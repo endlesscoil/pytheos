@@ -4,6 +4,7 @@ import http.client
 
 import netifaces
 
+from pytheos import Pytheos
 
 DEFAULT_BROADCAST_ADDRESS = '239.255.255.250'
 DEFAULT_BROADCAST_PORT = 1900
@@ -33,12 +34,14 @@ def discover(service, address=DEFAULT_BROADCAST_ADDRESS, port=DEFAULT_BROADCAST_
 
         try:
             response = SSDPResponse(sock)
-            discovered_devices.append(response)
+            discovered_devices.append(Pytheos(None, port=port, from_response=response))
 
         except socket.timeout:
             break
 
-    return discovered_devices # FIXME: Should really be returning Pytheos instances.
+        sock.close()
+
+    return discovered_devices
 
 def get_default_ip(proto):
     gateway, inf = get_default_interface(socket.AF_INET)

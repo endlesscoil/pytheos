@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-sys.path.insert(0, os.path.join(os.path.basename(__file__), "..")) # FIXME
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
 
 from pytheos import discover
 

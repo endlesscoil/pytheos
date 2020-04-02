@@ -1,26 +1,34 @@
 #!/usr/bin/env python
-import unittest
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
 
+import unittest
 import pytheos
-from pytheos import Pytheos
 
 
 class TestPytheos(unittest.TestCase):
     def setUp(self) -> None:
-        self._pytheos = Pytheos()
+        self._pytheos = pytheos.Pytheos('10.7.2.64', 1255)
+        self._pytheos.connect()
+
+    def tearDown(self) -> None:
+        self._pytheos.close()
 
     def test_discover(self):
-        discovered = pytheos.discover()
-        self.assertGreater(len(discovered), 0)
+        discovered = pytheos.discover("urn:schemas-denon-com:device:ACT-Denon:1")
+        self.assertIsInstance(discovered[0], pytheos.Pytheos)
 
     def test_connect(self):
-        server = 'localhost'
+        server = '10.7.2.64:1255'
 
         with pytheos.connect(server) as connection:
             self.assertIsNotNone(connection)
 
-    def test_command(self):
-        self._pytheos.execute('player', 'something', some_arg=True)
+    def test_system_heartbeat(self):
+        resp = self._pytheos.call('system', 'heart_beat')
+        self.assertGreater(len(resp), 0)
+
 
 if __name__== '__main__':
     unittest.main()
