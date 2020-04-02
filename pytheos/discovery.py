@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import socket
-import http.client
 
 import netifaces
 
-from pytheos import Pytheos
+from .pytheos import Pytheos
+from .types import SSDPResponse
 
 DEFAULT_BROADCAST_ADDRESS = '239.255.255.250'
 DEFAULT_BROADCAST_PORT = 1900
@@ -69,16 +69,3 @@ def _create_socket(broadcast_address, local_ip, so_reuseaddr=True, ttl=2):
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, membership_request)
 
     return sock
-
-class SSDPResponse(http.client.HTTPResponse):
-    def __init__(self, sock):
-        super().__init__(sock)
-
-        self.begin()
-        self.location = self.getheader("location")
-        self.usn = self.getheader("usn")
-        self.st = self.getheader("st")
-        self.cache = self.getheader("cache-control").split("=")[1]
-
-    def __repr__(self):
-        return f"<SSDPResponse(location={self.location})>"

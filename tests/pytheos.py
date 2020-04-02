@@ -26,8 +26,12 @@ class TestPytheos(unittest.TestCase):
             self.assertIsNotNone(connection)
 
     def test_system_heartbeat(self):
-        resp = self._pytheos.call('system', 'heart_beat')
-        self.assertGreater(len(resp), 0)
+        header, payload = self._pytheos.call('system', 'heart_beat')
+        self.assertTrue(header.succeeded)
+
+    # def test_foo(self):
+    #     while True:
+    #         time.sleep(0.5)
 
 
 if __name__== '__main__':

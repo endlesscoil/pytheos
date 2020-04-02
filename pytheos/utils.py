@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 import re
 
-def extract_ip(url):
-    return re.match(r"http://([^:/]+)[:/]", url).group(1)
 
-def build_command_string(group, command, **kwargs):
+def extract_ip(url: str):
+    return re.match(r"https?://([^:/$]+)[:/$]", url).group(1)
+
+def build_command_string(group: str, command: str, **kwargs) -> str:
     # FIXME: encoding
 
     attributes = '&'.join((
-        '='.join((k, v)) for k, v in kwargs.items()
+        '='.join((k, _replace_chars(v))) for k, v in kwargs.items()
     ))
 
     command_string = f"heos://{group}/{command}"
@@ -16,3 +17,16 @@ def build_command_string(group, command, **kwargs):
         command_string += f"?{attributes}"
 
     return command_string + "\n"
+
+def _replace_chars(input: str) -> str:
+    replace_map = {
+        '&': '%26',
+        '=': '%3D',
+        '%': '%25',
+    }
+
+    results = input
+    for char, replacement in replace_map.items():
+        results = results.replace(char, replacement)
+
+    return results
