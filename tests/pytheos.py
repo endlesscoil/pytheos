@@ -30,6 +30,8 @@ class TestPytheos(unittest.TestCase):
         self.assertTrue(header.succeeded)
 
     # def test_foo(self):
+    #     import time
+    #
     #     while True:
     #         time.sleep(0.5)
 

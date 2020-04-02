@@ -5,6 +5,7 @@ import time
 
 from . import utils
 from .connection import Connection
+from .types import HEOSEvent
 
 
 def connect(host):
@@ -38,11 +39,6 @@ def connect(host):
 class Pytheos(object):
     def __init__(self, server=None, port=None, from_response=None):
         if from_response:
-            self.location = from_response.location
-            self.usn = from_response.usn
-            self.st = from_response.st
-            self.cache = from_response.cache
-
             server = utils.extract_ip(from_response.location)
 
         assert server is not None
@@ -84,10 +80,11 @@ class Pytheos(object):
 
 
 class EventThread(threading.Thread):
-    def __init__(self, conn):
+    def __init__(self, conn, out_queue):
         super().__init__()
 
         self._connection = conn
+        self._out_queue = out_queue
         self.running = False
 
     def run(self) -> None:
@@ -96,8 +93,13 @@ class EventThread(threading.Thread):
         while self.running:
             results = self._connection.read_message()
             if results:
-                print('Got event', results)
-                # TODO
+                evt = HEOSEvent(from_json=results)
+                print(f"Received event: {evt!r}") # FIXME: logging.
+
+                try:
+                    self._out_queue.put_nowait(evt)
+                except queue.Full:
+                    pass # throw it away if the queue is full
 
             time.sleep(0.01)
 

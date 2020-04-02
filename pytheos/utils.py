@@ -6,8 +6,6 @@ def extract_ip(url: str):
     return re.match(r"https?://([^:/$]+)[:/$]", url).group(1)
 
 def build_command_string(group: str, command: str, **kwargs) -> str:
-    # FIXME: encoding
-
     attributes = '&'.join((
         '='.join((k, _replace_chars(v))) for k, v in kwargs.items()
     ))

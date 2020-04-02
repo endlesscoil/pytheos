@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import http.client
-from dataclasses import dataclass
+import json
 
 
 class SSDPResponse(http.client.HTTPResponse):
@@ -17,7 +17,6 @@ class SSDPResponse(http.client.HTTPResponse):
         return f"<SSDPResponse(location={self.location})>"
 
 
-@dataclass
 class HEOSResult(object):
     command: str = None
     result: str = None
@@ -38,3 +37,34 @@ class HEOSResult(object):
 
     def __repr__(self):
         return f'<HEOSResult(command={self.command}, result={self.result}, message={self.message})>'
+
+
+class HEOSEvent(object):
+    group: str = None
+    command: str = None
+    message: str = None
+    raw_string: str = None
+
+    def __init__(self, from_json=None):
+        if from_json:
+            heos = from_json.get('heos', {})
+
+            self.group, self.command = heos.get('command').split('/')
+            self.message = heos.get('message')
+            self.raw_string = json.dumps(from_json)
+
+            if self.message:
+                vars = {
+                    k: v.strip("'") for k, v in dict(
+                        [var_string.split('=') for var_string in self.message.split('&')]
+                    ).items()
+                }
+
+                for name, value in vars.items():
+                    setattr(self, name, value)
+
+    def __str__(self):
+        return self.raw_string
+
+    def __repr__(self):
+        return f'<HEOSEvent(group="{self.group}", command="{self.command}", message="{self.message}")>'
