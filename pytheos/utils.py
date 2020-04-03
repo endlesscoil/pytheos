@@ -8,9 +8,11 @@ def extract_host(url: str):
 
 def build_command_string(group: str, command: str, **kwargs) -> str:
     # Concatenate our vars string together from the keys and values we're provided.
-    attributes = '&'.join((
-        '='.join((k, _replace_chars(v))) for k, v in kwargs.items()
-    ))
+    attributes = '&'.join(
+        '='.join(
+            (k, _replace_chars(v))
+        ) for k, v in kwargs.items()
+    )
 
     command_string = f"heos://{group}/{command}"
     if attributes:
@@ -42,7 +44,7 @@ def _replace_chars(input):
     }
 
     if not isinstance(input, str):
-        return str(input)
+        input = str(input)
 
     results = input
     for char, replacement in replace_map.items():

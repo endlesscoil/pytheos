@@ -22,8 +22,8 @@ class Network(Enum):
 @dataclass
 class Player(object):
     name: str
-    pid: str
-    gid: str
+    player_id: str
+    group_id: str
     model: str
     version: str
     network: Network
@@ -35,8 +35,8 @@ class Player(object):
     def __init__(self, from_dict=None):
         if from_dict:
             self.name = from_dict.get('name')
-            self.pid = from_dict.get('pid')
-            self.gid = from_dict.get('gid')
+            self.player_id = from_dict.get('pid')
+            self.group_id = from_dict.get('gid')
             self.model = from_dict.get('model')
             self.version = from_dict.get('version')
             self.network = Network(from_dict.get('network'))

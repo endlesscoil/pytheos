@@ -22,6 +22,7 @@ class TestUtils(unittest.TestCase):
 
     def test_parse_var_string(self):
         self.assertEqual(utils.parse_var_string('pid=12345678&un=someone'), {'pid': '12345678', 'un': 'someone'})
+        # FIXME: This needs more
 
 
 if __name__ == '__main__':

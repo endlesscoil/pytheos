@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from ..api import API
 from .types import Player
+from ... import utils
 
 
 class PlayerAPI(API):
@@ -26,4 +27,9 @@ class PlayerAPI(API):
     def get_play_state(self, player_id):
         header, payload = self._pytheos.api.call('player', 'get_play_state', pid=player_id)
 
-        # FIXME - Finish this.
+        state = None
+        if header.succeeded:
+            vars = utils.parse_var_string(header.message)
+            state = vars.get('state')
+
+        return state

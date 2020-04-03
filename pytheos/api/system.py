@@ -5,9 +5,7 @@ from .. import utils
 
 class SystemAPI(API):
     def register_for_change_events(self, enable):
-        assert enable in ('on', 'off')
-
-        header, payload = self._pytheos.api.call('system', 'register_for_change_events', enable=enable)
+        header, payload = self._pytheos.api.call('system', 'register_for_change_events', enable='on' if enable else 'off')
 
         return header.succeeded
 
@@ -47,8 +45,6 @@ class SystemAPI(API):
         return header.succeeded
 
     def prettify_json_response(self, enable):
-        assert enable in ('on', 'off')
-
-        header, payload = self._pytheos.api.call('system', 'prettify_json_response', enable=enable)
+        header, payload = self._pytheos.api.call('system', 'prettify_json_response', enable='on' if enable else 'off')
 
         return header.succeeded
