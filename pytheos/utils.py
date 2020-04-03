@@ -3,7 +3,8 @@ import re
 
 
 def extract_ip(url: str):
-    return re.match(r"https?://([^:/$]+)[:/$]", url).group(1)
+    match = re.match(r"https?://([^:/]+)[:/]?", url)
+    return match.group(1) if match else None
 
 def build_command_string(group: str, command: str, **kwargs) -> str:
     attributes = '&'.join((
@@ -12,6 +13,7 @@ def build_command_string(group: str, command: str, **kwargs) -> str:
 
     command_string = f"heos://{group}/{command}"
     if attributes:
+        # FIXME: Do we need to wrap string arguments in quotes?
         command_string += f"?{attributes}"
 
     return command_string + "\n"
