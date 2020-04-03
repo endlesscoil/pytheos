@@ -6,14 +6,14 @@ from pytheos import utils
 
 class TestUtils(unittest.TestCase):
     def test_extract_ip(self):
-        self.assertEqual(utils.extract_ip('http://127.0.0.1'), '127.0.0.1')
-        self.assertEqual(utils.extract_ip('http://127.0.0.1/'), '127.0.0.1')
-        self.assertEqual(utils.extract_ip('http://127.0.0.1/testing'), '127.0.0.1')
-        self.assertEqual(utils.extract_ip('http://127.0.0.1:1234'), '127.0.0.1')
-        self.assertEqual(utils.extract_ip('http://127.0.0.1:1234/testing'), '127.0.0.1')
-        self.assertEqual(utils.extract_ip('https://127.0.0.1'), '127.0.0.1')
+        self.assertEqual(utils.extract_host('http://127.0.0.1'), '127.0.0.1')
+        self.assertEqual(utils.extract_host('http://127.0.0.1/'), '127.0.0.1')
+        self.assertEqual(utils.extract_host('http://127.0.0.1/testing'), '127.0.0.1')
+        self.assertEqual(utils.extract_host('http://127.0.0.1:1234'), '127.0.0.1')
+        self.assertEqual(utils.extract_host('http://127.0.0.1:1234/testing'), '127.0.0.1')
+        self.assertEqual(utils.extract_host('https://127.0.0.1'), '127.0.0.1')
 
-        self.assertIsNone(utils.extract_ip('hxxp://127.0.0.1'))
+        self.assertIsNone(utils.extract_host('hxxp://127.0.0.1'))
 
     def test_build_command_string(self):
         self.assertEqual(utils.build_command_string("system", "heart_beat"), "heos://system/heart_beat\n")

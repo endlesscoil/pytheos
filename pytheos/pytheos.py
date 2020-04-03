@@ -40,7 +40,7 @@ def connect(host):
 class Pytheos(object):
     def __init__(self, server=None, port=None, from_response=None):
         if from_response:
-            server = utils.extract_ip(from_response.location)
+            server = utils.extract_host(from_response.location)
 
         assert server is not None
         assert port is not None
@@ -116,43 +116,43 @@ class Pytheos(object):
             self.subscribe(event, callback)
 
     def _handle_sources_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_players_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_groups_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_player_state_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_now_playing_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_now_playing_progress(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_playback_error(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_queue_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_volume_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_repeat_mode_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_shuffle_mode_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_group_volume_changed(self, event):
-        pass
+        raise NotImplementedError()
 
     def _handle_user_changed(self, event):
-        pass
+        raise NotImplementedError()
 
 
 class EventThread(threading.Thread):

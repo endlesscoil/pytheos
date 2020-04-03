@@ -54,6 +54,7 @@ class HEOSEvent(object):
             self.message = heos.get('message')
             self.raw = json.dumps(from_dict)
 
+            # Bind any message variables to our self as attributes
             if self.message:
                 vars = utils.parse_var_string(self.message)
 

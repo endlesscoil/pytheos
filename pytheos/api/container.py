@@ -28,25 +28,25 @@ class APIContainer(object):
 
         return header, payload
 
-    def read_message(self, timeout=1):
-        response = b''
+    def read_message(self, timeout=1, delimiter=b'\r\n'):
         results = None
+        response = b''
 
         started = time.time()
         while True:
-            response += self._connection.read_until(b'\r\n', timeout=1)
+            response += self._connection.read_until(delimiter, timeout=1)
 
-            if b"\r\n" in response:
+            if delimiter in response:
                 response = response.strip()
 
+                # Bail out if we got a duplicate message and have deduplicate enabled
                 if self._connection.deduplicate and response == self._last_response:
                     response = b''
                     continue
-
                 self._last_response = response
 
+                # Confirm message is valid JSON
                 try:
-                    print('parsing', response)
                     results = json.loads(response.decode('utf-8'))
                 except (ValueError, TypeError):
                     response = b'' # Not valid JSON; reset & retry
@@ -55,6 +55,7 @@ class APIContainer(object):
                 # Valid data
                 break
 
+            # And break out if we exceeded our time limit to read a valid message
             if time.time() - started > timeout:
                 break
 
