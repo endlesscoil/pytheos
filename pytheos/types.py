@@ -2,6 +2,8 @@
 import http.client
 import json
 
+from pytheos import utils
+
 
 class SSDPResponse(http.client.HTTPResponse):
     def __init__(self, sock):
@@ -26,11 +28,11 @@ class HEOSResult(object):
     def succeeded(self):
         return self.result and self.result.lower() == 'success'
 
-    def __init__(self, from_json=None):
-        if from_json:
-            self.command = from_json.get('command')
-            self.result = from_json.get('result')
-            self.message = from_json.get('message')
+    def __init__(self, from_dict=None):
+        if from_dict:
+            self.command = from_dict.get('command')
+            self.result = from_dict.get('result')
+            self.message = from_dict.get('message')
 
     def __str__(self):
         return f'{self.command} - {self.result} - {self.message}'
@@ -40,31 +42,26 @@ class HEOSResult(object):
 
 
 class HEOSEvent(object):
-    group: str = None
     command: str = None
     message: str = None
-    raw_string: str = None
+    raw: str = None
 
-    def __init__(self, from_json=None):
-        if from_json:
-            heos = from_json.get('heos', {})
+    def __init__(self, from_dict=None):
+        if from_dict:
+            heos = from_dict.get('heos', {})
 
-            self.group, self.command = heos.get('command').split('/')
+            self.command = heos.get('command')
             self.message = heos.get('message')
-            self.raw_string = json.dumps(from_json)
+            self.raw = json.dumps(from_dict)
 
             if self.message:
-                vars = {
-                    k: v.strip("'") for k, v in dict(
-                        [var_string.split('=') for var_string in self.message.split('&')]
-                    ).items()
-                }
+                vars = utils.parse_var_string(self.message)
 
                 for name, value in vars.items():
                     setattr(self, name, value)
 
     def __str__(self):
-        return self.raw_string
+        return self.raw
 
     def __repr__(self):
-        return f'<HEOSEvent(group="{self.group}", command="{self.command}", message="{self.message}")>'
+        return f'<HEOSEvent(command="{self.command}", message="{self.message}")>'
