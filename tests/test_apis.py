@@ -2,7 +2,7 @@
 import os
 import sys
 
-from pytheos.api.player.types import Player
+from pytheos.api.player.types import Player, QueueItem
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
 
