@@ -61,8 +61,11 @@ class Pytheos(object):
         self._event_channel.connect()
         self._event_channel.register_for_events(True)
 
-        self._event_thread = EventThread(self._event_channel, self._event_handler)
+        # FIXME: Figure out exactly how I'm consuming these.
+        self._event_queue = queue.Queue()
+        self._event_thread = EventThread(self._event_channel, self._event_queue)
         self._event_thread.start()
+        #/FIXME
 
         # TODO: get status
 

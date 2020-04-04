@@ -24,18 +24,18 @@ class TestAPIs(unittest.TestCase):
     def test_system_check_account(self):
         self.assertTrue(self._pytheos.api.system.check_account())
 
-    @unittest.skip('Too annoying')
+    @unittest.skip('Too disruptive')
     def test_system_sign_in(self):
         self.assertTrue(self._pytheos.api.system.sign_in())
 
-    @unittest.skip('Too annoying')
+    @unittest.skip('Too disruptive')
     def test_system_sign_out(self):
         self.assertTrue(self._pytheos.api.system.sign_out())
 
     def test_system_heart_beat(self):
         self.assertTrue(self._pytheos.api.system.heart_beat())
 
-    @unittest.skip('Too iffy')
+    @unittest.skip('Too disruptive')
     def test_system_reboot(self):
         self.assertTrue(self._pytheos.api.system.reboot())
 
@@ -141,6 +141,7 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_play_queue(self):
         pid = self._get_pid_to_query()
+        # FIXME: construct queue
         queue = self._pytheos.api.player.get_queue(pid)
         self.assertGreater(len(queue), 0)
 
@@ -152,6 +153,7 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_remove_from_queue(self):
         pid = self._get_pid_to_query()
+        # FIXME: construct queue
         queue = self._pytheos.api.player.get_queue(pid)
         self.assertGreater(len(queue), 2)
 
@@ -167,11 +169,13 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_save_queue(self):
         pid = self._get_pid_to_query()
+        # FIXME: construct queue
         success = self._pytheos.api.player.save_queue(pid, "Test Playlist")
         self.assertTrue(success)
 
     def test_player_clear_queue(self):
         pid = self._get_pid_to_query()
+        # FIXME: construct queue
         success = self._pytheos.api.player.clear_queue(pid)
         self.assertTrue(success)
 
@@ -191,11 +195,13 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_play_next(self):
         pid = self._get_pid_to_query()
+        # FIXME: construct queue
         success = self._pytheos.api.player.play_next(pid)
         self.assertIsInstance(success, bool)
 
     def test_player_play_previous(self):
         pid = self._get_pid_to_query()
+        # FIXME: construct queue
         success = self._pytheos.api.player.play_previous(pid)
         self.assertIsInstance(success, bool)
 

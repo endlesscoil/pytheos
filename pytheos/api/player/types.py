@@ -49,3 +49,23 @@ class Player(object):
             self.control = control
 
             self.serial = from_dict.get('serial')
+
+@dataclass
+class QueueItem(object):
+    song: str
+    album: str
+    artist: str
+    image_url: str
+    queue_id: int
+    media_id: int
+    album_id: int
+
+    def __init__(self, from_dict=None):
+        if from_dict:
+            self.song = from_dict.get('song')
+            self.album = from_dict.get('album')
+            self.artist = from_dict.get('artist')
+            self.image_url = from_dict.get('image_url')
+            self.queue_id = from_dict.get('qid')
+            self.media_id = from_dict.get('mid')
+            self.album_id = from_dict.get('album_id')
