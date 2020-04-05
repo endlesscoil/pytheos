@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+""" Provides type declarations related to the PlayerAPI group """
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
 
 class Lineout(Enum):
@@ -21,8 +22,9 @@ class Network(Enum):
     Wifi = 'wifi'
     Unknown = 'unknown'
 
-@dataclass
-class Player(object):
+class Player:
+    """ Player representation """
+
     name: str
     player_id: str
     group_id: str
@@ -34,7 +36,11 @@ class Player(object):
     control: Control
     serial: str
 
-    def __init__(self, from_dict=None):
+    def __init__(self, from_dict: Optional[dict]=None):
+        """ Constructor
+
+        :param from_dict: Optional dictionary to use for initialization
+        """
         if from_dict:
             self.name = from_dict.get('name')
             self.player_id = from_dict.get('pid')
@@ -44,16 +50,16 @@ class Player(object):
             self.network = Network(from_dict.get('network'))
             self.ip = from_dict.get('ip')
             self.lineout = Lineout(int(from_dict.get('lineout')))
+            self.serial = from_dict.get('serial')
 
             control = from_dict.get('control')
             if control is not None:
                 control = Control(int(control))
             self.control = control
 
-            self.serial = from_dict.get('serial')
 
-@dataclass
-class QueueItem(object):
+class QueueItem:
+    """ Represents an item in the play queue """
     song: str
     album: str
     artist: str
@@ -62,7 +68,11 @@ class QueueItem(object):
     media_id: int
     album_id: int
 
-    def __init__(self, from_dict=None):
+    def __init__(self, from_dict: Optional[dict]=None):
+        """ Constructor
+
+        :param from_dict: Optional dictionary to use for initialization
+        """
         if from_dict:
             self.song = from_dict.get('song')
             self.album = from_dict.get('album')

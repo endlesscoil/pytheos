@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+""" CLI interface for working with the Pytheos devices """
+
 from __future__ import annotations
 
 import os
@@ -9,8 +11,9 @@ from pytheos import discover
 
 
 def main():
-    discovered = discover("urn:schemas-denon-com:device:ACT-Denon:1")
+    discovered = discover()
     print(discovered)
+
 
 if __name__ == '__main__':
     main()

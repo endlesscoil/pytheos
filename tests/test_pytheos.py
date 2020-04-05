@@ -18,7 +18,7 @@ class TestPytheos(unittest.TestCase):
         self._pytheos.close()
 
     def test_discover(self):
-        discovered = pytheos.discover("urn:schemas-denon-com:device:ACT-Denon:1")
+        discovered = pytheos.discover()
         self.assertIsInstance(discovered[0], pytheos.Pytheos)
 
     def test_connect(self):

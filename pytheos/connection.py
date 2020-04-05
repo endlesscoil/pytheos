@@ -1,56 +1,83 @@
 #!/usr/bin/env python
+""" Provides the implementation for the Connection class """
+
 from __future__ import annotations
 
 import telnetlib
 import threading
+from typing import Optional
 
 from .api.container import APIContainer
 
 
-class Connection(object):
-    def __init__(self, server, port, deduplicate=False):
+class Connection:
+    """ Connection to the telnet service on a HEOS device """
+
+    def __init__(self, server: str, port: int, deduplicate: bool=False):
+        """ Constructor
+
+        :param server: Server hostname or IP
+        :param port: Port number
+        :param deduplicate: Flag to enable message deduplication
+        """
         self.server = server
         self.port = port
         self.deduplicate = deduplicate
         self.api = APIContainer(self)
 
         self._lock = threading.Lock()
-        self._connection = None
+        self._conn: Optional[telnetlib.Telnet] = None
 
     def __del__(self):
-        if self._connection:
+        if self._conn:
             self.close()
 
     @property
-    def lock(self):
-        return self._lock
+    def connected(self) -> bool:
+        return self._conn.get_socket() is not None if self._conn else None
 
-    @property
-    def connected(self):
-        socket = None
-        if self._connection:
-            socket = self._connection.get_socket()
+    def connect(self) -> None:
+        """ Establish a connection with the HEOS service
 
-        return socket is not None
-
-    def connect(self):
+        :return: None
+        """
         with self._lock:
-            self._connection = telnetlib.Telnet(self.server, self.port)
+            self._conn = telnetlib.Telnet(self.server, self.port)
 
-    def close(self):
-        with self._lock:
-            self._connection.close()
-            self._connection = None
+    def close(self) -> None:
+        """ Closes the connection
 
-    def write(self, input):
+        :return: None
+        """
         with self._lock:
-            self._connection.write(input)
+            self._conn.close()
+            self._conn = None
 
-    def read_until(self, target, timeout=None):
+    def write(self, input: bytes) -> None:
+        """ Writes the provided data to the connection
+
+        :param input: Data to write
+        :return: None
+        """
         with self._lock:
-            data = self._connection.read_until(target, timeout=timeout)
+            self._conn.write(input)
+
+    def read_until(self, target: bytes, timeout: Optional[int]=None) -> bytes:
+        """ Reads from the connection until the target string is found or the optional timeout is hit
+
+        :param target: Target string
+        :param timeout: Timeout (seconds) or None for no timeout
+        :return: str
+        """
+        with self._lock:
+            data = self._conn.read_until(target, timeout=timeout)
 
         return data
 
-    def register_for_events(self, enable=True):
-        return self.api.system.register_for_change_events(enable='on' if enable else 'off')
+    def register_for_events(self, enable: bool=True) -> None:
+        """ Registers this connection to receive change events
+
+        :param enable: True or False
+        :return: None
+        """
+        self.api.system.register_for_change_events(enable)
