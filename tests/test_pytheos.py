@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
@@ -26,14 +28,7 @@ class TestPytheos(unittest.TestCase):
             self.assertIsNotNone(connection)
 
     def test_system_heartbeat(self):
-        header, payload = self._pytheos.call('system', 'heart_beat')
-        self.assertTrue(header.succeeded)
-
-    # def test_foo(self):
-    #     import time
-    #
-    #     while True:
-    #         time.sleep(0.5)
+        self._pytheos.call('system', 'heart_beat')
 
 
 if __name__== '__main__':

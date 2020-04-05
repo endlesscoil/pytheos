@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import telnetlib
 import threading
 
@@ -13,6 +15,7 @@ class Connection(object):
         self.api = APIContainer(self)
 
         self._lock = threading.Lock()
+        self._connection = None
 
     def __del__(self):
         if self._connection:
@@ -21,6 +24,14 @@ class Connection(object):
     @property
     def lock(self):
         return self._lock
+
+    @property
+    def connected(self):
+        socket = None
+        if self._connection:
+            socket = self._connection.get_socket()
+
+        return socket is not None
 
     def connect(self):
         with self._lock:

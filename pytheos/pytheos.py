@@ -1,11 +1,16 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import queue
 import threading
 import time
+from typing import Optional
 
 from . import utils
+from .api.container import APIContainer
 from .connection import Connection
-from .types import HEOSEvent
+from .errors import ChannelUnavailableError
+from .types import HEOSEvent, HEOSResult
 
 
 def connect(host):
@@ -42,12 +47,14 @@ class Pytheos(object):
         if from_response:
             server = utils.extract_host(from_response.location)
 
+        # FIXME: I really don't like these asserts and the default Nones above - find a way to make this better.
         assert server is not None
         assert port is not None
+        #/FIXME
 
         self.server = server
         self.port = port
-        self.api = None
+        self.api : Optional[APIContainer] = None
 
         self._event_subscriptions = {}
         self._init_internal_event_handlers()
@@ -80,18 +87,20 @@ class Pytheos(object):
             self._command_channel.close()
 
 
-    def call(self, group, command, **kwargs):
-        assert self._command_channel is not None
+    def call(self, group, command, **kwargs) -> HEOSResult:
+        self._check_channel_availability(self._command_channel)
 
-        header, payload = self._command_channel.api.call(group, command, **kwargs)
-
-        return header, payload
+        return self._command_channel.api.call(group, command, **kwargs)
 
     def subscribe(self, event_name, callback):
         if self._event_subscriptions.get(event_name) is None:
             self._event_subscriptions[event_name] = []
 
         self._event_subscriptions[event_name].append(callback)
+
+    def _check_channel_availability(self, channel: Connection):
+        if not channel or not channel.connected:
+            raise ChannelUnavailableError()
 
     def _event_handler(self, event):
         subscriptions = self._event_subscriptions.get(event.command, [])

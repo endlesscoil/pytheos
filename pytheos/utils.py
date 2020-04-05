@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import re
 
 
@@ -24,15 +26,16 @@ def build_command_string(group: str, command: str, **kwargs) -> str:
 def parse_var_string(input):
     vars = {}
 
-    var_strings = [var_string.split('=') for var_string in input.split('&')]
-    for elements in var_strings:
-        # Copy name to value for vars with no value specified - e.g. signed_in&un=username
-        name = elements[0]
-        value = name
-        if len(elements) > 1:
-            value = elements[1]
+    if input is not None:
+        var_strings = [var_string.split('=') for var_string in input.split('&')]
+        for elements in var_strings:
+            # Copy name to value for vars with no value specified - e.g. signed_in&un=username
+            name = elements[0]
+            value = name
+            if len(elements) > 1:
+                value = elements[1]
 
-        vars[name] = value.strip("'")
+            vars[name] = value.strip("'")
 
     return vars
 

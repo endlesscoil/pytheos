@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import http.client
 import json
 
@@ -23,6 +25,7 @@ class HEOSResult(object):
     command: str = None
     result: str = None
     message: str = None
+    payload = None  # Dict or list
 
     @property
     def succeeded(self):
@@ -30,9 +33,19 @@ class HEOSResult(object):
 
     def __init__(self, from_dict=None):
         if from_dict:
-            self.command = from_dict.get('command')
-            self.result = from_dict.get('result')
-            self.message = from_dict.get('message')
+            heos = from_dict.get('heos')
+            if not heos:
+                raise ValueError('No "heos" block found in response.')
+
+            self.command = heos.get('command')
+            self.result = heos.get('result')
+            self.message = heos.get('message')
+
+            self.message_vars = {}
+            if self.message:
+                self.message_vars = utils.parse_var_string(self.message)
+
+            self.payload = from_dict.get('payload')
 
     def __str__(self):
         return f'{self.command} - {self.result} - {self.message}'

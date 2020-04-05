@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import os
 import sys
 
 from pytheos.api.player.types import Player, QueueItem
+from pytheos.errors import CommandFailedError
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
 
@@ -19,29 +22,29 @@ class TestAPIs(unittest.TestCase):
         self._pytheos.close()
 
     def test_system_register_for_change_events(self):
-        self.assertTrue(self._pytheos.api.system.register_for_change_events(True))
+        self._pytheos.api.system.register_for_change_events(True)
 
     def test_system_check_account(self):
         self.assertTrue(self._pytheos.api.system.check_account())
 
     @unittest.skip('Too disruptive')
     def test_system_sign_in(self):
-        self.assertTrue(self._pytheos.api.system.sign_in())
+        self._pytheos.api.system.sign_in()
 
     @unittest.skip('Too disruptive')
     def test_system_sign_out(self):
-        self.assertTrue(self._pytheos.api.system.sign_out())
+        self._pytheos.api.system.sign_out()
 
     def test_system_heart_beat(self):
-        self.assertTrue(self._pytheos.api.system.heart_beat())
+        self._pytheos.api.system.heart_beat()
 
     @unittest.skip('Too disruptive')
     def test_system_reboot(self):
-        self.assertTrue(self._pytheos.api.system.reboot())
+        self._pytheos.api.system.reboot()
 
     def test_system_prettify_json_response(self):
-        self.assertTrue(self._pytheos.api.system.prettify_json_response(True))
-        self.assertTrue(self._pytheos.api.system.prettify_json_response(False))
+        for enable in (True, False):
+            self._pytheos.api.system.prettify_json_response(enable)
 
     def test_player_get_players(self):
         players = self._pytheos.api.player.get_players()
@@ -60,8 +63,7 @@ class TestAPIs(unittest.TestCase):
     def test_player_set_play_state(self):
         pid = self._get_pid_to_query()
         for state in ('play', 'pause', 'stop'):
-            new_state = self._pytheos.api.player.set_play_state(pid, state)
-            self.assertEqual(new_state, state)
+            self._pytheos.api.player.set_play_state(pid, state)
 
         self.assertRaises(ValueError, self._pytheos.api.player.set_play_state(pid, 'invalid_state'))
 
@@ -78,25 +80,19 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_set_volume(self):
         pid = self._get_pid_to_query()
-        new_volume = self._pytheos.api.player.set_volume(pid, 20)
-        self.assertIsInstance(new_volume, int)
-        self.assertTrue(0 <= new_volume <= 100)
+        self._pytheos.api.player.set_volume(pid, 20)
         self.assertRaises(ValueError, self._pytheos.api.player.set_volume(pid, 101))
         self.assertRaises(ValueError, self._pytheos.api.player.set_volume(pid, -1))
 
     def test_player_volume_up(self):
         pid = self._get_pid_to_query()
-        step_level = self._pytheos.api.player.volume_up(pid, 5)
-        self.assertIsInstance(step_level, int)
-        self.assertTrue(1 <= step_level <= 10)
+        self._pytheos.api.player.volume_up(pid, 5)
         self.assertRaises(ValueError, self._pytheos.api.player.volume_up(pid, 11))
         self.assertRaises(ValueError, self._pytheos.api.player.volume_up(pid, 0))
 
     def test_player_volume_down(self):
         pid = self._get_pid_to_query()
-        step_level = self._pytheos.api.player.volume_down(pid, 5)
-        self.assertIsInstance(step_level, int)
-        self.assertTrue(1 <= step_level <= 10)
+        self._pytheos.api.player.volume_down(pid, 5)
         self.assertRaises(ValueError, self._pytheos.api.player.volume_down(pid, 11))
         self.assertRaises(ValueError, self._pytheos.api.player.volume_down(pid, 0))
 
@@ -107,13 +103,12 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_set_mute(self):
         pid = self._get_pid_to_query()
-        muted = self._pytheos.api.player.set_mute(pid, True)
-        self.assertIsInstance(muted, bool)
+        for enable in (True, False):
+            self._pytheos.api.player.set_mute(pid, enable)
 
     def test_player_toggle_mute(self):
         pid = self._get_pid_to_query()
-        success = self._pytheos.api.player.toggle_mute(pid)
-        self.assertIsInstance(success, bool)
+        self._pytheos.api.player.toggle_mute(pid)
 
     def test_player_get_play_mode(self):
         pid = self._get_pid_to_query()
@@ -122,18 +117,14 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_set_play_mode(self):
         pid = self._get_pid_to_query()
-        success = self._pytheos.api.player.set_play_mode(pid, repeat='off', shuffle='off') # Don't really need to test the others
-        self.assertIsInstance(success, bool)
+        self._pytheos.api.player.set_play_mode(pid, repeat='off', shuffle='off') # Don't really need to test the others
 
     def test_player_get_queue(self):
         pid = self._get_pid_to_query()
-        queue = self._pytheos.api.player.get_queue(pid)
-        self.assertIsInstance(queue, list)
-        if queue:
-            self.assertIsInstance(queue[0], QueueItem)
-
+        # FIXME: construct queue
         queue = self._pytheos.api.player.get_queue(pid, 0, 10)
         self.assertIsInstance(queue, list)
+        self.assertIsInstance(queue[0], QueueItem)
 
         self.assertRaises(ValueError, self._pytheos.api.player.get_queue(pid, -1, 10))  # Lower limit too small
         self.assertRaises(ValueError, self._pytheos.api.player.get_queue(pid, 0, 100))  # Upper limit too large
@@ -145,11 +136,9 @@ class TestAPIs(unittest.TestCase):
         queue = self._pytheos.api.player.get_queue(pid)
         self.assertGreater(len(queue), 0)
 
-        success = self._pytheos.api.player.play_queue(pid, queue[0].id)
-        self.assertTrue(success)
+        self._pytheos.api.player.play_queue(pid, queue[0].id)
 
-        success = self._pytheos.api.player.play_queue(pid, -1)
-        self.assertFalse(success)
+        self.assertRaises(CommandFailedError, self._pytheos.api.player.play_queue(pid, -1))
 
     def test_player_remove_from_queue(self):
         pid = self._get_pid_to_query()
@@ -158,37 +147,29 @@ class TestAPIs(unittest.TestCase):
         self.assertGreater(len(queue), 2)
 
         queue_ids = [item.id for item in queue]
-        success = self._pytheos.api.player.remove_from_queue(pid, queue_ids=queue_ids[0])
-        self.assertTrue(success)
+        self._pytheos.api.player.remove_from_queue(pid, queue_ids=queue_ids[0])
+        self._pytheos.api.player.remove_from_queue(pid, queue_ids=queue_ids[1:2])
 
-        success = self._pytheos.api.player.remove_from_queue(pid, queue_ids=queue_ids[1:2])
-        self.assertTrue(success)
-
-        success = self._pytheos.api.player.remove_from_queue(pid, queue_ids=(-1,))
-        self.assertFalse(success)
+        self.assertRaises(CommandFailedError, self._pytheos.api.player.remove_from_queue(pid, queue_ids=(-1,)))
 
     def test_player_save_queue(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
-        success = self._pytheos.api.player.save_queue(pid, "Test Playlist")
-        self.assertTrue(success)
+        self._pytheos.api.player.save_queue(pid, "Test Playlist")
 
     def test_player_clear_queue(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
-        success = self._pytheos.api.player.clear_queue(pid)
-        self.assertTrue(success)
+        self._pytheos.api.player.clear_queue(pid)
 
     def test_player_move_queue(self):
         pid = self._get_pid_to_query()
+        # FIXME: construct queue
         queue = self._pytheos.api.player.get_queue(pid)
         self.assertGreater(len(queue), 2)
 
-        success = self._pytheos.api.player.move_queue(pid, source_ids=(1,), destination_id=1)
-        self.assertTrue(success)
-
-        success = self._pytheos.api.player.move_queue(pid, source_ids=(1, 2), destination_id=3)
-        self.assertTrue(success)
+        self._pytheos.api.player.move_queue(pid, source_ids=(1,), destination_id=1)
+        self._pytheos.api.player.move_queue(pid, source_ids=(1, 2), destination_id=3)
 
         self.assertRaises(ValueError, self._pytheos.api.player_move_queue(pid, source_ids=(-1,), destination_id=0)) # Invalid source ID
         self.assertRaises(ValueError, self._pytheos.api.player_move_queue(pid, source_ids=(0,), destination_id=4))  # Invalid destination ID
@@ -196,27 +177,23 @@ class TestAPIs(unittest.TestCase):
     def test_player_play_next(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
-        success = self._pytheos.api.player.play_next(pid)
-        self.assertIsInstance(success, bool)
+        self._pytheos.api.player.play_next(pid)
 
     def test_player_play_previous(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
-        success = self._pytheos.api.player.play_previous(pid)
-        self.assertIsInstance(success, bool)
+        self._pytheos.api.player.play_previous(pid)
 
     def test_player_set_quickselect(self):
         pid = self._get_pid_to_query()
-        success = self._pytheos.api.player.set_quickselect(pid, 1)
-        self.assertTrue(success)
+        self._pytheos.api.player.set_quickselect(pid, 1)
 
         self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect(pid, 0)) # Value too small
         self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect(pid, 7)) # Value too large
 
     def test_player_play_quickselect(self):
         pid = self._get_pid_to_query()
-        success = self._pytheos.api.player.play_quickselect(pid, 1)
-        self.assertTrue(success)
+        self._pytheos.api.player.play_quickselect(pid, 1)
 
         self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect(pid, 0)) # Value too small
         self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect(pid, 7)) # Value too large
