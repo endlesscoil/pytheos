@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 import sys
 
-from pytheos.api.player.types import Player, QueueItem
+from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
 from pytheos.errors import CommandFailedError
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
@@ -70,7 +70,7 @@ class TestAPIs(unittest.TestCase):
     def test_player_get_now_playing_media(self):
         pid = self._get_pid_to_query()
         now_playing = self._pytheos.api.player.get_now_playing_media(pid) # FIXME?: What about the options?
-        self.assertIsInstance(now_playing, MediaDetails)
+        self.assertIsInstance(now_playing, MediaItem)
 
     def test_player_get_volume(self):
         pid = self._get_pid_to_query()
@@ -117,14 +117,15 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_set_play_mode(self):
         pid = self._get_pid_to_query()
-        self._pytheos.api.player.set_play_mode(pid, repeat='off', shuffle='off') # Don't really need to test the others
+        self._pytheos.api.player.set_play_mode(pid, PlayMode(repeat=RepeatMode.Off, shuffle=ShuffleMode.Off)) # Don't really need to test the others
 
     def test_player_get_queue(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
         queue = self._pytheos.api.player.get_queue(pid, 0, 10)
         self.assertIsInstance(queue, list)
-        self.assertIsInstance(queue[0], QueueItem)
+        self.assertGreater(len(queue), 0)
+        self.assertIsInstance(queue[0], MediaItem)
 
         self.assertRaises(AssertionError, self._pytheos.api.player.get_queue(pid, -1, 10))  # Lower limit too small
         self.assertRaises(AssertionError, self._pytheos.api.player.get_queue(pid, 0, 100))  # Number to retrieve too large
@@ -152,16 +153,20 @@ class TestAPIs(unittest.TestCase):
 
         self.assertRaises(CommandFailedError, self._pytheos.api.player.remove_from_queue(pid, queue_ids=(-1,)))
 
+    @unittest.skip("Too disruptive - and I don't know how to remove them yet")
     def test_player_save_queue(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
         self._pytheos.api.player.save_queue(pid, "Test Playlist")
+        self.assertRaises(AssertionError, self._pytheos.api.player.save_queue(pid, '*'*129))
 
+    @unittest.skip('Too disruptive')
     def test_player_clear_queue(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
         self._pytheos.api.player.clear_queue(pid)
 
+    @unittest.skip('Too disruptive')
     def test_player_move_queue(self):
         pid = self._get_pid_to_query()
         # FIXME: construct queue
@@ -198,12 +203,13 @@ class TestAPIs(unittest.TestCase):
         self.assertRaises(AssertionError, self._pytheos.api.player.play_quickselect(pid, 0)) # Value too small
         self.assertRaises(AssertionError, self._pytheos.api.player.play_quickselect(pid, 7)) # Value too large
 
+    @unittest.skip('No AVR to test with')
     def test_player_get_quickselects(self):
         pid = self._get_pid_to_query()
-        quickselects = self._pytheos.api.player.get_quickselects(pid)
-        self.assertIsInstance(quickselects, list)
-        self.assertGreater(len(quickselects), 0)
-        self.assertIsInstance(quickselects[0], QuickSelect)
+        quick_selects = self._pytheos.api.player.get_quickselects(pid)
+        self.assertIsInstance(quick_selects, list)
+        self.assertGreater(len(quick_selects), 0)
+        self.assertIsInstance(quick_selects[0], QuickSelect)
 
     def test_player_check_update(self):
         pid = self._get_pid_to_query()

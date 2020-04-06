@@ -57,6 +57,7 @@ class APIContainer:
         :return: HEOSResult
         """
         command_string = utils.build_command_string(group, command, **kwargs)
+        print(command_string)
         self._connection.write(command_string.encode('utf-8'))
 
     def read_message(self, timeout: int=1, delimiter: bytes=b'\r\n') -> bytes:

@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Optional
 
 from ..api import API
-from .types import Player, QueueItem
+from .types import Player, MediaItem, PlayMode, RepeatMode, ShuffleMode, QuickSelect, Mute
 from ...errors import InvalidResponse
 
 
@@ -39,6 +39,17 @@ class PlayerAPI(API):
         results = self._pytheos.api.call('player', 'get_mute', pid=player_id)
         return results.header.vars.get('state') == 'on'
 
+    def get_now_playing_media(self, player_id: int) -> MediaItem:
+        """ Returns details of the currently playing media
+
+        :param player_id: PlayerID
+        :return: MediaItem
+        """
+        results = self._pytheos.api.call('player', 'get_now_playing_media', pid=player_id)
+        # TODO: options support
+
+        return MediaItem(results.payload)
+
     def get_players(self) -> list:
         """ Retrieves a list of players that are available
 
@@ -55,6 +66,19 @@ class PlayerAPI(API):
         """
         results = self._pytheos.api.call('player', 'get_player_info', pid=player_id)
         return Player(results.payload)
+
+    def get_play_mode(self, player_id: int) -> PlayMode:
+        """ Returns the current play mode flags - repeat & shuffle
+
+        :param player_id: Player ID
+        :return: PlayMode
+        """
+        results = self._pytheos.api.call('player', 'get_play_mode', pid=player_id)
+
+        return PlayMode(
+            repeat=RepeatMode(results.header.vars.get('repeat')),
+            shuffle=ShuffleMode(results.header.vars.get('shuffle'))
+        )
 
     def get_play_state(self, player_id: int) -> Optional[str]:
         """ Retrieves the current playing state (e.g. play, pause, stop)
@@ -83,7 +107,23 @@ class PlayerAPI(API):
 
         results = self._pytheos.api.call('player', 'get_queue',
                                          pid=player_id, range=f'{range_start},{range_start + number_to_retrieve - 1}')
-        return [QueueItem(item) for item in results.payload]
+        return [MediaItem(item) for item in results.payload]
+
+    def get_quickselects(self, player_id: int, quick_select_id: Optional[int]=None) -> list:
+        """ Retrieves a list of quick select entries - LEGO AVR or HEOS BAR only
+
+        :param player_id:
+        :param quick_select_id:
+        :return: list
+        """
+        assert quick_select_id is None or quick_select_id in range(1, 7)
+
+        kwargs = {'pid': player_id}
+        if quick_select_id is not None:
+            kwargs['id'] = quick_select_id
+
+        results = self._pytheos.api.call('player', 'get_quickselects', **kwargs)
+        return [QuickSelect(id=item.id, name=item.name) for item in results.payload]
 
     def get_volume(self, player_id: int) -> int:
         """ Retrieves the current volume
@@ -94,7 +134,7 @@ class PlayerAPI(API):
         results = self._pytheos.api.call('player', 'get_volume', pid=player_id)
         return int(results.header.vars.get('level'))
 
-    def play_next(self, player_id: int)-> None:
+    def play_next(self, player_id: int) -> None:
         """ Plays the next item in the play queue
 
         :param player_id: Player ID
@@ -118,3 +158,42 @@ class PlayerAPI(API):
         :return: None
         """
         self._pytheos.api.call('player', 'play_queue', pid=player_id, qid=queue_entry_id)
+
+    def play_quickselect(self, player_id: int, quick_select_id: int) -> None:
+        """ Play the specified QuickSelect ID
+
+        :param player_id: Player ID
+        :param quick_select_id: QuickSelect ID
+        :return: None
+        """
+        assert 1 <= quick_select_id <= 6
+        self._pytheos.api.call('player', 'play_quickselect', pid=player_id, id=quick_select_id)
+
+    def save_queue(self, player_id: int, playlist_name: str) -> None:
+        """ Saves the current queue as a playlist
+
+        :param player_id: Player ID
+        :param playlist_name: Playlist name
+        :return: None
+        """
+        assert len(playlist_name) <= 128
+
+        self._pytheos.api.call('player', 'save_queue', pid=player_id, name=playlist_name)
+
+    def set_mute(self, player_id: int, enable: bool) -> None:
+        """ Enables or disables mute on the specified player
+
+        :param player_id: Player ID
+        :param enable: True or False
+        :return: None
+        """
+        self._pytheos.api.call('player', 'set_mute', pid=player_id, state=Mute.On if enable else Mute.Off)
+
+    def set_play_mode(self, player_id: int, play_mode: PlayMode) -> None:
+        """ Sets the play mode for the specified player - repeat & shuffle
+
+        :param player_id: Player ID
+        :param play_mode: PlayMode
+        :return: None
+        """
+        self._pytheos.api.call('player', 'set_play_mode', pid=player_id, repeat=play_mode.repeat, shuffle=play_mode.shuffle)
