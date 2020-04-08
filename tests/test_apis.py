@@ -65,6 +65,7 @@ class TestAPIs(unittest.TestCase):
         pid = self._get_pid_to_query()
         for state in ('play', 'pause', 'stop'):
             self._pytheos.api.player.set_play_state(pid, state)
+            time.sleep(1)
 
         self.assertRaises(ValueError, self._pytheos.api.player.set_play_state, pid, 'invalid_state')
 

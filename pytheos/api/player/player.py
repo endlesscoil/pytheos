@@ -229,6 +229,19 @@ class PlayerAPI(API):
 
         self._pytheos.api.call('player', 'set_quickselect', pid=player_id, id=id)
 
+    def set_play_state(self, player_id: int, state: str) -> None:
+        """ Set the current playing state for the player
+
+        :param player_id: Player ID
+        :param state: Play state
+        :raises: ValueError
+        :return: None
+        """
+        if state not in ('play', 'pause', 'stop'):
+            raise ValueError('Play state must be "play", "pause", or "stop"')
+
+        self._pytheos.api.call('player', 'set_play_state', pid=player_id, state=state)
+
     def set_volume(self, player_id: int, level: int) -> None:
         """ Sets the volume level on the player
 
