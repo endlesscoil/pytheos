@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Union
 
 from ..api import API
 from .types import Player, MediaItem, PlayMode, RepeatMode, ShuffleMode, QuickSelect, Mute
@@ -99,11 +99,13 @@ class PlayerAPI(API):
         :param player_id: Player ID
         :param range_start: Optional range to start retrieving from
         :param number_to_retrieve: Number of items to retrieve
-        :raises: AssertionError
+        :raises: ValueError
         :return: list
         """
-        assert range_start >= 0
-        assert 0 < number_to_retrieve <= 100
+        if range_start < 0:
+            raise ValueError('Range start must be >= 0')
+        if not 0 < number_to_retrieve <= 100:
+            raise ValueError('Number of items to retrieve must be between 1 and 100')
 
         results = self._pytheos.api.call('player', 'get_queue',
                                          pid=player_id, range=f'{range_start},{range_start + number_to_retrieve - 1}')
@@ -112,11 +114,13 @@ class PlayerAPI(API):
     def get_quickselects(self, player_id: int, quick_select_id: Optional[int]=None) -> list:
         """ Retrieves a list of quick select entries - LEGO AVR or HEOS BAR only
 
-        :param player_id:
-        :param quick_select_id:
+        :param player_id: Player ID
+        :param quick_select_id: QuickSelect ID
+        :raises: ValueError
         :return: list
         """
-        assert quick_select_id is None or quick_select_id in range(1, 7)
+        if not 0 < quick_select_id <= 6 and quick_select_id is not None:
+            raise ValueError('Quick Select ID must be between 1 and 6 or None to retrieve all Quick Selects')
 
         kwargs = {'pid': player_id}
         if quick_select_id is not None:
@@ -164,19 +168,33 @@ class PlayerAPI(API):
 
         :param player_id: Player ID
         :param quick_select_id: QuickSelect ID
+        :raises: ValueError
         :return: None
         """
-        assert 1 <= quick_select_id <= 6
+        if not 1 <= quick_select_id <= 6:
+            raise ValueError('Quick Select ID must be between 1 and 6')
+
         self._pytheos.api.call('player', 'play_quickselect', pid=player_id, id=quick_select_id)
+
+    def remove_from_queue(self, player_id: int, queue_ids: Union[list, tuple, set]) -> None:
+        """ Remove a set of items from the queue
+
+        :param player_id: Player ID
+        :param queue_ids: Queue IDs
+        :return: None
+        """
+        self._pytheos.api.call('player', 'remove_from_queue', pid=player_id, qid=','.join([str(qid) for qid in queue_ids]))
 
     def save_queue(self, player_id: int, playlist_name: str) -> None:
         """ Saves the current queue as a playlist
 
         :param player_id: Player ID
         :param playlist_name: Playlist name
+        :raises: ValueError
         :return: None
         """
-        assert len(playlist_name) <= 128
+        if len(playlist_name) > 128:
+            raise ValueError('Playlist name cannot exceed 128 characters')
 
         self._pytheos.api.call('player', 'save_queue', pid=player_id, name=playlist_name)
 
@@ -197,3 +215,63 @@ class PlayerAPI(API):
         :return: None
         """
         self._pytheos.api.call('player', 'set_play_mode', pid=player_id, repeat=play_mode.repeat, shuffle=play_mode.shuffle)
+
+    def set_quickselect(self, player_id: int, id: int) -> None:
+        """ Selects the specified Quick Select
+
+        :param player_id: Player ID
+        :param level: QuickSelect ID
+        :raises: ValueError
+        :return: None
+        """
+        if not 0 < id <= 6:
+            raise ValueError('Level must be between 1 and 6')
+
+        self._pytheos.api.call('player', 'set_quickselect', pid=player_id, id=id)
+
+    def set_volume(self, player_id: int, level: int) -> None:
+        """ Sets the volume level on the player
+
+        :param player_id: Player ID
+        :param level: Volume level
+        :raises: ValueError
+        :return: None
+        """
+        if not 0 <= level <= 100:
+            raise ValueError('Level must be between 0 and 100')
+
+        self._pytheos.api.call('player', 'set_volume', pid=player_id, level=level)
+
+    def toggle_mute(self, player_id: int) -> None:
+        """ Toggles mute on the player
+
+        :param player_id: Player ID
+        :return: None
+        """
+        self._pytheos.api.call('player', 'toggle_mute', pid=player_id)
+
+    def volume_up(self, player_id: int, step_level: int=5) -> None:
+        """ Turn the volume up by the specified step level.
+
+        :param player_id: Player ID
+        :param step_level: Step level
+        :raises: ValueError
+        :return: None
+        """
+        if not 0 < step_level <= 10:
+            raise ValueError('Step level must be between 1 and 10')
+
+        self._pytheos.api.call('player', 'volume_up', pid=player_id, step=step_level)
+
+    def volume_down(self, player_id: int, step_level: int = 5) -> None:
+        """ Turn the volume down by the specified step level.
+
+        :param player_id: Player ID
+        :param step_level: Step level
+        :raises: ValueError
+        :return: None
+        """
+        if not 0 < step_level <= 10:
+            raise ValueError('Step level must be between 1 and 10')
+
+        self._pytheos.api.call('player', 'volume_down', pid=player_id, step=step_level)
