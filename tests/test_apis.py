@@ -185,6 +185,7 @@ class TestAPIs(unittest.TestCase):
         # FIXME: construct queue
         self._pytheos.api.player.play_previous(pid)
 
+    @unittest.skip('No AVR to test with')
     def test_player_set_quickselect(self):
         pid = self._get_pid_to_query()
         self._pytheos.api.player.set_quickselect(pid, 1)
@@ -192,6 +193,7 @@ class TestAPIs(unittest.TestCase):
         self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, pid, 0) # Value too small
         self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, pid, 7) # Value too large
 
+    @unittest.skip('No AVR to test with')
     def test_player_play_quickselect(self):
         pid = self._get_pid_to_query()
         self._pytheos.api.player.play_quickselect(pid, 1)
@@ -212,6 +214,18 @@ class TestAPIs(unittest.TestCase):
         update_available = self._pytheos.api.player.check_update(pid)
         self.assertIsInstance(update_available, bool)
 
+    def test_group_get_groups(self):
+        groups = self._pytheos.api.group.get_groups()
+        self.assertGreater(len(groups), 0)
+        self.assertIsInstance(groups[0], Group)
+
+    def test_group_get_group_info(self):
+        gid = self._get_gid_to_query()
+        group_info = self._pytheos.api.group.get_group_info(gid)
+        self.assertIsInstance(group_info, Group)
+
+        self.assertRaises(CommandFailedError, self._pytheos.api.group.get_group_info(-1))
+
     # Utils
     def _get_pid_to_query(self):
         players = self._pytheos.api.player.get_players()
@@ -220,6 +234,12 @@ class TestAPIs(unittest.TestCase):
 
         return players[0].player_id
 
+    def _get_gid_to_query(self):
+        groups = self._pytheos.api.player.get_groups()
+        self.assertGreater(len(groups), 0)
+        self.assertIsInstance(groups[0], Group)
+
+        return groups[0].group_id
 
 if __name__== '__main__':
     unittest.main()
