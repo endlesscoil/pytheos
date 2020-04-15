@@ -47,13 +47,6 @@ class ShuffleMode(Enum):
     def __str__(self):
         return self.value
 
-class Mute(Enum):
-    On = 'on'
-    Off = 'off'
-
-    def __str__(self):
-        return self.value
-
 @dataclass
 class PlayMode:
     repeat: RepeatMode

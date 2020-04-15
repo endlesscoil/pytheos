@@ -6,7 +6,8 @@ from __future__ import annotations
 from typing import Optional, Union
 
 from ..api import API
-from .types import Player, MediaItem, PlayMode, RepeatMode, ShuffleMode, QuickSelect, Mute
+from .types import Player, MediaItem, PlayMode, RepeatMode, ShuffleMode, QuickSelect
+from ..types import Mute
 from ...errors import InvalidResponse
 
 

@@ -6,7 +6,7 @@ from __future__ import annotations
 import http.client
 import json
 import socket
-from typing import Optional
+from typing import Optional, Any
 
 from pytheos import utils
 
@@ -52,8 +52,14 @@ class HEOSPayload(object):
 
     data: Optional[dict] = None
 
-    def __init__(self, from_dict=None):
-        self.data = from_dict
+    def __init__(self, source: Any[dict, list]=None):
+        self.data = source
+        self.vars = {}
+
+        if source and isinstance(source, dict):
+            message = source.get('message')
+            if message:
+                self.vars = utils.parse_var_string(message)
 
 
 class HEOSListPayloadIterator(object):
@@ -84,7 +90,7 @@ class HEOSDictPayload(HEOSPayload, dict):
     """ Represents a dict that is returned from some HEOS command execution """
 
     def __init__(self, from_dict=None):
-        super().__init__(from_dict=from_dict)
+        super().__init__(source=from_dict)
 
         if from_dict:
             self.__dict__ = from_dict

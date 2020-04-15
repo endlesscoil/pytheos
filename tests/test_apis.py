@@ -5,6 +5,8 @@ import os
 import sys
 import time
 
+from pytheos.api.group.group import GroupAPI
+from pytheos.api.group.types import Group
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
 from pytheos.errors import CommandFailedError
 
@@ -143,6 +145,7 @@ class TestAPIs(unittest.TestCase):
 
         self.assertRaises(CommandFailedError, self._pytheos.api.player.play_queue, pid, -1)
 
+    @unittest.skip('Too disruptive')
     def test_player_remove_from_queue(self):
         pid = self._get_pid_to_query()
         self._pytheos.api.player.remove_from_queue(pid, queue_ids=(0,))
@@ -217,14 +220,64 @@ class TestAPIs(unittest.TestCase):
     def test_group_get_groups(self):
         groups = self._pytheos.api.group.get_groups()
         self.assertGreater(len(groups), 0)
-        self.assertIsInstance(groups[0], Group)
+        self.assertIsInstance(groups[0], GroupAPI)
 
     def test_group_get_group_info(self):
         gid = self._get_gid_to_query()
         group_info = self._pytheos.api.group.get_group_info(gid)
-        self.assertIsInstance(group_info, Group)
+        self.assertIsInstance(group_info, GroupAPI)
 
         self.assertRaises(CommandFailedError, self._pytheos.api.group.get_group_info(-1))
+
+    def test_group_set_group(self):
+        leader = self._get_pid_to_query()
+        members = [0, 1] # FIXME - use real ids.
+        results = self._pytheos.api.group.set_group(leader, members)
+        self.assertIsInstance(results, Group)
+
+        # FIXME: needs to test removal cases.
+
+        results = self._pytheos.api.group.set_group(leader)
+        self.assertIsNone(results)
+
+    def test_group_get_volume(self):
+        gid = self._get_gid_to_query()
+        volume = self._pytheos.api.group.get_volume(gid)
+        self.assertIsInstance(volume, int)
+        self.assertTrue(0 <= volume <= 100)
+
+    def test_group_set_volume(self):
+        gid = self._get_gid_to_query()
+        self._pytheos.api.group.set_volume(gid, 20)
+        self.assertRaises(ValueError, self._pytheos.api.group.set_volume, gid, 101)
+        self.assertRaises(ValueError, self._pytheos.api.group.set_volume, gid, -1)
+
+    def test_group_volume_up(self):
+        gid = self._get_gid_to_query()
+        self._pytheos.api.group.volume_up(gid, 5)
+        self.assertRaises(ValueError, self._pytheos.api.group.volume_up, gid, 11)
+        self.assertRaises(ValueError, self._pytheos.api.group.volume_up, gid, 0)
+
+    def test_group_volume_down(self):
+        gid = self._get_gid_to_query()
+        self._pytheos.api.group.volume_down(gid, 5)
+        self.assertRaises(ValueError, self._pytheos.api.group.volume_down, gid, 11)
+        self.assertRaises(ValueError, self._pytheos.api.group.volume_down, gid, 0)
+
+    def test_group_get_mute(self):
+        gid = self._get_gid_to_query()
+        muted = self._pytheos.api.group.get_mute(gid)
+        self.assertIsInstance(muted, bool)
+
+    def test_group_set_mute(self):
+        gid = self._get_gid_to_query()
+        for enable in (True, False):
+            self._pytheos.api.group.set_mute(gid, enable)
+
+    def test_group_toggle_mute(self):
+        gid = self._get_gid_to_query()
+        self._pytheos.api.group.toggle_mute(gid)
+
 
     # Utils
     def _get_pid_to_query(self):
@@ -235,9 +288,9 @@ class TestAPIs(unittest.TestCase):
         return players[0].player_id
 
     def _get_gid_to_query(self):
-        groups = self._pytheos.api.player.get_groups()
+        groups = self._pytheos.api.group.get_groups()
         self.assertGreater(len(groups), 0)
-        self.assertIsInstance(groups[0], Group)
+        self.assertIsInstance(groups[0], GroupAPI)
 
         return groups[0].group_id
 
