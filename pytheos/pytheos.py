@@ -98,6 +98,8 @@ class Pytheos:
         self._event_queue = queue.Queue()
         self._event_thread = EventThread(self._event_channel, self._event_queue)
         self._event_thread.start()
+        self._event_handler_thread = EventHandlerThread(self, self._event_queue)
+        self._event_handler_thread.start()
         #/FIXME
 
         # TODO: get status
@@ -167,19 +169,19 @@ class Pytheos:
         """
         # FIXME: Meh, do something better with this.
         internal_handler_map = {
-            'event/sources_changed': self._handle_sources_changed,
-            'event/players_changed': self._handle_players_changed,
-            'event/groups_changed': self._handle_groups_changed,
-            'event/player_state_changed': self._handle_player_state_changed,
-            'event/player_now_playing_changed': self._handle_now_playing_changed,
-            'event/player_now_playing_progress': self._handle_now_playing_progress,
-            'event/player_playback_error': self._handle_playback_error,
-            'event/player_queue_changed': self._handle_queue_changed,
-            'event/player_volume_changed': self._handle_volume_changed,
-            'event/repeat_mode_changed': self._handle_repeat_mode_changed,
-            'event/shuffle_mode_changed': self._handle_shuffle_mode_changed,
-            'event/group_volume_changed': self._handle_group_volume_changed,
-            'event/user_changed': self._handle_user_changed,
+            # 'event/sources_changed': self._handle_sources_changed,
+            # 'event/players_changed': self._handle_players_changed,
+            # 'event/groups_changed': self._handle_groups_changed,
+            # 'event/player_state_changed': self._handle_player_state_changed,
+            # 'event/player_now_playing_changed': self._handle_now_playing_changed,
+            # 'event/player_now_playing_progress': self._handle_now_playing_progress,
+            # 'event/player_playback_error': self._handle_playback_error,
+            # 'event/player_queue_changed': self._handle_queue_changed,
+            # 'event/player_volume_changed': self._handle_volume_changed,
+            # 'event/repeat_mode_changed': self._handle_repeat_mode_changed,
+            # 'event/shuffle_mode_changed': self._handle_shuffle_mode_changed,
+            # 'event/group_volume_changed': self._handle_group_volume_changed,
+            # 'event/user_changed': self._handle_user_changed,
         }
 
         for event, callback in internal_handler_map.items():
@@ -252,6 +254,41 @@ class EventThread(threading.Thread):
                     self._out_queue.put_nowait(event)
                 except queue.Full:
                     pass # throw it away if the queue is full
+
+            time.sleep(0.01)
+
+    def stop(self) -> None:
+        """ Signals the thread that it needs to stop
+
+        :return: None
+        """
+        self.running = False
+
+class EventHandlerThread(threading.Thread):
+    def __init__(self, service: Pytheos, in_queue: queue.Queue) -> None:
+        super().__init__()
+
+        self._service: Pytheos = service
+        self._in_queue: queue.Queue = in_queue
+        self.running = False
+
+    def run(self) -> None:
+        """ Primary thread function
+
+        :return: None
+        """
+        self.running = True
+
+        while self.running:
+            event = None
+
+            try:
+                event = self._in_queue.get_nowait()
+            except queue.Empty:
+                pass
+
+            if event:
+                self._service._event_handler(event)
 
             time.sleep(0.01)
 

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import socket
-from typing import Optional
+from typing import Optional, List
 
 import netifaces
 
@@ -34,7 +34,7 @@ def discover(service: str="urn:schemas-denon-com:device:ACT-Denon:1",
              timeout: int=5,
              retries: int=1,
              mx :int=3,
-             bind_ip: Optional[str]=None) -> list:
+             bind_ip: Optional[str]=None) -> List[Pytheos]:
     """ Performs SSDP broadcasts to identify any HEOS devices on the network
 
     :param service: Service URN to broadcast for
