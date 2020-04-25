@@ -111,6 +111,8 @@ class Pytheos:
         """
         self._event_thread.stop()
         self._event_thread.join()
+        self._event_handler_thread.stop()
+        self._event_handler_thread.join()
 
         if self._event_channel:
             self._event_channel.close()
