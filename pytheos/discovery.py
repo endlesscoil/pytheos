@@ -60,7 +60,7 @@ def discover(service: str="urn:schemas-denon-com:device:ACT-Denon:1",
 
         try:
             response = SSDPResponse(sock)
-            discovered_devices.append(Pytheos(None, port=port, from_response=response))
+            discovered_devices.append(Pytheos(None, port=1255, from_response=response)) # FIXME: port
 
         except socket.timeout:
             break

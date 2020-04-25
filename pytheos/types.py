@@ -6,6 +6,7 @@ from __future__ import annotations
 import http.client
 import json
 import socket
+from collections import UserDict
 from typing import Optional, Any
 
 from pytheos import utils
@@ -86,15 +87,17 @@ class HEOSListPayload(HEOSPayload):
         return HEOSListPayloadIterator(self)
 
 
-class HEOSDictPayload(HEOSPayload, dict):
+class HEOSDictPayload(HEOSPayload):
     """ Represents a dict that is returned from some HEOS command execution """
 
     def __init__(self, from_dict=None):
         super().__init__(source=from_dict)
 
-        if from_dict:
-            self.__dict__ = from_dict
+    def get(self, name, default=None):
+        if self.data:
+            return self.data.get(name, default)
 
+        return None
 
 class HEOSResult(object):
     """ Represents the result of executing a HEOS command """

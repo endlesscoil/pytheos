@@ -78,6 +78,9 @@ class Pytheos:
         self._event_subscriptions = {}
         self._init_internal_event_handlers()
 
+    def __repr__(self):
+        return f'<Pytheos(server={self.server}, port={self.port})>'
+
     def connect(self) -> None:
         """ Connect to our HEOS device
 
