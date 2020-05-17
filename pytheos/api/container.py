@@ -8,6 +8,7 @@ import time
 from typing import Optional
 
 from pytheos import utils
+from pytheos.api.browse.browse import BrowseAPI
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.player.player import PlayerAPI
 from pytheos.api.system import SystemAPI
@@ -22,6 +23,7 @@ class APIContainer:
         self.system = SystemAPI(connection)
         self.player = PlayerAPI(connection)
         self.group = GroupAPI(connection)
+        self.browse = BrowseAPI(connection)
 
         self._connection: 'Connection' = connection
         self._last_response: Optional[str] = None

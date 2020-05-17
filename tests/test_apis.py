@@ -5,6 +5,7 @@ import os
 import sys
 import time
 
+from pytheos.api.browse.types import MusicSource
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
@@ -278,6 +279,14 @@ class TestAPIs(unittest.TestCase):
         gid = self._get_gid_to_query()
         self._pytheos.api.group.toggle_mute(gid)
 
+    def test_browse_get_music_sources(self):
+        music_sources = self._pytheos.api.browse.get_music_sources()
+        self.assertGreater(len(music_sources), 0)
+        self.assertIsInstance(music_sources[0], MusicSource)
+
+    def test_browse_get_source_info(self):
+        self.assertIsInstance(self._pytheos.api.browse.get_source_info(1), MusicSource)
+        self.assertRaises(CommandFailedError, self._pytheos.api.browse.get_source_info, -1)
 
     # Utils
     def _get_pid_to_query(self):
