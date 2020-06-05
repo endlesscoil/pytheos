@@ -15,8 +15,9 @@ from .connection import Connection
 from .errors import ChannelUnavailableError
 from .types import HEOSEvent, HEOSResult, SSDPResponse
 
+# FIXME: Change default log level.
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('pytheos')
 
 
 def connect(host):
@@ -84,6 +85,14 @@ class Pytheos:
 
     def __repr__(self):
         return f'<Pytheos(server={self.server}, port={self.port})>'
+
+    @property
+    def log_level(self):
+        return logger.level
+
+    @log_level.setter
+    def log_level(self, value):
+        logger.setLevel(value)
 
     def connect(self) -> None:
         """ Connect to our HEOS device
