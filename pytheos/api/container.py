@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import time
+import logging
 from typing import Optional
 
 from pytheos import utils
@@ -14,6 +15,8 @@ from pytheos.api.player.player import PlayerAPI
 from pytheos.api.system import SystemAPI
 from pytheos.errors import CommandFailedError
 from pytheos.types import HEOSResult
+
+logger = logging.getLogger(__name__)
 
 
 class APIContainer:
@@ -61,8 +64,8 @@ class APIContainer:
         :return: HEOSResult
         """
         command_string = utils.build_command_string(group, command, **kwargs)
-        print(command_string)
         self._connection.write(command_string.encode('utf-8'))
+        logger.debug(f"Sending command: {command_string.rstrip()}")
 
     def read_message(self, timeout: int=1, delimiter: bytes=b'\r\n') -> bytes:
         """ Reads a message from the connection
@@ -80,6 +83,7 @@ class APIContainer:
 
             if delimiter in response:
                 response = response.strip()
+                logger.debug(f"Got response: {response}")
 
                 # Bail out if we got a duplicate message and have deduplicate enabled
                 if self._connection.deduplicate and response == self._last_response:
@@ -92,6 +96,11 @@ class APIContainer:
                     results = json.loads(response.decode('utf-8'))
                 except (ValueError, TypeError):
                     response = b'' # Not valid JSON; reset & retry
+                    continue
+
+                if "command under process" in results['heos'].get('message', ''):
+                    logger.debug("Delayed - command under process")
+                    response = b''
                     continue
 
                 # Valid data

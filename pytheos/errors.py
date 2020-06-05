@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pytheos.types import HEOSResult
+from pytheos.types import HEOSResult, HEOSErrorCode, HEOSSystemErrorCode
 
 
 class PytheosError(Exception):
@@ -21,6 +21,14 @@ class CommandFailedError(PytheosError):
     def __init__(self, message: str, result: Optional[HEOSResult]):
         self.result = result
         self.message = message
+        self.error_code = None
+        self.system_error_code = None
+
+        eid = result.header.vars.get('eid')
+        if eid:
+            self.error_code = HEOSErrorCode(int(eid))
+            if self.error_code == HEOSErrorCode.SystemError:
+                self.system_error_code = HEOSSystemErrorCode(result.header.vars.get('syserrno'))
 
 class SignInFailedError(CommandFailedError):
     """ Error returned when the system/sign_in command fails """

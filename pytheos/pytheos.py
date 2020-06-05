@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 import queue
 import threading
 import time
@@ -13,6 +14,9 @@ from .api.container import APIContainer
 from .connection import Connection
 from .errors import ChannelUnavailableError
 from .types import HEOSEvent, HEOSResult, SSDPResponse
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def connect(host):
@@ -86,6 +90,8 @@ class Pytheos:
 
         :return: None
         """
+        logger.info(f'Connecting to {self.server}:{self.port}')
+
         self._command_channel = Connection(self.server, self.port)
         self.api = self._command_channel.api
         self._command_channel.connect()
@@ -250,7 +256,7 @@ class EventThread(threading.Thread):
             results = self._connection.api.read_message()
             if results:
                 event = HEOSEvent(results)
-                print(f"Received event: {event!r}") # FIXME: logging.
+                logger.debug(f"Received event: {event!r}")
 
                 try:
                     self._out_queue.put_nowait(event)

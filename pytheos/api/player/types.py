@@ -124,4 +124,4 @@ class MediaItem:
             self.album_id = from_dict.get('album_id')
 
             self.type = from_dict.get('type')
-            self.source_id = from_dict.get('source_id')
+            self.source_id = from_dict.get('sid')

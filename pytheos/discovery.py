@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import logging
 import socket
 from typing import Optional, List
 
@@ -11,6 +12,8 @@ import netifaces
 
 from .pytheos import Pytheos
 from .types import SSDPResponse
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_BROADCAST_ADDRESS = '239.255.255.250'
@@ -52,6 +55,9 @@ def discover(service: str="urn:schemas-denon-com:device:ACT-Denon:1",
     if not bind_ip:
         bind_ip = get_default_ip(socket.AF_INET)
 
+    logger.debug(f"Broadcasting discovery to {address}:{port}")
+    logger.debug(f"Binding to IP: {bind_ip}")
+
     for attempt in range(retries):
         sock = _create_socket(address, bind_ip)
 
@@ -60,7 +66,11 @@ def discover(service: str="urn:schemas-denon-com:device:ACT-Denon:1",
 
         try:
             response = SSDPResponse(sock)
-            discovered_devices.append(Pytheos(None, port=1255, from_response=response)) # FIXME: port
+            device = Pytheos(None, port=1255, from_response=response) # FIXME: port
+
+            logger.info(f"Discovered new device: {device}")
+
+            discovered_devices.append(device)
 
         except socket.timeout:
             break

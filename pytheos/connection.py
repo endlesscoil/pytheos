@@ -3,11 +3,14 @@
 
 from __future__ import annotations
 
+import logging
 import telnetlib
 import threading
 from typing import Optional
 
 from .api.container import APIContainer
+
+logger = logging.getLogger(__name__)
 
 
 class Connection:

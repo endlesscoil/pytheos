@@ -288,6 +288,10 @@ class TestAPIs(unittest.TestCase):
         self.assertIsInstance(self._pytheos.api.browse.get_source_info(1), MusicSource)
         self.assertRaises(CommandFailedError, self._pytheos.api.browse.get_source_info, -1)
 
+    def test_browse_browse_source(self):
+        # TODO
+        pass
+
     # Utils
     def _get_pid_to_query(self):
         players = self._pytheos.api.player.get_players()
