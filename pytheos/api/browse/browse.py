@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from collections import OrderedDict
 from typing import Optional
 import logging
 
@@ -193,3 +194,16 @@ class BrowseAPI(API):
             kwargs['spid'] = source_player_id
 
         self._pytheos.api.call('browse', 'play_input', pid=player_id, input=input_name, **kwargs)
+
+    def play_url(self, player_id: str, url: str):
+        """ Play the specified URL
+
+        :param player_id: Player ID
+        :param url: URL string
+        :return: None
+        """
+        kwargs = OrderedDict()
+        kwargs['pid'] = player_id
+        kwargs['url'] = url         # 'url' must be the last parameter in this command.
+
+        self._pytheos.api.call('browse', 'play_stream', **kwargs)

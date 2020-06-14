@@ -366,6 +366,12 @@ class TestAPIs(unittest.TestCase):
 
         self._pytheos.api.browse.play_input(pid, InputSource.Phono)
 
+    def test_browse_play_url(self):
+        pid = self._get_pid_to_query()
+        url = 'http://www.hochmuth.com/mp3/Haydn_Cello_Concerto_D-1.mp3'
+
+        self._pytheos.api.browse.play_url(pid, url)
+
     # Utils
     def _get_pid_to_query(self):
         players = self._pytheos.api.player.get_players()
