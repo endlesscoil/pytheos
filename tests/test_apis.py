@@ -345,6 +345,7 @@ class TestAPIs(unittest.TestCase):
     def test_browse_play_station(self):
         pid = self._get_pid_to_query()
         sid = 1 # FIXME - Pandora
+
         pandora_sources = self._pytheos.api.browse.browse_source(sid)
         AtoZ = pandora_sources[1]
 
@@ -352,6 +353,13 @@ class TestAPIs(unittest.TestCase):
         to_play = stations[0]
 
         self._pytheos.api.browse.play_station(pid, sid, AtoZ.container_id, to_play.media_id, to_play.name)
+
+    def test_browse_play_preset(self):
+        pid = self._get_pid_to_query()
+
+        self.assertRaises(ValueError, self._pytheos.api.browse.play_preset, pid, 0)
+
+        self._pytheos.api.browse.play_preset(pid, 1)
 
     # Utils
     def _get_pid_to_query(self):

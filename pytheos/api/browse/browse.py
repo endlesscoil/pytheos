@@ -166,3 +166,15 @@ class BrowseAPI(API):
                                pid=player_id, sid=source_id,
                                cid=container_id, mid=media_id,
                                name=name)
+
+    def play_preset(self, player_id: int, preset: int):
+        """ Plays one of the configured presets/favorites.
+
+        :param player_id: Player ID
+        :param preset: Preset number
+        :return: None
+        """
+        if preset <= 0:
+            raise ValueError('Preset must be greater than zero.')
+
+        self._pytheos.api.call('browse', 'play_preset', pid=player_id, preset=preset)
