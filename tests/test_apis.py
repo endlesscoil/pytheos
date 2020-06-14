@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from pytheos.api.browse.types import MusicSource
+from pytheos.api.browse.types import MusicSource, SourceMedia
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
@@ -289,8 +289,25 @@ class TestAPIs(unittest.TestCase):
         self.assertRaises(CommandFailedError, self._pytheos.api.browse.get_source_info, -1)
 
     def test_browse_browse_source(self):
-        # TODO
-        pass
+        music_sources = self._pytheos.api.browse.get_music_sources()
+        sid = music_sources[0].source_id
+
+        results = self._pytheos.api.browse.browse_source(sid)
+        self.assertGreater(len(results), 0)
+        self.assertIsInstance(results[0], SourceMedia)
+
+    def test_browse_browse_source_container(self):
+        sid = 1024 # PLEX
+
+        results = self._pytheos.api.browse.browse_source(sid)
+        plex_server = results[0]
+
+        results = self._pytheos.api.browse.browse_source(plex_server.source_id)
+        music = results[1]
+
+        results = self._pytheos.api.browse.browse_source_container(plex_server.source_id, music.container_id)
+        self.assertGreater(len(results), 0)
+        self.assertIsInstance(results[0], SourceMedia)
 
     # Utils
     def _get_pid_to_query(self):
