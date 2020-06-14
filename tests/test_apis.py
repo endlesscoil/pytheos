@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from pytheos.api.browse.types import MusicSource, SourceMedia
+from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
@@ -176,8 +176,8 @@ class TestAPIs(unittest.TestCase):
         self._pytheos.api.player.move_queue(pid, source_ids=(1,), destination_id=1)
         self._pytheos.api.player.move_queue(pid, source_ids=(1, 2), destination_id=3)
 
-        self.assertRaises(ValueError, self._pytheos.api.player_move_queue, pid, source_ids=(-1,), destination_id=0) # Invalid source ID
-        self.assertRaises(ValueError, self._pytheos.api.player_move_queue, pid, source_ids=(0,), destination_id=4)  # Invalid destination ID
+        self.assertRaises(ValueError, self._pytheos.api.player.move_queue, pid, source_ids=(-1,), destination_id=0) # Invalid source ID
+        self.assertRaises(ValueError, self._pytheos.api.player.move_queue, pid, source_ids=(0,), destination_id=4)  # Invalid destination ID
 
     def test_player_play_next(self):
         pid = self._get_pid_to_query()
@@ -218,11 +218,13 @@ class TestAPIs(unittest.TestCase):
         update_available = self._pytheos.api.player.check_update(pid)
         self.assertIsInstance(update_available, bool)
 
+    @unittest.skip('No groups defined currently')
     def test_group_get_groups(self):
         groups = self._pytheos.api.group.get_groups()
         self.assertGreater(len(groups), 0)
         self.assertIsInstance(groups[0], GroupAPI)
 
+    @unittest.skip('No groups defined currently')
     def test_group_get_group_info(self):
         gid = self._get_gid_to_query()
         group_info = self._pytheos.api.group.get_group_info(gid)
@@ -230,6 +232,7 @@ class TestAPIs(unittest.TestCase):
 
         self.assertRaises(CommandFailedError, self._pytheos.api.group.get_group_info(-1))
 
+    @unittest.skip('No groups defined currently')
     def test_group_set_group(self):
         leader = self._get_pid_to_query()
         members = [0, 1] # FIXME - use real ids.
@@ -241,40 +244,47 @@ class TestAPIs(unittest.TestCase):
         results = self._pytheos.api.group.set_group(leader)
         self.assertIsNone(results)
 
+    @unittest.skip('No groups defined currently')
     def test_group_get_volume(self):
         gid = self._get_gid_to_query()
         volume = self._pytheos.api.group.get_volume(gid)
         self.assertIsInstance(volume, int)
         self.assertTrue(0 <= volume <= 100)
 
+    @unittest.skip('No groups defined currently')
     def test_group_set_volume(self):
         gid = self._get_gid_to_query()
         self._pytheos.api.group.set_volume(gid, 20)
         self.assertRaises(ValueError, self._pytheos.api.group.set_volume, gid, 101)
         self.assertRaises(ValueError, self._pytheos.api.group.set_volume, gid, -1)
 
+    @unittest.skip('No groups defined currently')
     def test_group_volume_up(self):
         gid = self._get_gid_to_query()
         self._pytheos.api.group.volume_up(gid, 5)
         self.assertRaises(ValueError, self._pytheos.api.group.volume_up, gid, 11)
         self.assertRaises(ValueError, self._pytheos.api.group.volume_up, gid, 0)
 
+    @unittest.skip('No groups defined currently')
     def test_group_volume_down(self):
         gid = self._get_gid_to_query()
         self._pytheos.api.group.volume_down(gid, 5)
         self.assertRaises(ValueError, self._pytheos.api.group.volume_down, gid, 11)
         self.assertRaises(ValueError, self._pytheos.api.group.volume_down, gid, 0)
 
+    @unittest.skip('No groups defined currently')
     def test_group_get_mute(self):
         gid = self._get_gid_to_query()
         muted = self._pytheos.api.group.get_mute(gid)
         self.assertIsInstance(muted, bool)
 
+    @unittest.skip('No groups defined currently')
     def test_group_set_mute(self):
         gid = self._get_gid_to_query()
         for enable in (True, False):
             self._pytheos.api.group.set_mute(gid, enable)
 
+    @unittest.skip('No groups defined currently')
     def test_group_toggle_mute(self):
         gid = self._get_gid_to_query()
         self._pytheos.api.group.toggle_mute(gid)
@@ -297,7 +307,7 @@ class TestAPIs(unittest.TestCase):
         self.assertIsInstance(results[0], SourceMedia)
 
     def test_browse_browse_source_container(self):
-        sid = 1024 # PLEX
+        sid = 1024 # FIXME - Local Music
 
         results = self._pytheos.api.browse.browse_source(sid)
         plex_server = results[0]
@@ -308,6 +318,16 @@ class TestAPIs(unittest.TestCase):
         results = self._pytheos.api.browse.browse_source_container(plex_server.source_id, music.container_id)
         self.assertGreater(len(results), 0)
         self.assertIsInstance(results[0], SourceMedia)
+
+    def test_browse_get_search_criteria(self):
+        sid = 1024 # FIXME - Local Music
+
+        results = self._pytheos.api.browse.browse_source(sid)
+        plex_server = results[0]
+
+        results = self._pytheos.api.browse.get_search_criteria(plex_server.source_id)
+        self.assertGreater(len(results), 0)
+        self.assertIsInstance(results[0], SearchCriteria)
 
     # Utils
     def _get_pid_to_query(self):

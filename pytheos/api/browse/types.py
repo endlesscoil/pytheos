@@ -69,3 +69,19 @@ class SourceMedia:
             self.source_id = from_dict.get('sid')
             self.container_id = from_dict.get('cid')
             self.media_id = from_dict.get('mid')
+
+@dataclass
+class SearchCriteria:
+    name: str = ""
+    search_criteria_id: str = ""
+    wildcard: bool = False
+    playable: bool = False
+    container_id: str = "" # Prefix to add to search string to play directly from results.  Only valid if playable=True.
+
+    def __init__(self, from_dict: Optional[dict]=None):
+        if from_dict:
+            self.name = from_dict.get('name')
+            self.search_criteria_id = from_dict.get('scid')
+            self.wildcard = bool(from_dict.get('wildcard', False))
+            self.playable = bool(from_dict.get('playable', False))
+            self.container_id = from_dict.get('cid')
