@@ -40,19 +40,23 @@ class BrowseAPI(API):
         results = []
 
         while True:
-            num_results, res = self._get_source_container_results(source_id, container_id, item_range)
+            total_count, res = self._get_source_container_results(source_id, container_id, item_range)
             results.extend(res)
 
             # FIXME: Add logging stuff
-            # FIXME: This is all wrong.  Also doesn't increment the item_range.
             # Unknown container size - reached the end
-            if num_results == 0 and len(res.payload) == 0:
+            if total_count == 0 and len(res.payload) == 0:
+                logger.debug(f'Reached end (unknown size)')
                 break
 
+            current_count = len(results)
             # Known container size - reached the end
-            if num_results <= len(results):
+            if current_count >= total_count:
+                logger.debug(f'Reached end (known size)')
                 break
             #/FIXME
+
+            item_range = current_count, current_count + 50 # FIXME
 
         return results
 
@@ -66,7 +70,7 @@ class BrowseAPI(API):
             kwargs['cid'] = container_id
 
         if item_range is not None:
-            kwargs['item_range'] = ','.join(item_range)
+            kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
         results = self._pytheos.api.call('browse', 'browse', **kwargs)
         return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
