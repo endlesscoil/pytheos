@@ -151,3 +151,18 @@ class BrowseAPI(API):
 
         results = self._pytheos.api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
         return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
+
+    def play_station(self, player_id: int, source_id: int, container_id: str, media_id: str, name: str):
+        """ Starts playing the specified music station.  Media ID must be from media of the 'station' type.
+
+        :param player_id: Player ID
+        :param source_id: Source ID
+        :param container_id: Container ID
+        :param media_id: Media ID
+        :param name: Station name returned by browse
+        :return: None
+        """
+        self._pytheos.api.call('browse', 'play_stream',
+                               pid=player_id, sid=source_id,
+                               cid=container_id, mid=media_id,
+                               name=name)

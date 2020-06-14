@@ -342,6 +342,17 @@ class TestAPIs(unittest.TestCase):
         self.assertGreater(len(results), 0)
         self.assertIsInstance(results[0], SourceMedia)
 
+    def test_browse_play_station(self):
+        pid = self._get_pid_to_query()
+        sid = 1 # FIXME - Pandora
+        pandora_sources = self._pytheos.api.browse.browse_source(sid)
+        AtoZ = pandora_sources[1]
+
+        stations = self._pytheos.api.browse.browse_source_container(sid, AtoZ.container_id)
+        to_play = stations[0]
+
+        self._pytheos.api.browse.play_station(pid, sid, AtoZ.container_id, to_play.media_id, to_play.name)
+
     # Utils
     def _get_pid_to_query(self):
         players = self._pytheos.api.player.get_players()
