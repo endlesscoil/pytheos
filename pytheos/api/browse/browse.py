@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class BrowseAPI(API):
+    MAX_QUERY_RESULTS = 50
+    MAX_SEARCH_LENGTH = 128
+
+
     def get_music_sources(self) -> list:
         """ Retrieve a list of music sources.
 
@@ -67,20 +71,16 @@ class BrowseAPI(API):
             total_count, res = self._get_source_container_results(source_id, container_id, item_range)
             results.extend(res)
 
-            # FIXME: Add logging stuff
             # Unknown container size - reached the end
             if total_count == 0 and len(res.payload) == 0:
-                logger.debug(f'Reached end (unknown size)')
                 break
 
             current_count = len(results)
             # Known container size - reached the end
             if current_count >= total_count:
-                logger.debug(f'Reached end (known size)')
                 break
-            #/FIXME
 
-            item_range = current_count, current_count + 50 # FIXME
+            item_range = current_count, current_count + self.MAX_QUERY_RESULTS
 
         return results
 
@@ -109,3 +109,45 @@ class BrowseAPI(API):
         results = self._pytheos.api.call('browse', 'get_search_criteria', sid=source_id)
 
         return [SearchCriteria(item) for item in results.payload]
+
+    def search(self, source_id: int, query: str, search_criteria_id: int) -> list:
+        """ Search the source for a given string using the specified search criteria ID.
+
+        FIXME: Can't get this working with my current setup - keep getting a -10 system error when searching Plex.
+
+        :param source_id: Source ID
+        :param query: String to search for.  May include wildcards if the search criteria does.
+        :param search_criteria_id: Search Criteria ID
+        :return: list of SourceMedia
+        """
+        if len(query) > self.MAX_SEARCH_LENGTH:
+            raise ValueError(f"Query must be no longer than {self.MAX_SEARCH_LENGTH} characters.")
+
+        results = []
+        item_range = None
+
+        while True:
+            total_count, res = self._get_search_results(source_id, query, search_criteria_id, item_range)
+            results.extend(res)
+
+            # Unknown container size - reached the end
+            if total_count == 0 and len(res.payload) == 0:
+                break
+
+            current_count = len(results)
+            # Known container size - reached the end
+            if current_count >= total_count:
+                break
+
+            item_range = current_count, current_count + self.MAX_QUERY_RESULTS
+
+        return results
+
+    def _get_search_results(self, source_id: int, query: str, search_criteria_id: int, item_range: tuple) -> tuple:
+        kwargs = {}
+
+        if item_range is not None:
+            kwargs['range'] = ','.join([str(itm) for itm in item_range])
+
+        results = self._pytheos.api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
+        return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]

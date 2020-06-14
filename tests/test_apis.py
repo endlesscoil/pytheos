@@ -329,6 +329,19 @@ class TestAPIs(unittest.TestCase):
         self.assertGreater(len(results), 0)
         self.assertIsInstance(results[0], SearchCriteria)
 
+    def test_browse_search(self):
+        sid = 1024 # FIXME - Local Music
+
+        results = self._pytheos.api.browse.browse_source(sid)
+        plex_server = results[0]
+
+        criteria = self._pytheos.api.browse.get_search_criteria(plex_server.source_id)
+        self.assertGreater(len(criteria), 0)
+
+        results = self._pytheos.api.browse.search(plex_server.source_id, 'a', criteria[0].search_criteria_id)
+        self.assertGreater(len(results), 0)
+        self.assertIsInstance(results[0], SourceMedia)
+
     # Utils
     def _get_pid_to_query(self):
         players = self._pytheos.api.player.get_players()
