@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria
+from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
@@ -360,6 +360,11 @@ class TestAPIs(unittest.TestCase):
         self.assertRaises(ValueError, self._pytheos.api.browse.play_preset, pid, 0)
 
         self._pytheos.api.browse.play_preset(pid, 1)
+
+    def test_browse_play_input(self):
+        pid = self._get_pid_to_query()
+
+        self._pytheos.api.browse.play_input(pid, InputSource.Phono)
 
     # Utils
     def _get_pid_to_query(self):

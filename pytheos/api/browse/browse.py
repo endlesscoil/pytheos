@@ -178,3 +178,18 @@ class BrowseAPI(API):
             raise ValueError('Preset must be greater than zero.')
 
         self._pytheos.api.call('browse', 'play_preset', pid=player_id, preset=preset)
+
+    def play_input(self, player_id: int, input_name: str, source_player_id: Optional[int]=None):
+        """ Plays the specified input source on the provided Player ID.  Other speakers can be targeted if the optional
+        Source Player ID is provided.
+
+        :param player_id: Player ID
+        :param input_name: Input name
+        :param source_player_id: Source Player ID
+        :return: None
+        """
+        kwargs = {}
+        if source_player_id is not None:
+            kwargs['spid'] = source_player_id
+
+        self._pytheos.api.call('browse', 'play_input', pid=player_id, input=input_name, **kwargs)
