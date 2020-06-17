@@ -224,3 +224,22 @@ class BrowseAPI(API):
             kwargs['mid'] = media_id
 
         self._pytheos.api.call('browse', 'add_to_queue', pid=player_id, sid=source_id, cid=container_id, aid=add_type, **kwargs)
+
+    def rename_playlist(self, source_id: int, container_id: int, name: str):
+        """ Renames a playlist container.
+
+        :param source_id: Source ID
+        :param container_id: Container ID
+        :param name: New playlist name
+        :return: None
+        """
+        self._pytheos.api.call('browse', 'rename_playlist', sid=source_id, cid=container_id, name=name)
+
+    def delete_playlist(self, source_id: int, container_id: int):
+        """ Deletes a playlist container.
+
+        :param source_id: Source ID
+        :param container_id: Container ID
+        :return: None
+        """
+        self._pytheos.api.call('browse', 'delete_playlist', sid=source_id, cid=container_id)

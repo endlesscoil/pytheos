@@ -387,6 +387,40 @@ class TestAPIs(unittest.TestCase):
         self._pytheos.api.browse.add_to_queue(pid, sid, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
         # FIXME: Test other add types
 
+    @unittest.skip('Skipping for now.')
+    def test_browse_rename_playlist(self):
+        sid = 1025 # FIXME: Playlists
+        new_name = 'testing'
+
+        # FIXME: Create playlist
+
+        playlists = self._pytheos.api.browse.browse_source(sid)
+        self.assertGreater(len(playlists), 0)
+
+        p = playlists[0]
+        orig_name = p.name
+
+        self._pytheos.api.browse.rename_playlist(sid, p.container_id, new_name)
+        new_playlists = self._pytheos.api.browse.browse_source(sid)
+        self.assertTrue(any([pl.name == new_name for pl in new_playlists]))
+
+        self._pytheos.api.browse.rename_playlist(sid, p.container_id, orig_name)
+        new_playlists = self._pytheos.api.browse.browse_source(sid)
+        self.assertTrue(any([pl.name == new_name for pl in new_playlists]))
+
+    @unittest.skip('Skipping for now.')
+    def test_browse_delete_playlist(self):
+        sid = 1025 # FIXME: Playlists
+        # FIXME: Create playlist
+
+        playlists = self._pytheos.api.browse.browse_source(sid)
+        self.assertGreater(len(playlists), 0)
+        p = playlists[0]
+
+        self._pytheos.api.browse.delete_playlist(sid, p.container_id)
+        new_playlists = self._pytheos.api.browse.browse_source(sid)
+        self.assertTrue(len(new_playlists) == len(playlists) - 1)
+
     # Utils
     def _get_pid_to_query(self):
         players = self._pytheos.api.player.get_players()
