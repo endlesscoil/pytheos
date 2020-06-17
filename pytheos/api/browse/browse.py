@@ -4,7 +4,7 @@ from typing import Optional
 import logging
 
 from pytheos.api.api import API
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria
+from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, AddToQueueType
 
 logger = logging.getLogger(__name__)
 
@@ -207,3 +207,20 @@ class BrowseAPI(API):
         kwargs['url'] = url         # 'url' must be the last parameter in this command.
 
         self._pytheos.api.call('browse', 'play_stream', **kwargs)
+
+    def add_to_queue(self, player_id: str, source_id: str, container_id: str, media_id: Optional[str]=None, add_type: AddToQueueType=AddToQueueType.PlayNow):
+        """ Adds the specified container or track to the playback queue.  If media_id is provided it will add the track
+        specified by that ID, otherwise it will add the container specified by container_id.
+
+        :param player_id: Player ID
+        :param source_id: Source ID
+        :param container_id: Container ID
+        :param media_id: Media ID
+        :param add_type: Type of add to perform
+        :return: None
+        """
+        kwargs = {}
+        if media_id is not None:
+            kwargs['mid'] = media_id
+
+        self._pytheos.api.call('browse', 'add_to_queue', pid=player_id, sid=source_id, cid=container_id, aid=add_type, **kwargs)

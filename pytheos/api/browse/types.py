@@ -68,6 +68,15 @@ class InputSource(Enum):
     def __str__(self):
         return str(self.value)
 
+class AddToQueueType(Enum):
+    PlayNow = 1
+    PlayNext = 2
+    AddToEnd = 3
+    ReplaceAndPlay = 4
+
+    def __str__(self):
+        return str(self.value)
+
 @dataclass
 class MusicSource:
     name: str = None
@@ -132,3 +141,4 @@ class SearchCriteria:
             self.wildcard = bool(from_dict.get('wildcard', False))
             self.playable = bool(from_dict.get('playable', False))
             self.container_id = from_dict.get('cid')
+

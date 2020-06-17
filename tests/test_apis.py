@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource
+from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource, AddToQueueType
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
@@ -371,6 +371,21 @@ class TestAPIs(unittest.TestCase):
         url = 'http://www.hochmuth.com/mp3/Haydn_Cello_Concerto_D-1.mp3'
 
         self._pytheos.api.browse.play_url(pid, url)
+
+    def test_browse_add_container_to_queue(self):
+        pid = self._get_pid_to_query()
+        sid = 1024 # FIXME: Plex
+        cid = 'dc7e8002b2f0ef9ef21b' # FIXME: White Zombie - La Sexorcisto
+        self._pytheos.api.browse.add_to_queue(pid, sid, cid, add_type=AddToQueueType.AddToEnd)
+        # FIXME: Test other add types
+
+    def test_browse_add_track_to_queue(self):
+        pid = self._get_pid_to_query()
+        sid = 1024  # FIXME: Plex
+        cid = 'dc7e8002b2f0ef9ef21b'    # FIXME: White Zombie - La Sexorcisto
+        mid = '6101de04f2cd63dc9676'    # FIXME: Knuckle Duster
+        self._pytheos.api.browse.add_to_queue(pid, sid, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+        # FIXME: Test other add types
 
     # Utils
     def _get_pid_to_query(self):
