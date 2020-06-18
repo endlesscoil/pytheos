@@ -62,7 +62,12 @@ def discover(service: str="urn:schemas-denon-com:device:ACT-Denon:1",
         sock = _create_socket(address, bind_ip)
 
         message_bytes = SSDP_MESSAGE_FORMAT.format(address=address, port=port, st=service, mx=mx).encode('utf-8')
+        logger.debug(f'Sending message {message_bytes}')
+
         sock.sendto(message_bytes, (address, port))
+        #ba = bytearray()
+        #sock.recv_into(ba)
+        #import pdb; pdb.set_trace()
 
         try:
             response = SSDPResponse(sock)
@@ -72,7 +77,8 @@ def discover(service: str="urn:schemas-denon-com:device:ACT-Denon:1",
 
             discovered_devices.append(device)
 
-        except socket.timeout:
+        except socket.timeout as ex:
+            print(f'wtf: {ex}')
             break
 
         sock.close()
@@ -111,7 +117,7 @@ def _get_interface_ip(interface: str, address_family: socket.AddressFamily) -> O
 
     return proto_address[0].get('addr')
 
-def _create_socket(broadcast_address: str, local_ip: str, so_reuseaddr: bool=True, ttl: int=2):
+def _create_socket(broadcast_address: str, local_ip: str, so_reuseaddr: bool=True, ttl: int=5):
     """
 
     :param broadcast_address: Broadcast address to use
@@ -127,5 +133,6 @@ def _create_socket(broadcast_address: str, local_ip: str, so_reuseaddr: bool=Tru
 
     membership_request = socket.inet_aton(broadcast_address) + socket.inet_aton(local_ip)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, membership_request)        # Required for Windows
+    sock.bind((local_ip, 12112))
 
     return sock

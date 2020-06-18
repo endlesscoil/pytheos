@@ -6,11 +6,13 @@ from __future__ import annotations
 import http.client
 import json
 import socket
-from collections import UserDict
+import logging
 from enum import Enum
 from typing import Optional, Any
 
 from pytheos import utils
+
+logger = logging.getLogger(__file__)
 
 
 class SSDPResponse(http.client.HTTPResponse):
@@ -19,7 +21,9 @@ class SSDPResponse(http.client.HTTPResponse):
     def __init__(self, sock: socket.socket):
         super().__init__(sock)
 
+        logger.debug('fooooo')
         self.begin()
+        logger.debug('foo')
         self.location = self.getheader("location")
         self.usn = self.getheader("usn")
         self.st = self.getheader("st")

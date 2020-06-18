@@ -1,12 +1,19 @@
-def gimme_instance():
-    import pytheos.discovery
+import os
+import sys;
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-    services = pytheos.discovery.discover()
+import pprint
 
-    if not services:
-        print("No services detected!")
-    else:
-        services[0].connect()
+import pytheos.discovery
 
-    return services[0]
 
+
+services = pytheos.discovery.discover()
+
+if not services:
+    print("No HEOS services detected!")
+else:
+    svc = services[0]
+    svc.connect()
+    players = svc.api.player.get_players()
+    pprint.pprint(players)
