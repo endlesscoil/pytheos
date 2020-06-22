@@ -43,19 +43,7 @@ def connect(host):
     if not conn:
         conn = Pytheos(host, port)
 
-    class _wrapper(object):
-        """ Context wrapper """
-        def __enter__(self):
-            self.conn = conn
-            self.conn.connect()
-
-            return self.conn
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            if self.conn:
-                self.conn.close()
-
-    return _wrapper()
+    return conn.connect()
 
 
 class Pytheos:
@@ -80,11 +68,26 @@ class Pytheos:
         self.port: int = port
         self.api: Optional[APIContainer] = None
 
+        self._connected = False
         self._event_subscriptions = {}
         self._init_internal_event_handlers()
 
     def __repr__(self):
         return f'<Pytheos(server={self.server}, port={self.port})>'
+
+    def __enter__(self):
+        if not self._connected:
+            self.connect()
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._connected:
+            self.close()
+
+    @property
+    def connected(self):
+        return self._connected
 
     @property
     def log_level(self):
@@ -94,10 +97,10 @@ class Pytheos:
     def log_level(self, value):
         logger.setLevel(value)
 
-    def connect(self) -> None:
-        """ Connect to our HEOS device
+    def connect(self) -> Pytheos:
+        """ Connect to our HEOS device.
 
-        :return: None
+        :return: self
         """
         logger.info(f'Connecting to {self.server}:{self.port}')
 
@@ -117,13 +120,18 @@ class Pytheos:
         self._event_handler_thread.start()
         #/FIXME
 
+        self._connected = True
+
         # TODO: get status
+
+        return self
 
     def close(self) -> None:
         """ Close the connection to our HEOS device
 
         :return: None
         """
+        logger.info(f'Closing connection to {self.server}:{self.port}')
         self._event_thread.stop()
         self._event_thread.join()
         self._event_handler_thread.stop()
@@ -135,6 +143,7 @@ class Pytheos:
         if self._command_channel:
             self._command_channel.close()
 
+        self._connected = False
 
     def call(self, group: str, command: str, **kwargs: dict) -> HEOSResult:
         """ Proxy interface to call an API on our Command Channel
@@ -155,6 +164,7 @@ class Pytheos:
         :param callback: Callback function
         :return: None
         """
+        # FIXME: Change event_name to an enum
         if self._event_subscriptions.get(event_name) is None:
             self._event_subscriptions[event_name] = []
 

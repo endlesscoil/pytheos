@@ -57,6 +57,7 @@ def parse_var_string(input: str) -> dict:
                 value = elements[1]
 
             vars[name] = value.strip("'")
+            # FIXME: Use replace map here
 
     return vars
 

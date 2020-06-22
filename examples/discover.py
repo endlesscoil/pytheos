@@ -1,19 +1,20 @@
+#!/usr/bin/env python
+"""
+This example demonstrates how to use SSDP to discover HEOS devices on your network.
+"""
 import os
-import sys;
+import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
-import pprint
 
 import pytheos.discovery
 
 
-
 services = pytheos.discovery.discover()
 
-if not services:
-    print("No HEOS services detected!")
+if services:
+    print("Discovered these HEOS services:")
+    for svc in services:
+        print(f'- {svc}')
+
 else:
-    svc = services[0]
-    svc.connect()
-    players = svc.api.player.get_players()
-    pprint.pprint(players)
+    print("No HEOS services detected!")
