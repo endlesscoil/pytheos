@@ -97,22 +97,15 @@ def _retrieve_contents(svc: Pytheos, parent_id: str, source: Union[MusicSource, 
     :param source: Source node
     :return: tuple (new source id, result list)
     """
-    new_source_id = parent_id
     results = []
+    new_source_id = parent_id
 
-    # FIXME: Clean this up.
-    if isinstance(source, MusicSource):
-        # Update the source ID and retrieve the contents
+    if source.container:
+        results = svc.api.browse.browse_source_container(source_id=parent_id, container_id=source.container_id)
+    else:
+        # This is a nested source, so update the source ID and retrieve the contents
         new_source_id = source.source_id
         results = svc.api.browse.browse_source(new_source_id)
-    else:
-        if source.container:
-            results = svc.api.browse.browse_source_container(source_id=parent_id, container_id=source.container_id)
-        else:
-            # This is a nested source, so update the source ID and retrieve the contents
-            new_source_id = source.source_id
-            results = svc.api.browse.browse_source(new_source_id)
-    #/FIXME
 
     return new_source_id, results
 

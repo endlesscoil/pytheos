@@ -5,18 +5,13 @@ from typing import Optional
 
 
 class SourceType(Enum):
+    # Service types
     MusicService = 'music_service'
     HeosService = 'heos_service'
     HeosServer = 'heos_server'
     DLNAServer = 'dlna_server'
 
-    Artist = 'artist' # HACK: WTF?
-
-    def __str__(self):
-        return str(self.value)
-
-
-class SourceMediaType(Enum):
+    # Media types
     Artist = 'artist'
     Album = 'album'
     Song = 'song'
@@ -25,6 +20,7 @@ class SourceMediaType(Enum):
 
     def __str__(self):
         return str(self.value)
+
 
 class InputSource(Enum):
     AuxIn1 = 'inputs/aux_in_1'
@@ -78,13 +74,13 @@ class AddToQueueType(Enum):
         return str(self.value)
 
 @dataclass
-class MusicSource:
+class Source:
     name: str = None
-    image_url: str = None
     type: SourceType = None
     source_id: int = None
-    available: bool = False
-    service_username: str = None
+    container: bool = False
+    container_id: int = None
+    image_url: str = None
 
     def __init__(self, from_dict: Optional[dict]=None):
         """ Constructor
@@ -93,22 +89,31 @@ class MusicSource:
         """
         if from_dict:
             self.name = from_dict.get('name')
-            self.image_url = from_dict.get('image_url')
             self.type = SourceType(from_dict.get('type'))
+            self.image_url = from_dict.get('image_url')
             self.source_id = from_dict.get('sid')
+            self.container = from_dict.get('container')
+            self.container_id = from_dict.get('cid')
+
+@dataclass
+class MusicSource(Source):
+    available: bool = False
+    service_username: str = None
+
+    def __init__(self, from_dict: Optional[dict]=None):
+        """ Constructor
+
+        :param from_dict: Optional dictionary to use for initialization
+        """
+        super().__init__(from_dict)
+
+        if from_dict:
             self.available = from_dict.get('available')
             self.service_username = from_dict.get('service_username')
 
-
 @dataclass
-class SourceMedia:
-    container: bool = False
+class SourceMedia(Source):
     playable: bool = False
-    type: SourceMediaType = None
-    name: str = None
-    image_url: str = None
-    source_id: int = None
-    container_id: int = None
     media_id: int = None
 
     def __init__(self, from_dict: Optional[dict]=None):
@@ -116,10 +121,12 @@ class SourceMedia:
 
         :param from_dict: Optional dictionary to use for initialization
         """
+        super().__init__(from_dict)
+
         if from_dict:
             self.container = from_dict.get('container')
             self.playable = from_dict.get('playable')
-            self.type = from_dict.get('type') # FIXME SourceMediaType()
+            self.type = from_dict.get('type')
             self.name = from_dict.get('name')
             self.image_url = from_dict.get('image_url')
             self.source_id = from_dict.get('sid')
