@@ -4,7 +4,7 @@ from typing import Optional
 import logging
 
 from pytheos.api.api import API
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, AddToQueueType
+from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, AddToQueueType, AlbumMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -243,3 +243,13 @@ class BrowseAPI(API):
         :return: None
         """
         self._pytheos.api.call('browse', 'delete_playlist', sid=source_id, cid=container_id)
+
+    def retrieve_metadata(self, source_id: int, container_id: int) -> AlbumMetadata:
+        """ Retrieves image data for a specific container.  This only applies to Rhapsody and Napster.
+
+        :param source_id: Source ID
+        :param container_id: Container ID
+        :return: AlbumMetadata
+        """
+        results = self._pytheos.api.call('browse', 'retrieve_metadata', sid=source_id, cid=container_id)
+        return AlbumMetadata(results.payload)

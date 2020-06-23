@@ -149,3 +149,23 @@ class SearchCriteria:
             self.playable = bool(from_dict.get('playable', False))
             self.container_id = from_dict.get('cid')
 
+@dataclass
+class AlbumMetadata:
+    album_id: str
+    images: list
+
+    def __init__(self, from_dict=None):
+        self.images = []
+        if from_dict:
+            self.album_id = from_dict.get('album_id')
+            self.images = [AlbumImage(image_data) for image_data in from_dict.get('images', [])]
+
+@dataclass
+class AlbumImage:
+    image_url: str
+    width: int
+
+    def __init__(self, from_dict=None):
+        if from_dict:
+            self.image_url = from_dict.get('image_url')
+            self.width = int(from_dict.get('width'))
