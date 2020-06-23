@@ -4,7 +4,9 @@ from typing import Optional
 import logging
 
 from pytheos.api.api import API
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, AddToQueueType, AlbumMetadata
+from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, AddToQueueType, AlbumMetadata, \
+    ServiceOption
+from pytheos.types import HEOSResult
 
 logger = logging.getLogger(__name__)
 
@@ -253,3 +255,13 @@ class BrowseAPI(API):
         """
         results = self._pytheos.api.call('browse', 'retrieve_metadata', sid=source_id, cid=container_id)
         return AlbumMetadata(results.payload)
+
+    def set_service_option(self, source_id: int, option: ServiceOption, **kwargs) -> HEOSResult:
+        """
+
+        :param source_id:
+        :param option:
+        :param kwargs:
+        :return:
+        """
+        return self._pytheos.api.call('browse', 'set_service_option', sid=source_id, option=option, **kwargs)

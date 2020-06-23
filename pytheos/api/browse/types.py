@@ -73,6 +73,26 @@ class AddToQueueType(Enum):
     def __str__(self):
         return str(self.value)
 
+class ServiceOption(Enum):
+    AddTrackToLibrary = 1
+    AddAlbumToLibrary = 2
+    AddStationToLibrary = 3
+    AddPlaylistToLibrary = 4
+    RemoveTrackFromLibrary = 5
+    RemoveAlbumFromLibrary = 6
+    RemoveStationFromLibrary = 7
+    RemovePlaylistFromLibrary = 8
+
+    ThumbsUp = 11
+    ThumbsDown = 12
+    CreateNewStation = 13
+
+    AddToFavorites = 19
+    RemoveFromFavorites = 20
+
+    def __str__(self):
+        return str(self.value)
+
 @dataclass
 class Source:
     name: str = None
