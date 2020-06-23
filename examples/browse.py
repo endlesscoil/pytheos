@@ -85,8 +85,7 @@ def _init_tree_with_sources(svc: Pytheos) -> TreeEntry:
     tree = TreeEntry(object=None)
 
     for source in svc.api.browse.get_music_sources():
-        if source.name not in tree.keys():
-            tree[source.name] = TreeEntry(object=source)
+        tree.setdefault(source.name, TreeEntry(object=source))
 
     return tree
 
@@ -121,8 +120,6 @@ def main():
     """ Main entry point """
 
     with pytheos.connect((HEOS_IP, HEOS_PORT)) as svc:
-        svc.log_level = logging.ERROR
-
         # Use all command line parameters to construct our path or default to '/' if not specified.
         path = ' '.join(sys.argv[1:]) if len(sys.argv) > 1 else '/'
 
