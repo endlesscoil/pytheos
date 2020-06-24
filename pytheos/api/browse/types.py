@@ -59,7 +59,9 @@ class InputSource(Enum):
     TvAudio = 'inputs/tvaudio'
     Phono = 'inputs/phono'
     UsbDac = 'inputs/usbdac'
-    Analog = 'inputs/analog'
+    AnalogIn1 = 'inputs/analog_in_1'
+    AnalogIn2 = 'inputs/analog_in_2'
+    RecorderIn1 = 'inputs/record_in_1'
 
     def __str__(self):
         return str(self.value)
