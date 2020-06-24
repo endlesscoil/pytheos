@@ -5,7 +5,8 @@ import os
 import sys
 import time
 
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource, AddToQueueType
+from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource, AddToQueueType, \
+    AlbumMetadata, ServiceOption
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
@@ -420,6 +421,19 @@ class TestAPIs(unittest.TestCase):
         self._pytheos.api.browse.delete_playlist(sid, p.container_id)
         new_playlists = self._pytheos.api.browse.browse_source(sid)
         self.assertTrue(len(new_playlists) == len(playlists) - 1)
+
+    @unittest.skip("Meh, don't feel like dealing with Rhapsody or Napster.")
+    def test_browse_retrieve_metadata(self):
+        sid = 1 # FIXME
+        cid = 1 # FIXME
+        results = self._pytheos.api.browse.retrieve_metadata(sid, cid)
+        self.assertEquals(results, AlbumMetadata)
+
+    def test_browse_set_service_option(self):
+        sid = 1 # FIXME: Pandora
+        query = 'some band'
+        results = self._pytheos.api.browse.set_service_option(sid, ServiceOption.CreateNewStation, name=query)
+        self.assertGreater(int(results.header.vars.get('returned', 0)), 0)
 
     # Utils
     def _get_pid_to_query(self):
