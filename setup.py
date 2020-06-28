@@ -26,7 +26,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    keywords='python heos marantz denon',
+    keywords='python heos marantz denon network audio api',
     #package_dir={'pytheos': '.'},
     packages=find_packages(),
     python_requires='>=3.6',
