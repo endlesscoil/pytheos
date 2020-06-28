@@ -154,7 +154,7 @@ class Pytheos:
         """ Proxy interface to call an API on our Command Channel
 
         :param group: Group name (e.g. system, player, etc)
-        :param command: Command name (e.g. heart_beat_
+        :param command: Command name (e.g. heart_beat)
         :param kwargs: Any parameters that should be sent along with the command
         :return: HEOSResult
         """
