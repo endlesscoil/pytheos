@@ -14,7 +14,7 @@ class GroupAPI(API):
 
         :return: list
         """
-        results = self._pytheos.api.call('group', 'get_groups')
+        results = self._api.call('group', 'get_groups')
         return [Group(grp) for grp in results.payload]
 
     def get_group_info(self, group_id: int) -> Group:
@@ -23,7 +23,7 @@ class GroupAPI(API):
         :param group_id: Group ID
         :return: Group
         """
-        results = self._pytheos.api.call('group', 'get_group_info', gid=group_id)
+        results = self._api.call('group', 'get_group_info', gid=group_id)
         return Group(results.payload)
 
     def get_mute(self, group_id: int) -> bool:
@@ -32,7 +32,7 @@ class GroupAPI(API):
         :param group_id: Group ID
         :return: bool
         """
-        results = self._pytheos.api.call('group', 'get_mute', gid=group_id)
+        results = self._api.call('group', 'get_mute', gid=group_id)
         return results.header.vars.get('state') == 'on'
 
     def get_volume(self, group_id: int) -> int:
@@ -41,7 +41,7 @@ class GroupAPI(API):
         :param group_id: Group ID
         :return: int
         """
-        results = self._pytheos.api.call('group', 'get_volume', gid=group_id)
+        results = self._api.call('group', 'get_volume', gid=group_id)
         return int(results.header.vars.get('level'))
 
     def set_group(self, leader_id: int, member_ids=None) -> Optional[Group]:
@@ -55,7 +55,7 @@ class GroupAPI(API):
         if member_ids:
             player_ids += member_ids
 
-        results = self._pytheos.api.call('group', 'set_group', pid=','.join([str(pid) for pid in player_ids]))
+        results = self._api.call('group', 'set_group', pid=','.join([str(pid) for pid in player_ids]))
 
         if results.payload.vars.get('gid') is not None:
             return Group(results.payload.vars)
@@ -69,7 +69,7 @@ class GroupAPI(API):
         :param enable: True or False
         :return: None
         """
-        self._pytheos.api.call('group', 'set_mute', gid=group_id, state=Mute.On if enable else Mute.Off)
+        self._api.call('group', 'set_mute', gid=group_id, state=Mute.On if enable else Mute.Off)
 
     def set_volume(self, group_id: int, level: int) -> None:
         """ Sets the volume level on the group
@@ -82,7 +82,7 @@ class GroupAPI(API):
         if not 0 <= level <= 100:
             raise ValueError('Level must be between 0 and 100')
 
-        self._pytheos.api.call('group', 'set_volume', gid=group_id, level=level)
+        self._api.call('group', 'set_volume', gid=group_id, level=level)
 
     def toggle_mute(self, group_id: int) -> None:
         """ Toggles mute on the group
@@ -90,7 +90,7 @@ class GroupAPI(API):
         :param group_id: Group ID
         :return: None
         """
-        self._pytheos.api.call('group', 'toggle_mute', gid=group_id)
+        self._api.call('group', 'toggle_mute', gid=group_id)
 
     def volume_up(self, group_id: int, step_level: int=5) -> None:
         """ Turn the volume up by the specified step level.
@@ -103,7 +103,7 @@ class GroupAPI(API):
         if not 0 < step_level <= 10:
             raise ValueError('Step level must be between 1 and 10')
 
-        self._pytheos.api.call('group', 'volume_up', gid=group_id, step=step_level)
+        self._api.call('group', 'volume_up', gid=group_id, step=step_level)
 
     def volume_down(self, group_id: int, step_level: int = 5) -> None:
         """ Turn the volume down by the specified step level.
@@ -116,4 +116,4 @@ class GroupAPI(API):
         if not 0 < step_level <= 10:
             raise ValueError('Step level must be between 1 and 10')
 
-        self._pytheos.api.call('group', 'volume_down', gid=group_id, step=step_level)
+        self._api.call('group', 'volume_down', gid=group_id, step=step_level)

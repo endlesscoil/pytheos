@@ -142,6 +142,8 @@ class HEOSResult(object):
         return self.header.result and self.header.result.lower() == 'success'
 
     def __init__(self, from_dict=None):
+        self.header = None
+        self.payload = None
         if from_dict:
             heos = from_dict.get('heos')
             if not heos:
@@ -168,7 +170,7 @@ class HEOSResult(object):
 class HEOSEvent(object):
     """ Represents a message received from the event channel that signifies a new event has occurred. """
 
-    vars : dict
+    vars: dict
     command: str = None
     message: str = None
     raw: str = None

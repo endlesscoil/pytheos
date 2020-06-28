@@ -15,7 +15,7 @@ class SystemAPI(API):
 
         :return: (status, username)
         """
-        results = self._pytheos.api.call('system', 'check_account')
+        results = self._api.call('system', 'check_account')
 
         username = results.header.vars.get('un')
         result = results.header.vars.get('signed_out')
@@ -29,7 +29,7 @@ class SystemAPI(API):
 
         :return: None
         """
-        self._pytheos.api.call('system', 'heart_beat')
+        self._api.call('system', 'heart_beat')
 
     def prettify_json_response(self, enable: bool) -> None:
         """ Enables or disables pretty JSON responses
@@ -37,14 +37,14 @@ class SystemAPI(API):
         :param enable: True or False
         :return: None
         """
-        self._pytheos.api.call('system', 'prettify_json_response', enable='on' if enable else 'off')
+        self._api.call('system', 'prettify_json_response', enable='on' if enable else 'off')
 
     def reboot(self) -> None:
         """ Forces the system to reboot
 
         :return: None
         """
-        self._pytheos.api.call('system', 'reboot')
+        self._api.call('system', 'reboot')
 
     def register_for_change_events(self, enable: bool) -> None:
         """ Registers the current connection to receive events from HEOS.
@@ -52,7 +52,7 @@ class SystemAPI(API):
         :param enable: True or False
         :return: None
         """
-        self._pytheos.api.call('system', 'register_for_change_events', enable='on' if enable else 'off')
+        self._api.call('system', 'register_for_change_events', enable='on' if enable else 'off')
 
     def sign_in(self, username: str, password: str) -> None:
         """ Commands the system to signin to HEOS
@@ -63,7 +63,7 @@ class SystemAPI(API):
         :return: None
         """
         try:
-            self._pytheos.api.call('system', 'sign_in', un=username, pw=password)
+            self._api.call('system', 'sign_in', un=username, pw=password)
         except CommandFailedError as ex:
             raise SignInFailedError('HEOS sign-in failed', ex.result) from ex
 
@@ -72,4 +72,4 @@ class SystemAPI(API):
 
         :return: None
         """
-        self._pytheos.api.call('system', 'sign_out')
+        self._api.call('system', 'sign_out')

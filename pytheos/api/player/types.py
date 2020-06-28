@@ -48,6 +48,14 @@ class ShuffleMode(Enum):
     def __str__(self):
         return self.value
 
+class PlayState(Enum):
+    Stopped = 'stop'
+    Playing = 'play'
+    Paused = 'pause'
+
+    def __str__(self):
+        return self.value
+
 @dataclass
 class PlayMode:
     repeat: RepeatMode

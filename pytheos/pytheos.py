@@ -10,7 +10,7 @@ import time
 from typing import Optional, Callable
 
 from . import utils
-from .api.container import APIContainer
+from .api.interface import APIInterface
 from .connection import Connection
 from .errors import ChannelUnavailableError
 from .types import HEOSEvent, HEOSResult, SSDPResponse
@@ -65,10 +65,16 @@ class Pytheos:
 
         self.server: str = server
         self.port: int = port
-        self.api: Optional[APIContainer] = None
 
+        self._command_channel = Connection()
+        self._event_channel = Connection()
+        self._event_thread = None
+        self._event_handler_thread = None
         self._connected = False
         self._event_subscriptions = {}
+
+        self.api: Optional[APIInterface] = APIInterface(self._command_channel)
+
         self._init_internal_event_handlers()
 
     def __repr__(self):
@@ -96,30 +102,27 @@ class Pytheos:
     def log_level(self, value):
         logger.setLevel(value)
 
-    def connect(self) -> Pytheos:
+    def connect(self, enable_event_connection=True) -> Pytheos:
         """ Connect to our HEOS device.
 
         :return: self
         """
         logger.info(f'Connecting to {self.server}:{self.port}')
 
-        self._command_channel = Connection(self.server, self.port)
-        self.api = self._command_channel.api
-        self._command_channel.connect()
-
-        self._event_channel = Connection(self.server, self.port, deduplicate=True)
-        self._event_channel.connect()
-        self._event_channel.register_for_events(True)
-
-        # FIXME: Figure out exactly how I'm consuming these.
-        self._event_queue = queue.Queue()
-        self._event_thread = EventThread(self._event_channel, self._event_queue)
-        self._event_thread.start()
-        self._event_handler_thread = EventHandlerThread(self, self._event_queue)
-        self._event_handler_thread.start()
-        #/FIXME
-
+        self._command_channel.connect(self.server, self.port)
         self._connected = True
+
+        if enable_event_connection:
+            self._event_channel.connect(self.server, self.port, deduplicate=True)
+            APIInterface(self._event_channel).system.register_for_change_events(True)
+
+            # FIXME: Figure out exactly how I'm consuming these.
+            self._event_queue = queue.Queue()
+            self._event_thread = EventThread(self._event_channel, self._event_queue)
+            self._event_thread.start()
+            self._event_handler_thread = EventHandlerThread(self, self._event_queue)
+            self._event_handler_thread.start()
+            #/FIXME
 
         # TODO: get status
 
@@ -131,10 +134,13 @@ class Pytheos:
         :return: None
         """
         logger.info(f'Closing connection to {self.server}:{self.port}')
-        self._event_thread.stop()
-        self._event_thread.join()
-        self._event_handler_thread.stop()
-        self._event_handler_thread.join()
+        if self._event_thread:
+            self._event_thread.stop()
+            self._event_thread.join()
+
+        if self._event_handler_thread:
+            self._event_handler_thread.stop()
+            self._event_handler_thread.join()
 
         if self._event_channel:
             self._event_channel.close()
@@ -261,6 +267,7 @@ class EventThread(threading.Thread):
 
         self._connection = conn
         self._out_queue = out_queue
+        self._api = APIInterface(conn)
         self.running = False
 
     def run(self) -> None:
@@ -271,7 +278,7 @@ class EventThread(threading.Thread):
         self.running = True
 
         while self.running:
-            results = self._connection.api.read_message()
+            results = self._api.read_message()
             if results:
                 event = HEOSEvent(results)
                 logger.debug(f"Received event: {event!r}")

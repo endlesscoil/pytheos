@@ -21,7 +21,7 @@ class BrowseAPI(API):
 
         :return: list
         """
-        results = self._pytheos.api.call('browse', 'get_music_sources')
+        results = self._api.call('browse', 'get_music_sources')
         return [MusicSource(source) for source in results.payload]
 
     def get_source_info(self, source_id: int) -> Optional[MusicSource]:
@@ -30,7 +30,7 @@ class BrowseAPI(API):
         :param source_id: Source ID
         :return: MusicSource or None if not found
         """
-        results = self._pytheos.api.call('browse', 'get_source_info', sid=source_id)
+        results = self._api.call('browse', 'get_source_info', sid=source_id)
         if results.header.result == 'success':
             return MusicSource(results.payload.data)
 
@@ -54,7 +54,7 @@ class BrowseAPI(API):
             kwargs['item_range'] = ','.join(item_range)
 
         # FIXME: This needs a whole bunch of work.  There are three different formats to this command.
-        results = self._pytheos.api.call('browse', 'browse', sid=source_id, id=options, scid=scid, **kwargs)
+        results = self._api.call('browse', 'browse', sid=source_id, id=options, scid=scid, **kwargs)
         return [SourceMedia(media) for media in results.payload.data]
 
     def browse_source_container(self,
@@ -100,7 +100,7 @@ class BrowseAPI(API):
         if item_range is not None:
             kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
-        results = self._pytheos.api.call('browse', 'browse', **kwargs)
+        results = self._api.call('browse', 'browse', **kwargs)
         return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
 
     def get_search_criteria(self, source_id: int) -> list:
@@ -109,7 +109,7 @@ class BrowseAPI(API):
         :param source_id: Source ID
         :return: list of SearchCriteria
         """
-        results = self._pytheos.api.call('browse', 'get_search_criteria', sid=source_id)
+        results = self._api.call('browse', 'get_search_criteria', sid=source_id)
 
         return [SearchCriteria(item) for item in results.payload]
 
@@ -152,7 +152,7 @@ class BrowseAPI(API):
         if item_range is not None:
             kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
-        results = self._pytheos.api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
+        results = self._api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
         return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
 
     def play_station(self, player_id: int, source_id: int, container_id: str, media_id: str, name: str):
@@ -165,10 +165,10 @@ class BrowseAPI(API):
         :param name: Station name returned by browse
         :return: None
         """
-        self._pytheos.api.call('browse', 'play_stream',
-                               pid=player_id, sid=source_id,
-                               cid=container_id, mid=media_id,
-                               name=name)
+        self._api.call('browse', 'play_stream',
+                           pid=player_id, sid=source_id,
+                           cid=container_id, mid=media_id,
+                           name=name)
 
     def play_preset(self, player_id: int, preset: int):
         """ Plays one of the configured presets/favorites.
@@ -180,7 +180,7 @@ class BrowseAPI(API):
         if preset <= 0:
             raise ValueError('Preset must be greater than zero.')
 
-        self._pytheos.api.call('browse', 'play_preset', pid=player_id, preset=preset)
+        self._api.call('browse', 'play_preset', pid=player_id, preset=preset)
 
     def play_input(self, player_id: int, input_name: str, source_player_id: Optional[int]=None):
         """ Plays the specified input source on the provided Player ID.  Other speakers can be targeted if the optional
@@ -195,7 +195,7 @@ class BrowseAPI(API):
         if source_player_id is not None:
             kwargs['spid'] = source_player_id
 
-        self._pytheos.api.call('browse', 'play_input', pid=player_id, input=input_name, **kwargs)
+        self._api.call('browse', 'play_input', pid=player_id, input=input_name, **kwargs)
 
     def play_url(self, player_id: str, url: str):
         """ Play the specified URL
@@ -208,7 +208,7 @@ class BrowseAPI(API):
         kwargs['pid'] = player_id
         kwargs['url'] = url         # 'url' must be the last parameter in this command.
 
-        self._pytheos.api.call('browse', 'play_stream', **kwargs)
+        self._api.call('browse', 'play_stream', **kwargs)
 
     def add_to_queue(self, player_id: str, source_id: str, container_id: str, media_id: Optional[str]=None, add_type: AddToQueueType=AddToQueueType.PlayNow):
         """ Adds the specified container or track to the playback queue.  If media_id is provided it will add the track
@@ -225,7 +225,7 @@ class BrowseAPI(API):
         if media_id is not None:
             kwargs['mid'] = media_id
 
-        self._pytheos.api.call('browse', 'add_to_queue', pid=player_id, sid=source_id, cid=container_id, aid=add_type, **kwargs)
+        self._api.call('browse', 'add_to_queue', pid=player_id, sid=source_id, cid=container_id, aid=add_type, **kwargs)
 
     def rename_playlist(self, source_id: int, container_id: int, name: str):
         """ Renames a playlist container.
@@ -235,7 +235,7 @@ class BrowseAPI(API):
         :param name: New playlist name
         :return: None
         """
-        self._pytheos.api.call('browse', 'rename_playlist', sid=source_id, cid=container_id, name=name)
+        self._api.call('browse', 'rename_playlist', sid=source_id, cid=container_id, name=name)
 
     def delete_playlist(self, source_id: int, container_id: int):
         """ Deletes a playlist container.
@@ -244,7 +244,7 @@ class BrowseAPI(API):
         :param container_id: Container ID
         :return: None
         """
-        self._pytheos.api.call('browse', 'delete_playlist', sid=source_id, cid=container_id)
+        self._api.call('browse', 'delete_playlist', sid=source_id, cid=container_id)
 
     def retrieve_metadata(self, source_id: int, container_id: int) -> AlbumMetadata:
         """ Retrieves image data for a specific container.  This only applies to Rhapsody and Napster.
@@ -253,7 +253,7 @@ class BrowseAPI(API):
         :param container_id: Container ID
         :return: AlbumMetadata
         """
-        results = self._pytheos.api.call('browse', 'retrieve_metadata', sid=source_id, cid=container_id)
+        results = self._api.call('browse', 'retrieve_metadata', sid=source_id, cid=container_id)
         return AlbumMetadata(results.payload)
 
     def set_service_option(self, source_id: int, option: ServiceOption, **kwargs) -> HEOSResult:
@@ -264,4 +264,4 @@ class BrowseAPI(API):
         :param kwargs:
         :return:
         """
-        return self._pytheos.api.call('browse', 'set_service_option', sid=source_id, option=option, **kwargs)
+        return self._api.call('browse', 'set_service_option', sid=source_id, option=option, **kwargs)

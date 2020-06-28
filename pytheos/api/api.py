@@ -6,5 +6,5 @@ from __future__ import annotations
 
 class API:
     """ Base API implementation """
-    def __init__(self, pytheos_object: 'Pytheos'):
-        self._pytheos = pytheos_object
+    def __init__(self, pytheos_object: 'APIInterface'):
+        self._api = pytheos_object

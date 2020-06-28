@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" Provides the APIContainer implementation """
+""" Provides the APIInterface implementation """
 
 from __future__ import annotations
 
@@ -19,14 +19,14 @@ from pytheos.types import HEOSResult
 logger = logging.getLogger(__name__)
 
 
-class APIContainer:
+class APIInterface:
     """ Container class for raw command functionality and object references to the API groups """
 
     def __init__(self, connection):
-        self.system = SystemAPI(connection)
-        self.player = PlayerAPI(connection)
-        self.group = GroupAPI(connection)
-        self.browse = BrowseAPI(connection)
+        self.system = SystemAPI(self)
+        self.player = PlayerAPI(self)
+        self.group = GroupAPI(self)
+        self.browse = BrowseAPI(self)
 
         self._connection: 'Connection' = connection
         self._last_response: Optional[str] = None
@@ -46,11 +46,12 @@ class APIContainer:
         message = self.read_message()
         results = HEOSResult(message)
 
-        if results.header.result is None:
-            raise CommandFailedError('No "result" found in "heos" response', results)
+        if results.header:
+            if results.header.result is None:
+                raise CommandFailedError('No "result" found in "heos" response', results)
 
-        if results.header.result == 'fail':
-            raise CommandFailedError('Failed to execute command', results)
+            if results.header.result == 'fail':
+                raise CommandFailedError('Failed to execute command', results)
 
         return results
 
@@ -58,7 +59,7 @@ class APIContainer:
         """ Formats a HEOS API request and submits it
 
         :param group: Group name (e.g. system, player, etc)
-        :param command: Command name (e.g. heart_beat_
+        :param command: Command name (e.g. heart_beat)
         :param kwargs: Any parameters that should be sent along with the command
         :raises: AssertionError, CommandFailedError
         :return: HEOSResult
@@ -67,7 +68,7 @@ class APIContainer:
         self._connection.write(command_string.encode('utf-8'))
         logger.debug(f"Sending command: {command_string.rstrip()}")
 
-    def read_message(self, timeout: int=1, delimiter: bytes=b'\r\n') -> bytes:
+    def read_message(self, timeout: int=1, delimiter: bytes=b'\r\n') -> Optional[bytes]:
         """ Reads a message from the connection
 
         :param timeout: Timeout (seconds)
