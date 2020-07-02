@@ -5,180 +5,545 @@ import os
 import sys
 import time
 
+import unittest
+from unittest.mock import patch
+
+from pytheos.api.types import Mute
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource, AddToQueueType, \
     AlbumMetadata, ServiceOption
 from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group
-from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode
-from pytheos.errors import CommandFailedError
+from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode, PlayState
+from pytheos.errors import CommandFailedError, SignInFailedError
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
-
-import unittest
 import pytheos
+import pytheos.connection
+
+TEST_PLAYER_ID = 12345678
 
 
 class TestAPIs(unittest.TestCase):
-    def setUp(self) -> None:
-        self._pytheos = pytheos.Pytheos('10.7.2.64', 1255)
-        self._pytheos.connect()
-
-    def tearDown(self) -> None:
-        self._pytheos.close()
+    def setUp(self):
+        self._pytheos = pytheos.Pytheos('127.0.0.1', 1255)
+        self._pytheos.api.send_command = unittest.mock.MagicMock()
 
     def test_system_register_for_change_events(self):
-        self._pytheos.api.system.register_for_change_events(True)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/register_for_change_events",
+                                  "result": "success", "message": "enable=on"
+                              }
+                          }) as mock:
+            self._pytheos.api.system.register_for_change_events(True)
+            self._pytheos.api.send_command.assert_called_with('system', 'register_for_change_events', enable='on')
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/register_for_change_events",
+                                  "result": "success", "message": "enable=off"
+                              }
+                          }) as mock:
+            self._pytheos.api.system.register_for_change_events(False)
+            self._pytheos.api.send_command.assert_called_with('system', 'register_for_change_events', enable='off')
 
     def test_system_check_account(self):
-        self.assertTrue(self._pytheos.api.system.check_account())
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/check_account",
+                                  "result": "success",
+                                  "message": "signed_in&un=username@someemailplace.com"
+                              }
+                          }) as mock:
+            status, email = self._pytheos.api.system.check_account()
+            self.assertEqual(status, 'signed_in')
+            self.assertEqual(email, 'username@someemailplace.com')
+            self._pytheos.api.send_command.assert_called_with('system', 'check_account')
 
-    @unittest.skip('Too disruptive')
     def test_system_sign_in(self):
-        self._pytheos.api.system.sign_in()
+        username = 'username@someemailplace.com'
+        password = 'somepassword'
 
-    @unittest.skip('Too disruptive')
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/sign_in",
+                                  "result": "success",
+                                  "message": "signed_in&un=username@someemailplace.com"
+                              }
+                          }) as mock:
+            self._pytheos.api.system.sign_in(username, password)
+            self._pytheos.api.send_command.assert_called_with('system', 'sign_in', un=username, pw=password)
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/sign_in",
+                                  "result": "fail",
+                                  "message": ""
+                              }
+                          }) as mock:
+            self.assertRaises(SignInFailedError, self._pytheos.api.system.sign_in, username, password)
+
     def test_system_sign_out(self):
-        self._pytheos.api.system.sign_out()
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/sign_out",
+                                  "result": "success",
+                                  "message": "signed_out"
+                              }
+                          }) as mock:
+            self._pytheos.api.system.sign_out()
+            self._pytheos.api.send_command.assert_called_with('system', 'sign_out')
 
     def test_system_heart_beat(self):
-        self._pytheos.api.system.heart_beat()
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/heart_beat",
+                                  "result": "success",
+                                  "message": ""
+                              }
+                          }) as mock:
+            self._pytheos.api.system.heart_beat()
+            self._pytheos.api.send_command.assert_called_with('system', 'heart_beat')
 
-    @unittest.skip('Too disruptive')
     def test_system_reboot(self):
-        self._pytheos.api.system.reboot()
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=None) as mock:
+            self._pytheos.api.system.reboot()
+            self._pytheos.api.send_command.assert_called_with('system', 'reboot')
 
     def test_system_prettify_json_response(self):
-        for enable in (True, False):
-            self._pytheos.api.system.prettify_json_response(enable)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/prettify_json_response",
+                                  "result": "success",
+                                  "message": "enable=on",
+                              }
+                          }) as mock:
+                self._pytheos.api.system.prettify_json_response(True)
+                self._pytheos.api.send_command.assert_called_with('system', 'prettify_json_response', enable='on')
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "system/prettify_json_response",
+                                  "result": "success",
+                                  "message": "enable=off",
+                              }
+                          }) as mock:
+                self._pytheos.api.system.prettify_json_response(False)
+                self._pytheos.api.send_command.assert_called_with('system', 'prettify_json_response', enable='off')
 
     def test_player_get_players(self):
-        players = self._pytheos.api.player.get_players()
-        self.assertGreater(len(players), 0)
-        self.assertIsInstance(players[0], Player)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_players",
+                                  "result": "success",
+                                  "message": ""
+                              },
+                              "payload": [
+                                  {
+                                      "name": "Marantz PM7000N",
+                                      "pid": TEST_PLAYER_ID,
+                                      "model": "Marantz PM7000N",
+                                      "version": "1.562.230",
+                                      "ip": "10.10.0.7",
+                                      "network": "wifi",
+                                      "lineout": 0,
+                                      "serial": "SN12345678"
+                                  }
+                              ]
+                          }) as mock:
+            players = self._pytheos.api.player.get_players()
+            self.assertGreater(len(players), 0)
+            self.assertIsInstance(players[0], Player)
 
     def test_player_get_player_info(self):
-        pid = self._get_pid_to_query()
-        self.assertIsInstance(self._pytheos.api.player.get_player_info(pid), Player)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_player_info",
+                                  "result": "success",
+                                  "message": ""
+                              },
+                              "payload": [
+                                  {
+                                      "name": "Marantz PM7000N",
+                                      "pid": TEST_PLAYER_ID,
+                                      "model": "Marantz PM7000N",
+                                      "version": "1.562.230",
+                                      "ip": "10.10.0.7",
+                                      "network": "wifi",
+                                      "lineout": 0,
+                                      "serial": "SN12345678"
+                                  }
+                              ]
+                          }) as mock:
+            result = self._pytheos.api.player.get_player_info(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_player_info', pid=TEST_PLAYER_ID)
+            self.assertIsInstance(result, Player)
 
     def test_player_get_play_state(self):
-        pid = self._get_pid_to_query()
-        play_state = self._pytheos.api.player.get_play_state(pid)
-        self.assertIn(play_state, ('play', 'pause', 'stop'))
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_play_state",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=stop"
+                              },
+                          }) as mock:
+            play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
+            self.assertEqual(play_state, PlayState.Stopped)
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_play_state",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=play"
+                              },
+                          }) as mock:
+            play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
+            self.assertEqual(play_state, PlayState.Playing)
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_play_state",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=pause"
+                              },
+                          }) as mock:
+            play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
+            self.assertEqual(play_state, PlayState.Paused)
 
     def test_player_set_play_state(self):
-        pid = self._get_pid_to_query()
-        for state in ('play', 'pause', 'stop'):
-            self._pytheos.api.player.set_play_state(pid, state)
-            time.sleep(1)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/set_play_state",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=stop"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Stopped)
+            self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Stopped)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.set_play_state, pid, 'invalid_state')
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/set_play_state",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=play"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Playing)
+            self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Playing)
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/set_play_state",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=pause"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Paused)
+            self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Paused)
+
+        self.assertRaises(ValueError, self._pytheos.api.player.set_play_state, TEST_PLAYER_ID, 'invalid_state')
 
     def test_player_get_now_playing_media(self):
-        pid = self._get_pid_to_query()
-        now_playing = self._pytheos.api.player.get_now_playing_media(pid) # FIXME?: What about the options?
-        self.assertIsInstance(now_playing, MediaItem)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_now_playing_media",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}"
+                              }, "payload": {
+                                  "type": "station",
+                                  "song": "TOOL Radio",
+                                  "station": "TOOL Radio",
+                                  "album": "",
+                                  "artist": "",
+                                  "image_url": "https://content-images.p-cdn.com/images/c2/e4/83/44/bd064cd5943ec627b04cc04e/_500W_500H.jpg",
+                                  "album_id": "",
+                                  "mid": "4525086864314761798",
+                                  "qid": 1,
+                                  "sid": 1
+                              },
+                              "options": [
+                                  {
+                                      "play": [
+                                          {"id": 11, "name": "Thumbs Up"},
+                                          {"id": 12, "name": "Thumbs Down"},
+                                          {"id": 19, "name": "Add to HEOS Favorites"}
+                                      ]
+                                  }
+                              ]
+                          }) as mock:
+            now_playing = self._pytheos.api.player.get_now_playing_media(TEST_PLAYER_ID) # FIXME?: What about the options?
+            self._pytheos.api.send_command.assert_called_with('player', 'get_now_playing_media', pid=TEST_PLAYER_ID)
+            self.assertIsInstance(now_playing, MediaItem)
 
     def test_player_get_volume(self):
-        pid = self._get_pid_to_query()
-        volume = self._pytheos.api.player.get_volume(pid)
-        self.assertIsInstance(volume, int)
-        self.assertTrue(0 <= volume <= 100)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_volume",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&level=10"
+                              },
+                          }) as mock:
+            volume = self._pytheos.api.player.get_volume(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_volume', pid=TEST_PLAYER_ID)
+            self.assertEqual(volume, 10)
 
     def test_player_set_volume(self):
-        pid = self._get_pid_to_query()
-        self._pytheos.api.player.set_volume(pid, 20)
-        self.assertRaises(ValueError, self._pytheos.api.player.set_volume, pid, 101)
-        self.assertRaises(ValueError, self._pytheos.api.player.set_volume, pid, -1)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/set_volume",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&level=20"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.set_volume(TEST_PLAYER_ID, 20)
+            self._pytheos.api.send_command.assert_called_with('player', 'set_volume', pid=TEST_PLAYER_ID, level=20)
+
+        self.assertRaises(ValueError, self._pytheos.api.player.set_volume, TEST_PLAYER_ID, 101)
+        self.assertRaises(ValueError, self._pytheos.api.player.set_volume, TEST_PLAYER_ID, -1)
 
     def test_player_volume_up(self):
-        pid = self._get_pid_to_query()
-        self._pytheos.api.player.volume_up(pid, 5)
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_up, pid, 11)
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_up, pid, 0)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/volume_up",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&step=5"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.volume_up(TEST_PLAYER_ID, 5)
+            self._pytheos.api.send_command.assert_called_with('player', 'volume_up', pid=TEST_PLAYER_ID, step=5)
+
+        self.assertRaises(ValueError, self._pytheos.api.player.volume_up, TEST_PLAYER_ID, 11)
+        self.assertRaises(ValueError, self._pytheos.api.player.volume_up, TEST_PLAYER_ID, 0)
 
     def test_player_volume_down(self):
-        pid = self._get_pid_to_query()
-        self._pytheos.api.player.volume_down(pid, 5)
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_down, pid, 11)
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_down, pid, 0)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/volume_down",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&step=5"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.volume_down(TEST_PLAYER_ID, 5)
+            self._pytheos.api.send_command.assert_called_with('player', 'volume_down', pid=TEST_PLAYER_ID, step=5)
+
+        self.assertRaises(ValueError, self._pytheos.api.player.volume_down, TEST_PLAYER_ID, 11)
+        self.assertRaises(ValueError, self._pytheos.api.player.volume_down, TEST_PLAYER_ID, 0)
 
     def test_player_get_mute(self):
-        pid = self._get_pid_to_query()
-        muted = self._pytheos.api.player.get_mute(pid)
-        self.assertIsInstance(muted, bool)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_mute",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=off"
+                              },
+                          }) as mock:
+            muted = self._pytheos.api.player.get_mute(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_mute', pid=TEST_PLAYER_ID)
+            self.assertEqual(muted, False)
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_mute",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=on"
+                              },
+                          }) as mock:
+            muted = self._pytheos.api.player.get_mute(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_mute', pid=TEST_PLAYER_ID)
+            self.assertEqual(muted, True)
 
     def test_player_set_mute(self):
-        pid = self._get_pid_to_query()
-        for enable in (True, False):
-            self._pytheos.api.player.set_mute(pid, enable)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/set_mute",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=on"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.set_mute(TEST_PLAYER_ID, True)
+            self._pytheos.api.send_command.assert_called_with('player', 'set_mute', pid=TEST_PLAYER_ID, state=Mute.On)
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/set_mute",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&state=off"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.set_mute(TEST_PLAYER_ID, False)
+            self._pytheos.api.send_command.assert_called_with('player', 'set_mute', pid=TEST_PLAYER_ID, state=Mute.Off)
 
     def test_player_toggle_mute(self):
-        pid = self._get_pid_to_query()
-        self._pytheos.api.player.toggle_mute(pid)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/toggle_mute",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.toggle_mute(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'toggle_mute', pid=TEST_PLAYER_ID)
 
     def test_player_get_play_mode(self):
-        pid = self._get_pid_to_query()
-        play_mode = self._pytheos.api.player.get_play_mode(pid)
-        self.assertIsInstance(play_mode, PlayMode)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/get_play_mode",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&repeat=off&shuffle=off"
+                              },
+                          }) as mock:
+            play_mode = self._pytheos.api.player.get_play_mode(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_play_mode', pid=TEST_PLAYER_ID)
+            self.assertIsInstance(play_mode, PlayMode)
+            self.assertEqual(play_mode.repeat, RepeatMode.Off)
+            self.assertEqual(play_mode.shuffle, ShuffleMode.Off)
 
     def test_player_set_play_mode(self):
-        pid = self._get_pid_to_query()
-        self._pytheos.api.player.set_play_mode(pid, PlayMode(repeat=RepeatMode.Off, shuffle=ShuffleMode.Off)) # Don't really need to test the others
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/set_play_mode",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&repeat=off&shuffle=off"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.set_play_mode(TEST_PLAYER_ID, PlayMode(repeat=RepeatMode.Off, shuffle=ShuffleMode.Off))
+            self._pytheos.api.send_command.assert_called_with('player', 'set_play_mode', pid=TEST_PLAYER_ID, repeat=RepeatMode.Off, shuffle=ShuffleMode.Off)
 
     def test_player_get_queue(self):
-        pid = self._get_pid_to_query()
-        # FIXME: construct queue
-        queue = self._pytheos.api.player.get_queue(pid, 0, 10)
-        self.assertIsInstance(queue, list)
-        self.assertGreater(len(queue), 0)
-        self.assertIsInstance(queue[0], MediaItem)
+        start_pos = 0
+        retrieve_count = 10
 
-        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, pid, -1, 10)  # Lower limit too small
-        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, pid, 0, 101)  # Number to retrieve too large
-        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, pid, 0, 0)    # Number to retrieve too small
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=self._get_demo_queue()) as mock:
+            queue = self._pytheos.api.player.get_queue(TEST_PLAYER_ID, start_pos, retrieve_count)
+            self._pytheos.api.send_command.assert_called_with('player', 'get_queue',
+                                                              pid=TEST_PLAYER_ID,
+                                                              range=','.join((str(start_pos), str(retrieve_count - 1))))
+            self.assertIsInstance(queue, list)
+            self.assertGreater(len(queue), 0)
+            self.assertIsInstance(queue[0], MediaItem)
+
+        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, TEST_PLAYER_ID, -1, 10)  # Lower limit too small
+        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, TEST_PLAYER_ID, 0, 101)  # Number to retrieve too large
+        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, TEST_PLAYER_ID, 0, 0)    # Number to retrieve too small
 
     def test_player_play_queue(self):
-        pid = self._get_pid_to_query()
-        # FIXME: construct queue
-        queue = self._pytheos.api.player.get_queue(pid)
-        self.assertGreater(len(queue), 0)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=self._get_demo_queue()) as mock:
+            queue = self._pytheos.api.player.get_queue(TEST_PLAYER_ID, 0, 10)
 
-        self._pytheos.api.player.play_queue(pid, queue[0].queue_id)
+            self._pytheos.api.player.play_queue(TEST_PLAYER_ID, queue[0].queue_id)
+            self._pytheos.api.send_command.assert_called_with('player', 'play_queue', pid=TEST_PLAYER_ID, qid=queue[0].queue_id)
 
-        self.assertRaises(CommandFailedError, self._pytheos.api.player.play_queue, pid, -1)
+        self.assertRaises(CommandFailedError, self._pytheos.api.player.play_queue, TEST_PLAYER_ID, -1)
 
-    @unittest.skip('Too disruptive')
     def test_player_remove_from_queue(self):
-        pid = self._get_pid_to_query()
-        self._pytheos.api.player.remove_from_queue(pid, queue_ids=(0,))
-        time.sleep(1)
-        self._pytheos.api.player.remove_from_queue(pid, queue_ids=(0, 1))
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/remove_from_queue",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&qid=0"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0,))
+            self._pytheos.api.send_command.assert_called_with('player', 'remove_from_queue', pid=TEST_PLAYER_ID, qid='0')
 
-    @unittest.skip("Too disruptive - and I don't know how to remove them yet")
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/remove_from_queue",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&qid=0,1"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0, 1))
+            self._pytheos.api.send_command.assert_called_with('player', 'remove_from_queue', pid=TEST_PLAYER_ID, qid='0,1')
+
     def test_player_save_queue(self):
-        pid = self._get_pid_to_query()
-        # FIXME: construct queue
-        self._pytheos.api.player.save_queue(pid, "Test Playlist")
-        self.assertRaises(ValueError, self._pytheos.api.player.save_queue, pid, '*'*129)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/save_queue",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&name=Test Playlist"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.save_queue(TEST_PLAYER_ID, "Test Playlist")
+            self._pytheos.api.send_command.assert_called_with('player', 'save_queue',
+                                                              pid=TEST_PLAYER_ID, name='Test Playlist')
 
-    @unittest.skip('Too disruptive')
+        self.assertRaises(ValueError, self._pytheos.api.player.save_queue, TEST_PLAYER_ID, '*'*129)
+
     def test_player_clear_queue(self):
-        pid = self._get_pid_to_query()
-        # FIXME: construct queue
-        self._pytheos.api.player.clear_queue(pid)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/save_queue",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&name=Test Playlist"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.clear_queue(TEST_PLAYER_ID)
+            self._pytheos.api.send_command.assert_called_with('player', 'clear_queue', pid=TEST_PLAYER_ID)
 
-    @unittest.skip('Too disruptive')
-    def test_player_move_queue(self):
-        pid = self._get_pid_to_query()
-        # FIXME: construct queue
-        queue = self._pytheos.api.player.get_queue(pid)
-        self.assertGreater(len(queue), 2)
+    def test_player_move_queue_item(self):
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/move_queue_item",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&sqid=1&dqid=1"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1,), destination_queue_id=1)
+            self._pytheos.api.send_command.assert_called_with('player', 'move_queue_item', pid=TEST_PLAYER_ID, sqid='1', dqid=1)
 
-        self._pytheos.api.player.move_queue(pid, source_ids=(1,), destination_id=1)
-        self._pytheos.api.player.move_queue(pid, source_ids=(1, 2), destination_id=3)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value={
+                              "heos": {
+                                  "command": "player/move_queue_item",
+                                  "result": "success",
+                                  "message": f"pid={TEST_PLAYER_ID}&sqid=1&dqid=1"
+                              },
+                          }) as mock:
+            self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1, 2), destination_queue_id=3)
+            self._pytheos.api.send_command.assert_called_with('player', 'move_queue_item', pid=TEST_PLAYER_ID, sqid='1,2', dqid=3)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.move_queue, pid, source_ids=(-1,), destination_id=0) # Invalid source ID
-        self.assertRaises(ValueError, self._pytheos.api.player.move_queue, pid, source_ids=(0,), destination_id=4)  # Invalid destination ID
+        self.assertRaises(ValueError, self._pytheos.api.player.move_queue_item, TEST_PLAYER_ID, queue_ids=(1,), destination_queue_id=0)  # Invalid destination ID
+        self.assertRaises(ValueError, self._pytheos.api.player.move_queue_item, TEST_PLAYER_ID, queue_ids=(0,), destination_queue_id=4)  # Invalid source ID
 
     def test_player_play_next(self):
         pid = self._get_pid_to_query()
@@ -436,19 +801,59 @@ class TestAPIs(unittest.TestCase):
         self.assertGreater(int(results.header.vars.get('returned', 0)), 0)
 
     # Utils
-    def _get_pid_to_query(self):
-        players = self._pytheos.api.player.get_players()
-        self.assertGreater(len(players), 0)
-        self.assertIsInstance(players[0], Player)
-
-        return players[0].player_id
-
     def _get_gid_to_query(self):
         groups = self._pytheos.api.group.get_groups()
         self.assertGreater(len(groups), 0)
         self.assertIsInstance(groups[0], GroupAPI)
 
         return groups[0].group_id
+
+    def _get_demo_queue(self):
+        return {
+            "heos": {
+              "command": "player/get_queue",
+              "result": "success",
+              "message": f"pid={TEST_PLAYER_ID}&range=0,99&returned=4&count=4"
+            },
+            "payload": [
+              {
+                  "song": "to bid you farewell",
+                  "album": "Morningrise",
+                  "artist": "Opeth",
+                  "image_url": "http://10.10.0.7:32469/proxy/01c1ef4bb79e573b56e1/albumart.jpg",
+                  "qid": 1,
+                  "mid": "f82aa0f7d4f585460da5",
+                  "album_id": "d51c42cba3d68cd59cc4"
+              },
+              {
+                  "song": "The Apostle in Triumph",
+                  "album": "Orchid",
+                  "artist": "Opeth",
+                  "image_url": "http://10.10.0.7:32469/proxy/97accac8b6d7d7e17d49/albumart.jpg",
+                  "qid": 2,
+                  "mid": "57c488a101cc7bd8727f",
+                  "album_id": "aba54638f73286e151c3"
+              },
+              {
+                  "song": "Hessian Peel",
+                  "album": "Watershed",
+                  "artist": "Opeth",
+                  "image_url": "http://10.10.0.7:32469/proxy/c67c58dd9e036052b807/albumart.jpg",
+                  "qid": 3,
+                  "mid": "a56f574d9f92dc5c2ce1",
+                  "album_id": "ec9f45094fd04b62b4cc"
+              },
+              {
+                  "song": "Death Whispered a Lullaby",
+                  "album": "Damnation",
+                  "artist": "Opeth",
+                  "image_url": "http://10.10.0.7:32469/proxy/b2c515a3703ed610eeff/albumart.jpg",
+                  "qid": 4,
+                  "mid": "fe9b44bd84603da68566",
+                  "album_id": "23edbd4853d6c381e938"
+              }
+            ]
+        }
 
 if __name__== '__main__':
     unittest.main()

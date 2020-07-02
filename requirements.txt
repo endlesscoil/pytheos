@@ -1,0 +1,2 @@
+netifaces>=0.10.9
+setuptools>=40.8.0
