@@ -28,7 +28,7 @@ class APIInterface:
         self.group = GroupAPI(self)
         self.browse = BrowseAPI(self)
 
-        self._connection: 'Connection' = connection
+        self._connection = connection
         self._last_response: Optional[str] = None
 
     def call(self, group: str, command: str, **kwargs: dict) -> HEOSResult:
