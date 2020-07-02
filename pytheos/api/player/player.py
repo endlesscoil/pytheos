@@ -139,6 +139,25 @@ class PlayerAPI(API):
         results = self._api.call('player', 'get_volume', pid=player_id)
         return int(results.header.vars.get('level'))
 
+    def move_queue_item(self, player_id: int, queue_ids: tuple, destination_queue_id: int):
+        """ Moves the specified queue IDs to the location specified by the destination queue ID.
+
+        :param player_id: Player ID
+        :param queue_ids: Tuple of Queue IDs
+        :param destination_queue_id: Destination Queue ID
+        :raises ValueError:
+        :return: None
+        """
+        qids = []
+        for qid in queue_ids:
+            if qid < 1: raise ValueError('Invalid Queue ID - must be between 1 and the size of the queue')
+            qids.append(str(qid))
+
+        if destination_queue_id < 1:
+            raise ValueError('Invalid Queue ID - must be between 1 and the size of the queue')
+
+        self._api.call('player', 'move_queue_item', pid=player_id, sqid=','.join(qids), dqid=destination_queue_id)
+
     def play_next(self, player_id: int) -> None:
         """ Plays the next item in the play queue
 

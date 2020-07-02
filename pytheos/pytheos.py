@@ -160,7 +160,7 @@ class Pytheos:
         """
         self._check_channel_availability(self._command_channel)
 
-        return self._command_channel.api.call(group, command, **kwargs)
+        return self.api.call(group, command, **kwargs)
 
     def subscribe(self, event_name: str, callback: Callable) -> None:
         """ Subscribe a callback function to a specific event
