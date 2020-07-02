@@ -1,3 +1,4 @@
+![Python package](https://github.com/endlesscoil/pytheos/workflows/Python%20package/badge.svg)
 
 Pytheos is a Python library designed to allow easy interaction with devices in the HEOS audio ecosystem.  HEOS is 
 supported on specific Denon and Marantz products.
