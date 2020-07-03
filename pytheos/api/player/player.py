@@ -120,7 +120,7 @@ class PlayerAPI(API):
         :raises: ValueError
         :return: list
         """
-        if not 0 < quick_select_id <= 6 and quick_select_id is not None:
+        if quick_select_id is not None and not 0 < quick_select_id <= 6:
             raise ValueError('Quick Select ID must be between 1 and 6 or None to retrieve all Quick Selects')
 
         kwargs = {'pid': player_id}
@@ -128,7 +128,7 @@ class PlayerAPI(API):
             kwargs['id'] = quick_select_id
 
         results = self._api.call('player', 'get_quickselects', **kwargs)
-        return [QuickSelect(id=item.id, name=item.name) for item in results.payload]
+        return [QuickSelect(id=item['id'], name=item['name']) for item in results.payload]
 
     def get_volume(self, player_id: int) -> int:
         """ Retrieves the current volume

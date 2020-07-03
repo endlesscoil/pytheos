@@ -57,8 +57,8 @@ class GroupAPI(API):
 
         results = self._api.call('group', 'set_group', pid=','.join([str(pid) for pid in player_ids]))
 
-        if results.payload.vars.get('gid') is not None:
-            return Group(results.payload.vars)
+        if results.header.vars.get('gid') is not None:
+            return Group(results.header.vars)
 
         return None
 
