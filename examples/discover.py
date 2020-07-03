@@ -6,10 +6,10 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import pytheos.discovery
+import pytheos
 
 
-services = pytheos.discovery.discover()
+services = pytheos.discover()
 
 if services:
     print("Discovered these HEOS services:")

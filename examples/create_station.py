@@ -8,7 +8,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import pytheos.discovery
+import pytheos
 from pytheos.api.browse.types import ServiceOption
 
 SOURCE_ID = 1   # Pandora
@@ -16,7 +16,7 @@ SEARCH_NAME = 'a band'
 
 
 def main():
-    services = pytheos.discovery.discover()
+    services = pytheos.discover()
 
     if services:
         with services[0] as svc:

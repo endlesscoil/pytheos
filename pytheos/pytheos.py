@@ -47,6 +47,8 @@ def connect(host: Union[Pytheos, tuple, str]) -> Pytheos:
 
 class Pytheos:
     """ Pytheos interface """
+    DEFAULT_PORT = 1255
+
     @property
     def connected(self):
         return self._connected
@@ -59,7 +61,7 @@ class Pytheos:
     def log_level(self, value):
         logger.setLevel(value)
 
-    def __init__(self, server: Optional[str]=None, port: Optional[int]=None, from_response: SSDPResponse=None):
+    def __init__(self, server: Optional[str]=None, port: Optional[int]=DEFAULT_PORT, from_response: SSDPResponse=None):
         """ Constructor
 
         :param server: Server hostname or IP

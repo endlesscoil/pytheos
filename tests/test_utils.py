@@ -13,6 +13,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(utils.extract_host('http://127.0.0.1/'), '127.0.0.1')
         self.assertEqual(utils.extract_host('http://127.0.0.1/testing'), '127.0.0.1')
         self.assertEqual(utils.extract_host('http://127.0.0.1:1234'), '127.0.0.1')
+        self.assertEqual(utils.extract_host('http://127.0.0.1:1234/'), '127.0.0.1')
         self.assertEqual(utils.extract_host('http://127.0.0.1:1234/testing'), '127.0.0.1')
         self.assertEqual(utils.extract_host('https://127.0.0.1'), '127.0.0.1')
         self.assertIsNone(utils.extract_host('hxxp://127.0.0.1'))
@@ -44,6 +45,7 @@ class TestUtils(unittest.TestCase):
             output_str += invalid_char
 
         self.assertEqual(utils.parse_var_string(f'test={input_str}'), {'test': output_str})
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import re
+from socket import socket
 from typing import Optional
+
+import netifaces
 
 CHARACTER_REPLACE_MAP = {
     '&': '%26',
@@ -44,6 +47,22 @@ def build_command_string(group: str, command: str, **kwargs) -> str:
 
     return command_string + "\n"
 
+def _encode_characters(input) -> str:
+    """ Encodes certain special characters as defined by the HEOS specification.
+
+    :param input: String to encode
+    :return: New string with encoded characters
+    """
+    if not isinstance(input, str):
+        input = str(input)
+
+    results = ''
+    for c in input:
+        replacement_char = CHARACTER_REPLACE_MAP.get(c)
+        results += replacement_char if replacement_char else c
+
+    return results
+
 def parse_var_string(input: str) -> dict:
     """ Parses a URL parameter string (sorta) like "var1='val1'&var2='val2'" - also supports the special case
     where there is no value specified, such as "signed_in&un=username", for the player/signed_in command.
@@ -66,23 +85,7 @@ def parse_var_string(input: str) -> dict:
 
     return vars
 
-def _encode_characters(input) -> str:
-    """ Encodes certain special characters as defined by the HEOS specification.
-
-    :param input: String to encode
-    :return: New string with encoded characters
-    """
-    if not isinstance(input, str):
-        input = str(input)
-
-    results = ''
-    for c in input:
-        replacement_char = CHARACTER_REPLACE_MAP.get(c)
-        results += replacement_char if replacement_char else c
-
-    return results
-
-def _decode_characters(input) -> str:
+def _decode_characters(input: str) -> str:
     """ Decodes certain special characters as defined by the HEOS specification.
 
     :param input: String to decode
@@ -93,3 +96,35 @@ def _decode_characters(input) -> str:
         results = results.replace(original_str, replacement_str)
 
     return results
+
+def get_default_ip(address_family: socket.AddressFamily) -> str:
+    """ Retrieves the IP address on the default interface
+
+    :param address_family: Address family
+    :return: str
+    """
+    gateway, inf = get_default_interface(address_family)
+    return get_interface_ip(inf, address_family)
+
+def get_interface_ip(interface: str, address_family: socket.AddressFamily) -> Optional[str]:
+    """ Retrieves the IP address of the specified interface.
+
+    :param interface: Interface name
+    :param address_family: Address family
+    :return: str or None if not found
+    """
+    addresses = netifaces.ifaddresses(interface)
+    proto_address = addresses.get(address_family)
+    if not proto_address:
+        return None
+
+    return proto_address[0].get('addr')
+
+def get_default_interface(address_family: socket.AddressFamily) -> tuple:
+    """ Retrieves the default gateway and interface for the specified address family.
+
+    :param address_family: Address family
+    :return: tuple
+    """
+    gateways = netifaces.gateways()
+    return gateways['default'].get(address_family)

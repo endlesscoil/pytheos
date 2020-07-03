@@ -36,9 +36,6 @@ import pytheos
 from pytheos import Pytheos
 from pytheos.api.browse.types import MusicSource, SourceMedia
 
-HEOS_IP = os.environ.get('HEOS_IP', '127.0.0.1')
-HEOS_PORT = int(os.environ.get('HEOS_PORT', 1255))
-
 
 class TreeEntry(dict):
     """ Container class for our tree """
@@ -111,8 +108,12 @@ def _retrieve_contents(svc: Pytheos, parent_id: str, source: Union[MusicSource, 
 
 def main():
     """ Main entry point """
+    services = pytheos.discover()
+    if not services:
+        print("No HEOS services detected!")
+        return
 
-    with pytheos.connect((HEOS_IP, HEOS_PORT)) as svc:
+    with services[0] as svc:
         # Use all command line parameters to construct our path or default to '/' if not specified.
         path = ' '.join(sys.argv[1:]) if len(sys.argv) > 1 else '/'
 
