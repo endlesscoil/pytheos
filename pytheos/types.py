@@ -12,6 +12,8 @@ from typing import Optional, Any
 
 from pytheos import utils
 
+logger = logging.getLogger(__name__)
+
 
 class SSDPResponse(http.client.HTTPResponse):
     """ Specialized http.client Response object to facilitate parsing SSDP responses """
@@ -47,36 +49,6 @@ class HEOSHeader:
 
     def __repr__(self):
         return f'<HEOSHeader(command={self.command}, result={self.result}, message={self.message})>'
-
-
-class HEOSErrorCode(Enum):
-    UnrecognizedCommand = 1
-    InvalidID = 2
-    WrongNumberOfCommandArguments = 3
-    RequestedDataNotAvailable = 4
-    ResourceCurrentlyNotAvailable = 5
-    InvalidCredentials = 6
-    CommandCouldNotBeExecuted = 7
-    UserNotLoggedIn = 8
-    ParameterOutOfRange = 9
-    UserNotFound = 10
-    InternalError = 11
-    SystemError = 12
-    ProcessingPreviousCommand = 13
-    MediaCannotBePlayed = 14
-    OptionNotSupported = 15
-    CommandQueueFull = 16
-    ReachedSkipLimit = 17
-
-
-class HEOSSystemErrorCode(Enum):
-    RemoteServiceReturnedError = -9
-    UserNotRegisters = -1061
-    UserNotLoggedIn = -1063
-    UserNotFound = -1056
-    AuthenticationError = -1201
-    AuthorizationError = -1232
-    UserParametersInvalid = -1239
 
 
 class HEOSPayload(object):

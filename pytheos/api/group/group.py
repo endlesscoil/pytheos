@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 from typing import Optional
 
 from pytheos.api.api import API

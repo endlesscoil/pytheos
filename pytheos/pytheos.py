@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import queue
-from typing import Callable
+from typing import Callable, Optional, Union
 
 from . import utils
 from .api.interface import APIInterface
@@ -19,12 +19,12 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(leve
 logger = logging.getLogger('pytheos')
 
 
-def connect(host):
+def connect(host: Union[Pytheos, tuple, str]) -> Pytheos:
     """ Connect to the provided host and return a context manager for use with the connection.
 
     :param host: Host to connect to
     :raises: ValueError
-    :return: Context manager for Pytheos
+    :return: The Pytheos instance
     """
     conn = None
     port = None
@@ -47,8 +47,19 @@ def connect(host):
 
 class Pytheos:
     """ Pytheos interface """
+    @property
+    def connected(self):
+        return self._connected
 
-    def __init__(self, server: str=None, port: int=None, from_response: SSDPResponse=None):
+    @property
+    def log_level(self):
+        return logger.level
+
+    @log_level.setter
+    def log_level(self, value):
+        logger.setLevel(value)
+
+    def __init__(self, server: Optional[str]=None, port: Optional[int]=None, from_response: SSDPResponse=None):
         """ Constructor
 
         :param server: Server hostname or IP
@@ -58,18 +69,13 @@ class Pytheos:
         if from_response:
             server = utils.extract_host(from_response.location)
 
-        # FIXME: I really don't like these asserts and the default Nones above - find a way to make this better.
-        assert server is not None
-        assert port is not None
-        #/FIXME
-
         self.server: str = server
         self.port: int = port
 
         self._command_channel = Connection()
         self._event_channel = Connection()
-        self._event_thread = None
-        self._event_handler_thread = None
+        self._event_thread: Optional[EventReceiverThread] = None
+        self._event_handler_thread: Optional[EventHandlerThread] = None
         self._connected = False
         self._event_subscriptions = {}
 
@@ -90,19 +96,7 @@ class Pytheos:
         if self._connected:
             self.close()
 
-    @property
-    def connected(self):
-        return self._connected
-
-    @property
-    def log_level(self):
-        return logger.level
-
-    @log_level.setter
-    def log_level(self, value):
-        logger.setLevel(value)
-
-    def connect(self, enable_event_connection=True) -> Pytheos:
+    def connect(self, enable_event_connection: bool=True) -> Pytheos:
         """ Connect to our HEOS device.
 
         :return: self
@@ -128,7 +122,7 @@ class Pytheos:
 
         return self
 
-    def close(self) -> None:
+    def close(self):
         """ Close the connection to our HEOS device
 
         :return: None
@@ -150,7 +144,7 @@ class Pytheos:
 
         self._connected = False
 
-    def subscribe(self, event_name: str, callback: Callable) -> None:
+    def subscribe(self, event_name: str, callback: Callable):
         """ Subscribe a callback function to a specific event
 
         :param event_name: Event name
@@ -163,7 +157,7 @@ class Pytheos:
 
         self._event_subscriptions[event_name].append(callback)
 
-    def _check_channel_availability(self, channel: Connection) -> None:
+    def _check_channel_availability(self, channel: Connection):
         """ Checks to make sure that the provided channel is available.
 
         :param channel: Channel connection
@@ -173,7 +167,7 @@ class Pytheos:
         if not channel or not channel.connected:
             raise ChannelUnavailableError()
 
-    def _event_handler(self, event: HEOSEvent) -> None:
+    def _event_handler(self, event: HEOSEvent):
         """ Internal event handler
 
         :param event: HEOS Event
@@ -182,7 +176,7 @@ class Pytheos:
         for callback in self._event_subscriptions.get(event.command, []):
             callback(event)
 
-    def _init_internal_event_handlers(self) -> None:
+    def _init_internal_event_handlers(self):
         """ Initialize the internal event handlers
 
         :return: None

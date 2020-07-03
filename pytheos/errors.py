@@ -3,9 +3,37 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Optional
 
-from pytheos.types import HEOSResult, HEOSErrorCode, HEOSSystemErrorCode
+
+class HEOSErrorCode(Enum):
+    UnrecognizedCommand = 1
+    InvalidID = 2
+    WrongNumberOfCommandArguments = 3
+    RequestedDataNotAvailable = 4
+    ResourceCurrentlyNotAvailable = 5
+    InvalidCredentials = 6
+    CommandCouldNotBeExecuted = 7
+    UserNotLoggedIn = 8
+    ParameterOutOfRange = 9
+    UserNotFound = 10
+    InternalError = 11
+    SystemError = 12
+    ProcessingPreviousCommand = 13
+    MediaCannotBePlayed = 14
+    OptionNotSupported = 15
+    CommandQueueFull = 16
+    ReachedSkipLimit = 17
+
+class HEOSSystemErrorCode(Enum):
+    RemoteServiceReturnedError = -9
+    UserNotRegisters = -1061
+    UserNotLoggedIn = -1063
+    UserNotFound = -1056
+    AuthenticationError = -1201
+    AuthorizationError = -1232
+    UserParametersInvalid = -1239
 
 
 class PytheosError(Exception):

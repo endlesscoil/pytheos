@@ -62,8 +62,7 @@ def parse_var_string(input: str) -> dict:
             if len(elements) > 1:
                 value = elements[1]
 
-            vars[name] = value.strip("'")
-            # FIXME: Use replace map here
+            vars[name] = _decode_characters(value.strip("'"))
 
     return vars
 
@@ -80,5 +79,17 @@ def _encode_characters(input) -> str:
     for c in input:
         replacement_char = CHARACTER_REPLACE_MAP.get(c)
         results += replacement_char if replacement_char else c
+
+    return results
+
+def _decode_characters(input) -> str:
+    """ Decodes certain special characters as defined by the HEOS specification.
+
+    :param input: String to decode
+    :return: New string with decoded characters
+    """
+    results = input
+    for replacement_str, original_str in CHARACTER_REPLACE_MAP.items():
+        results = results.replace(original_str, replacement_str)
 
     return results

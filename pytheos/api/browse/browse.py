@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 from collections import OrderedDict
 from typing import Optional
 import logging

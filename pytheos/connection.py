@@ -8,21 +8,17 @@ import telnetlib
 import threading
 from typing import Optional
 
-from .api.interface import APIInterface
-
 logger = logging.getLogger(__name__)
 
 
 class Connection:
     """ Connection to the telnet service on a HEOS device """
 
-    def __init__(self):
-        """ Constructor
+    @property
+    def connected(self) -> bool:
+        return self._conn.get_socket() is not None if self._conn else None
 
-        :param server: Server hostname or IP
-        :param port: Port number
-        :param deduplicate: Flag to enable message deduplication
-        """
+    def __init__(self):
         self.server = None
         self.port = None
         self.deduplicate = None
@@ -34,13 +30,12 @@ class Connection:
         if self._conn:
             self.close()
 
-    @property
-    def connected(self) -> bool:
-        return self._conn.get_socket() is not None if self._conn else None
-
-    def connect(self, server: str, port: int, deduplicate: bool=False) -> None:
+    def connect(self, server: str, port: int, deduplicate: bool=False):
         """ Establish a connection with the HEOS service
 
+        :param server: Server hostname or IP
+        :param port: Port number
+        :param deduplicate: Flag to enable message deduplication
         :return: None
         """
         with self._lock:
@@ -50,7 +45,7 @@ class Connection:
 
             self._conn = telnetlib.Telnet(self.server, self.port)
 
-    def close(self) -> None:
+    def close(self):
         """ Closes the connection
 
         :return: None
@@ -60,7 +55,7 @@ class Connection:
                 self._conn.close()
                 self._conn = None
 
-    def write(self, input: bytes) -> None:
+    def write(self, input: bytes):
         """ Writes the provided data to the connection
 
         :param input: Data to write
