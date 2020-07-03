@@ -6,6 +6,12 @@ from __future__ import annotations
 import re
 from typing import Optional
 
+CHARACTER_REPLACE_MAP = {
+    '&': '%26',
+    '=': '%3D',
+    '%': '%25',
+}
+
 
 def extract_host(url: str) -> Optional[str]:
     """ Extracts the hostname or IP address from the supplied URL.
@@ -67,17 +73,12 @@ def _encode_characters(input) -> str:
     :param input: String to encode
     :return: New string with encoded characters
     """
-    replace_map = {
-        '&': '%26',
-        '=': '%3D',
-        '%': '%25',
-    }
-
     if not isinstance(input, str):
         input = str(input)
 
-    results = input
-    for char, replacement in replace_map.items():
-        results = results.replace(char, replacement)
+    results = ''
+    for c in input:
+        replacement_char = CHARACTER_REPLACE_MAP.get(c)
+        results += replacement_char if replacement_char else c
 
     return results

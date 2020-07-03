@@ -26,9 +26,6 @@ class TestPytheos(unittest.TestCase):
     #
     #     with pytheos.connect(server) as connection:
     #         self.assertIsNotNone(connection)
-    #
-    # def test_system_heartbeat(self):
-    #     self._pytheos.call('system', 'heart_beat')
     pass # FIXME: Rework these.
 
 if __name__== '__main__':

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import sys
-import time
 
 import unittest
 from unittest.mock import patch
@@ -14,13 +13,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource, AddToQueueType, \
     AlbumMetadata, ServiceOption
-from pytheos.api.group.group import GroupAPI
 from pytheos.api.group.types import Group, GroupRole, GroupPlayer
 from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode, PlayState
 from pytheos.errors import CommandFailedError, SignInFailedError
 
 import pytheos
 import pytheos.connection
+
 
 TEST_PLAYER_ID = 12345678
 TEST_GROUP_ID = 1
@@ -31,6 +30,11 @@ class TestAPIs(unittest.TestCase):
     def setUp(self):
         self._pytheos = pytheos.Pytheos('127.0.0.1', 1255)
         self._pytheos.api.send_command = unittest.mock.MagicMock()
+
+    def test_command_failure(self):
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('system', 'register_for_change_events', 'fail')):
+            self.assertRaises(CommandFailedError, self._pytheos.api.system.register_for_change_events, True)
 
     def test_system_register_for_change_events(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',

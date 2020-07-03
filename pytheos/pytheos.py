@@ -73,7 +73,7 @@ class Pytheos:
         self._connected = False
         self._event_subscriptions = {}
 
-        self.api: Optional[APIInterface] = APIInterface(self._command_channel)
+        self.api: APIInterface = APIInterface(self._command_channel)
 
         self._init_internal_event_handlers()
 

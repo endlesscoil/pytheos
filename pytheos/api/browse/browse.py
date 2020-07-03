@@ -15,26 +15,22 @@ class BrowseAPI(API):
     MAX_QUERY_RESULTS = 50
     MAX_SEARCH_LENGTH = 128
 
+    def add_to_queue(self, player_id: str, source_id: str, container_id: str, media_id: Optional[str]=None, add_type: AddToQueueType=AddToQueueType.PlayNow):
+        """ Adds the specified container or track to the playback queue.  If media_id is provided it will add the track
+        specified by that ID, otherwise it will add the container specified by container_id.
 
-    def get_music_sources(self) -> list:
-        """ Retrieve a list of music sources.
-
-        :return: list
-        """
-        results = self._api.call('browse', 'get_music_sources')
-        return [MusicSource(source) for source in results.payload]
-
-    def get_source_info(self, source_id: int) -> Optional[MusicSource]:
-        """ Retrieve information on the specified Source ID
-
+        :param player_id: Player ID
         :param source_id: Source ID
-        :return: MusicSource or None if not found
+        :param container_id: Container ID
+        :param media_id: Media ID
+        :param add_type: Type of add to perform
+        :return: None
         """
-        results = self._api.call('browse', 'get_source_info', sid=source_id)
-        if results.header.result == 'success':
-            return MusicSource(results.payload.data)
+        kwargs = {}
+        if media_id is not None:
+            kwargs['mid'] = media_id
 
-        return None
+        self._api.call('browse', 'add_to_queue', pid=player_id, sid=source_id, cid=container_id, aid=add_type, **kwargs)
 
     def browse_source(self,
                       source_id: int,
@@ -96,6 +92,15 @@ class BrowseAPI(API):
 
         return results
 
+    def delete_playlist(self, source_id: int, container_id: int):
+        """ Deletes a playlist container.
+
+        :param source_id: Source ID
+        :param container_id: Container ID
+        :return: None
+        """
+        self._api.call('browse', 'delete_playlist', sid=source_id, cid=container_id)
+
     # FIXME: Can this just be replaced with browse.browse above?
     def _get_source_container_results(self, source_id: int, container_id: str, item_range: tuple) -> tuple:
         kwargs = {}
@@ -112,6 +117,14 @@ class BrowseAPI(API):
         results = self._api.call('browse', 'browse', **kwargs)
         return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
 
+    def get_music_sources(self) -> list:
+        """ Retrieve a list of music sources.
+
+        :return: list
+        """
+        results = self._api.call('browse', 'get_music_sources')
+        return [MusicSource(source) for source in results.payload]
+
     def get_search_criteria(self, source_id: int) -> list:
         """ Retrieves the search criteria settings for the specified music source.
 
@@ -122,47 +135,15 @@ class BrowseAPI(API):
 
         return [SearchCriteria(item) for item in results.payload]
 
-    def search(self, source_id: int, query: str, search_criteria_id: int) -> list:
-        """ Search the source for a given string using the specified search criteria ID.
-
-        FIXME: Can't get this working with my current setup - keep getting a -10 system error when searching Plex.
+    def get_source_info(self, source_id: int) -> Optional[MusicSource]:
+        """ Retrieve information on the specified Source ID
 
         :param source_id: Source ID
-        :param query: String to search for.  May include wildcards if the search criteria does.
-        :param search_criteria_id: Search Criteria ID
-        :return: list of SourceMedia
+        :return: MusicSource or None if not found
         """
-        if len(query) > self.MAX_SEARCH_LENGTH:
-            raise ValueError(f"Query must be no longer than {self.MAX_SEARCH_LENGTH} characters.")
+        results = self._api.call('browse', 'get_source_info', sid=source_id)
 
-        results = []
-        item_range = None
-
-        while True:
-            total_count, res = self._get_search_results(source_id, query, search_criteria_id, item_range)
-            results.extend(res)
-
-            # Unknown container size - reached the end
-            if total_count == 0 and len(res.payload) == 0:
-                break
-
-            current_count = len(results)
-            # Known container size - reached the end
-            if current_count >= total_count:
-                break
-
-            item_range = current_count, current_count + self.MAX_QUERY_RESULTS
-
-        return results
-
-    def _get_search_results(self, source_id: int, query: str, search_criteria_id: int, item_range: tuple) -> tuple:
-        kwargs = {}
-
-        if item_range is not None:
-            kwargs['range'] = ','.join([str(itm) for itm in item_range])
-
-        results = self._api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
-        return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
+        return MusicSource(results.payload.data)
 
     def play_station(self, player_id: int, source_id: int, container_id: str, media_id: str, name: str):
         """ Starts playing the specified music station.  Media ID must be from media of the 'station' type.
@@ -219,23 +200,6 @@ class BrowseAPI(API):
 
         self._api.call('browse', 'play_stream', **kwargs)
 
-    def add_to_queue(self, player_id: str, source_id: str, container_id: str, media_id: Optional[str]=None, add_type: AddToQueueType=AddToQueueType.PlayNow):
-        """ Adds the specified container or track to the playback queue.  If media_id is provided it will add the track
-        specified by that ID, otherwise it will add the container specified by container_id.
-
-        :param player_id: Player ID
-        :param source_id: Source ID
-        :param container_id: Container ID
-        :param media_id: Media ID
-        :param add_type: Type of add to perform
-        :return: None
-        """
-        kwargs = {}
-        if media_id is not None:
-            kwargs['mid'] = media_id
-
-        self._api.call('browse', 'add_to_queue', pid=player_id, sid=source_id, cid=container_id, aid=add_type, **kwargs)
-
     def rename_playlist(self, source_id: int, container_id: int, name: str):
         """ Renames a playlist container.
 
@@ -245,15 +209,6 @@ class BrowseAPI(API):
         :return: None
         """
         self._api.call('browse', 'rename_playlist', sid=source_id, cid=container_id, name=name)
-
-    def delete_playlist(self, source_id: int, container_id: int):
-        """ Deletes a playlist container.
-
-        :param source_id: Source ID
-        :param container_id: Container ID
-        :return: None
-        """
-        self._api.call('browse', 'delete_playlist', sid=source_id, cid=container_id)
 
     def retrieve_metadata(self, source_id: int, container_id: int) -> list:
         """ Retrieves image data for a specific container.  This only applies to Rhapsody and Napster.
@@ -265,6 +220,48 @@ class BrowseAPI(API):
         results = self._api.call('browse', 'retrieve_metadata', sid=source_id, cid=container_id)
 
         return [AlbumMetadata(itm) for itm in results.payload]
+
+    def search(self, source_id: int, query: str, search_criteria_id: int) -> list:
+        """ Search the source for a given string using the specified search criteria ID.
+
+        FIXME: Can't get this working with my current setup - keep getting a -10 system error when searching Plex.
+
+        :param source_id: Source ID
+        :param query: String to search for.  May include wildcards if the search criteria does.
+        :param search_criteria_id: Search Criteria ID
+        :return: list of SourceMedia
+        """
+        if len(query) > self.MAX_SEARCH_LENGTH:
+            raise ValueError(f"Query must be no longer than {self.MAX_SEARCH_LENGTH} characters.")
+
+        results = []
+        item_range = None
+
+        while True:
+            total_count, res = self._get_search_results(source_id, query, search_criteria_id, item_range)
+            results.extend(res)
+
+            # Unknown container size - reached the end
+            if total_count == 0 and len(res.payload) == 0:
+                break
+
+            current_count = len(results)
+            # Known container size - reached the end
+            if current_count >= total_count:
+                break
+
+            item_range = current_count, current_count + self.MAX_QUERY_RESULTS
+
+        return results
+
+    def _get_search_results(self, source_id: int, query: str, search_criteria_id: int, item_range: tuple) -> tuple:
+        kwargs = {}
+
+        if item_range is not None:
+            kwargs['range'] = ','.join([str(itm) for itm in item_range])
+
+        results = self._api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
+        return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
 
     def set_service_option(self, source_id: int, option: ServiceOption, **kwargs) -> HEOSResult:
         """
