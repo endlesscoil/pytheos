@@ -24,6 +24,7 @@ import pytheos.connection
 
 TEST_PLAYER_ID = 12345678
 TEST_GROUP_ID = 1
+TEST_EMAIL = "username@someemailplace.com"
 
 
 class TestAPIs(unittest.TestCase):
@@ -45,29 +46,26 @@ class TestAPIs(unittest.TestCase):
             self._pytheos.api.send_command.assert_called_with('system', 'register_for_change_events', enable='off')
 
     def test_system_check_account(self):
-        username = 'username@someemailplace.com'
-
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
                           return_value=self._get_basic_response('system', 'check_account', 'success',
-                                                                message=f"signed_in&un={username}")):
+                                                                message=f"signed_in&un={TEST_EMAIL}")):
             status, email = self._pytheos.api.system.check_account()
             self.assertEqual(status, 'signed_in')
-            self.assertEqual(email, 'username@someemailplace.com')
+            self.assertEqual(email, TEST_EMAIL)
             self._pytheos.api.send_command.assert_called_with('system', 'check_account')
 
     def test_system_sign_in(self):
-        username = 'username@someemailplace.com'
         password = 'somepassword'
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
                           return_value=self._get_basic_response('system', 'sign_in', 'success',
-                                                                message=f"signed_in&un={username}")):
-            self._pytheos.api.system.sign_in(username, password)
-            self._pytheos.api.send_command.assert_called_with('system', 'sign_in', un=username, pw=password)
+                                                                message=f"signed_in&un={TEST_EMAIL}")):
+            self._pytheos.api.system.sign_in(TEST_EMAIL, password)
+            self._pytheos.api.send_command.assert_called_with('system', 'sign_in', un=TEST_EMAIL, pw=password)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
                           return_value=self._get_basic_response('system', 'sign_in', 'fail')):
-            self.assertRaises(SignInFailedError, self._pytheos.api.system.sign_in, username, password)
+            self.assertRaises(SignInFailedError, self._pytheos.api.system.sign_in, TEST_EMAIL, password)
 
     def test_system_sign_out(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
@@ -332,8 +330,6 @@ class TestAPIs(unittest.TestCase):
 
             self._pytheos.api.player.play_queue(TEST_PLAYER_ID, queue[0].queue_id)
             self._pytheos.api.send_command.assert_called_with('player', 'play_queue', pid=TEST_PLAYER_ID, qid=queue[0].queue_id)
-
-        self.assertRaises(CommandFailedError, self._pytheos.api.player.play_queue, TEST_PLAYER_ID, -1)
 
     def test_player_remove_from_queue(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
@@ -639,158 +635,306 @@ class TestAPIs(unittest.TestCase):
             self._pytheos.api.send_command.assert_called_with('group', 'toggle_mute', gid=TEST_GROUP_ID)
 
     def test_browse_get_music_sources(self):
-        music_sources = self._pytheos.api.browse.get_music_sources()
-        self.assertGreater(len(music_sources), 0)
-        self.assertIsInstance(music_sources[0], MusicSource)
+        response = self._get_basic_response('browse', 'get_music_sources', 'success')
+        response['payload'] = [
+            {
+                "name": "Pandora",
+                "image_url": "https://production.ws.skyegloup.com:443/media/images/service/logos/pandora.png",
+                "type": "music_service",
+                "sid": 1,
+                "available": "true",
+                "service_username": TEST_EMAIL
+            },
+            {
+                "name": "iHeartRadio",
+                "image_url": "https://production.ws.skyegloup.com:443/media/images/service/logos/iheartradio.png",
+                "type": "music_service",
+                "sid": 7,
+                "available": "false"
+            }
+        ]
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            music_sources = self._pytheos.api.browse.get_music_sources()
+            self._pytheos.api.send_command.assert_called_with('browse', 'get_music_sources')
+            self.assertGreater(len(music_sources), 0)
+            self.assertIsInstance(music_sources[0], MusicSource)
 
     def test_browse_get_source_info(self):
-        self.assertIsInstance(self._pytheos.api.browse.get_source_info(1), MusicSource)
-        self.assertRaises(CommandFailedError, self._pytheos.api.browse.get_source_info, -1)
+        response = self._get_basic_response('browse', 'get_music_sources', 'success')
+        response['payload'] = {
+            "name": "Pandora",
+            "image_url": "https://production.ws.skyegloup.com:443/media/images/service/logos/pandora.png",
+            "type": "music_service",
+            "sid": 1,
+            "available": "true",
+            "service_username": TEST_EMAIL
+        }
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            self.assertIsInstance(self._pytheos.api.browse.get_source_info(1), MusicSource)
+            self._pytheos.api.send_command.assert_called_with('browse', 'get_source_info', sid=1)
 
     def test_browse_browse_source(self):
-        music_sources = self._pytheos.api.browse.get_music_sources()
-        sid = music_sources[0].source_id
+        response = self._get_basic_response('browse', 'browse', 'success', sid=1, returned=2, count=2)
+        response['payload'] = [
+            {
+                "container": "yes",
+                "playable": "no",
+                "type": "container",
+                "name": "By Date",
+                "image_uri": "",
+                "image_url": "",
+                "cid": "By Date"
+            },
+            {
+                "container": "yes",
+                "playable": "no",
+                "type": "container",
+                "name": "A-Z",
+                "image_uri": "",
+                "image_url": "",
+                "cid": "A-Z"
+            }
+        ]
 
-        results = self._pytheos.api.browse.browse_source(sid)
-        self.assertGreater(len(results), 0)
-        self.assertIsInstance(results[0], SourceMedia)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            results = self._pytheos.api.browse.browse_source(1)
+            self._pytheos.api.send_command.assert_called_with('browse', 'browse', sid=1)
+            self.assertGreater(len(results), 0)
+            self.assertIsInstance(results[0], SourceMedia)
 
     def test_browse_browse_source_container(self):
-        sid = 1024 # FIXME - Local Music
+        source_id = 1340337940
+        container_id = 'abe6121c-1731-4683-815c-89e1dcd2bf11'
 
-        results = self._pytheos.api.browse.browse_source(sid)
-        plex_server = results[0]
+        response = self._get_basic_response('browse', 'browse', 'success', sid=source_id, cid=container_id, returned=1, count=1)
+        response['payload'] = [
+            {
+                "container": "yes",
+                "type": "artist",
+                "cid": "4c07e4537a6772cb2675",
+                "playable": "no",
+                "name": "Music",
+                "image_url": ""
+            }
+        ]
 
-        results = self._pytheos.api.browse.browse_source(plex_server.source_id)
-        music = results[1]
-
-        results = self._pytheos.api.browse.browse_source_container(plex_server.source_id, music.container_id)
-        self.assertGreater(len(results), 0)
-        self.assertIsInstance(results[0], SourceMedia)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            results = self._pytheos.api.browse.browse_source_container(source_id, container_id)
+            self._pytheos.api.send_command.assert_called_with('browse', 'browse', sid=source_id, cid=container_id)
+            self.assertGreater(len(results), 0)
+            self.assertIsInstance(results[0], SourceMedia)
 
     def test_browse_get_search_criteria(self):
-        sid = 1024 # FIXME - Local Music
+        sid = 1340337940
 
-        results = self._pytheos.api.browse.browse_source(sid)
-        plex_server = results[0]
+        response = self._get_basic_response('browse', 'get_search_criteria', 'success', sid=sid)
+        response['payload'] = [
+            {
+                "name": "Artist",
+                "scid": 1,
+                "wildcard": "no"
+            },
+            {
+                "name": "Album",
+                "scid": 2,
+                "wildcard": "no"
+            },
+            {
+                "name": "Track",
+                "scid": 3,
+                "wildcard": "no",
+                "cid": "SEARCHED_TRACKS-",
+                "playable": "yes"
+            }
+        ]
 
-        results = self._pytheos.api.browse.get_search_criteria(plex_server.source_id)
-        self.assertGreater(len(results), 0)
-        self.assertIsInstance(results[0], SearchCriteria)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            results = self._pytheos.api.browse.get_search_criteria(sid)
+            self._pytheos.api.send_command.assert_called_with('browse', 'get_search_criteria', sid=sid)
+            self.assertGreater(len(results), 0)
+            self.assertIsInstance(results[0], SearchCriteria)
 
     def test_browse_search(self):
-        sid = 1024 # FIXME - Local Music
+        sid = 1340337940
 
-        results = self._pytheos.api.browse.browse_source(sid)
-        plex_server = results[0]
+        response = self._get_basic_response('browse', 'search', 'success',
+                                            sid=sid, search='someband', scid=1,
+                                            returned=3, count=3)
+        response['payload'] = [
+            {
+                "container": "no",
+                "mid": "CREATE_STATION-S10198430",
+                "type": "station",
+                "playable": "yes",
+                "name": "Some Bands (Feat. Mozzy) by Murdah 1",
+                "image_url": ""
+            },
+            {
+                "container": "no",
+                "mid": "CREATE_STATION-S12797360",
+                "type": "station",
+                "playable": "yes",
+                "name": "The One I Love Belongs To Somebod by Frank Sinatra %26 Tommy Dorsey",
+                "image_url": ""
+            },
+            {
+                "container": "no",
+                "mid": "CREATE_STATION-S29863954",
+                "type": "station",
+                "playable": "yes",
+                "name": "Some Bands Have All the Fun by The Easy Button",
+                "image_url": ""
+            }
+        ]
 
-        criteria = self._pytheos.api.browse.get_search_criteria(plex_server.source_id)
-        self.assertGreater(len(criteria), 0)
-
-        results = self._pytheos.api.browse.search(plex_server.source_id, 'a', criteria[0].search_criteria_id)
-        self.assertGreater(len(results), 0)
-        self.assertIsInstance(results[0], SourceMedia)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            results = self._pytheos.api.browse.search(sid, 'someband', 1)
+            self._pytheos.api.send_command.assert_called_with('browse', 'search', sid=sid, search='someband', scid=1)
+            self.assertGreater(len(results), 0)
+            self.assertIsInstance(results[0], SourceMedia)
 
     def test_browse_play_station(self):
-        pid = self._get_pid_to_query()
-        sid = 1 # FIXME - Pandora
+        pid = 12345678
+        sid = 1
+        cid = 'A-Z'
+        mid = 1156081746731893318
+        name = 'Shuffle'
 
-        pandora_sources = self._pytheos.api.browse.browse_source(sid)
-        AtoZ = pandora_sources[1]
+        response = self._get_basic_response('browse', 'play_stream', 'success',
+                                            pid=pid, sid=sid, cid=cid, mid=mid, name=name)
 
-        stations = self._pytheos.api.browse.browse_source_container(sid, AtoZ.container_id)
-        to_play = stations[0]
-
-        self._pytheos.api.browse.play_station(pid, sid, AtoZ.container_id, to_play.media_id, to_play.name)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            self._pytheos.api.browse.play_station(pid, sid, cid, mid, name)
+            self._pytheos.api.send_command.assert_called_with('browse', 'play_stream', pid=pid, sid=sid, cid=cid, mid=mid, name=name)
 
     def test_browse_play_preset(self):
-        pid = self._get_pid_to_query()
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('browse', 'play_preset', 'success',
+                                                                pid=TEST_PLAYER_ID, preset=1)):
+            self._pytheos.api.browse.play_preset(TEST_PLAYER_ID, 1)
+            self._pytheos.api.send_command.assert_called_with('browse', 'play_preset', pid=TEST_PLAYER_ID, preset=1)
 
-        self.assertRaises(ValueError, self._pytheos.api.browse.play_preset, pid, 0)
-
-        self._pytheos.api.browse.play_preset(pid, 1)
+        self.assertRaises(ValueError, self._pytheos.api.browse.play_preset, TEST_PLAYER_ID, 0)
 
     def test_browse_play_input(self):
-        pid = self._get_pid_to_query()
-
-        self._pytheos.api.browse.play_input(pid, InputSource.Phono)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('browse', 'play_input', 'success',
+                                                                pid=TEST_PLAYER_ID, input=str(InputSource.Phono))):
+            self._pytheos.api.browse.play_input(TEST_PLAYER_ID, InputSource.Phono)
+            self._pytheos.api.send_command.assert_called_with('browse', 'play_input', pid=TEST_PLAYER_ID, input=InputSource.Phono)
 
     def test_browse_play_url(self):
-        pid = self._get_pid_to_query()
-        url = 'http://www.hochmuth.com/mp3/Haydn_Cello_Concerto_D-1.mp3'
+        url = 'http://someserver/somestream.mp3'
 
-        self._pytheos.api.browse.play_url(pid, url)
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('browse', 'play_url', 'success',
+                                                                pid=TEST_PLAYER_ID, url=url)):
+            self._pytheos.api.browse.play_url(TEST_PLAYER_ID, url)
 
     def test_browse_add_container_to_queue(self):
-        pid = self._get_pid_to_query()
-        sid = 1024 # FIXME: Plex
-        cid = 'dc7e8002b2f0ef9ef21b' # FIXME: White Zombie - La Sexorcisto
-        self._pytheos.api.browse.add_to_queue(pid, sid, cid, add_type=AddToQueueType.AddToEnd)
-        # FIXME: Test other add types
+        sid = 1340337940
+        cid = 'd4d42d93deb97cb2db7b'
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('browse', 'add_to_queue', 'success',
+                                                                pid=TEST_PLAYER_ID, sid=sid, cid=cid, aid=3)):
+            self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, add_type=AddToQueueType.AddToEnd)
+            self._pytheos.api.send_command.assert_called_with('browse', 'add_to_queue', pid=TEST_PLAYER_ID,
+                                                              sid=sid, cid=cid, aid=AddToQueueType.AddToEnd)
 
     def test_browse_add_track_to_queue(self):
-        pid = self._get_pid_to_query()
-        sid = 1024  # FIXME: Plex
-        cid = 'dc7e8002b2f0ef9ef21b'    # FIXME: White Zombie - La Sexorcisto
-        mid = '6101de04f2cd63dc9676'    # FIXME: Knuckle Duster
-        self._pytheos.api.browse.add_to_queue(pid, sid, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
-        # FIXME: Test other add types
+        sid = 1340337940
+        cid = '8eb5b733259c7a9fea25'
+        mid = '36fad30531d3e5bceec6'
 
-    @unittest.skip('Skipping for now.')
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('browse', 'add_to_queue', 'success',
+                                                                pid=TEST_PLAYER_ID, sid=sid, cid=cid, mid=mid, aid=3)):
+            self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+            self._pytheos.api.send_command.assert_called_with('browse', 'add_to_queue', pid=TEST_PLAYER_ID,
+                                                              sid=sid, cid=cid, mid=mid, aid=AddToQueueType.AddToEnd)
+
     def test_browse_rename_playlist(self):
-        sid = 1025 # FIXME: Playlists
-        new_name = 'testing'
+        sid = 1025
+        cid = 259539
+        name = 'foobar'
 
-        # FIXME: Create playlist
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('browse', 'rename_playlist', 'success',
+                                                                sid=sid, cid=cid, name=name)):
+            self._pytheos.api.browse.rename_playlist(sid, cid, name)
+            self._pytheos.api.send_command.assert_called_with('browse', 'rename_playlist', sid=sid, cid=cid, name=name)
 
-        playlists = self._pytheos.api.browse.browse_source(sid)
-        self.assertGreater(len(playlists), 0)
-
-        p = playlists[0]
-        orig_name = p.name
-
-        self._pytheos.api.browse.rename_playlist(sid, p.container_id, new_name)
-        new_playlists = self._pytheos.api.browse.browse_source(sid)
-        self.assertTrue(any([pl.name == new_name for pl in new_playlists]))
-
-        self._pytheos.api.browse.rename_playlist(sid, p.container_id, orig_name)
-        new_playlists = self._pytheos.api.browse.browse_source(sid)
-        self.assertTrue(any([pl.name == new_name for pl in new_playlists]))
-
-    @unittest.skip('Skipping for now.')
     def test_browse_delete_playlist(self):
-        sid = 1025 # FIXME: Playlists
-        # FIXME: Create playlist
+        sid = 1025
+        cid = 259539
 
-        playlists = self._pytheos.api.browse.browse_source(sid)
-        self.assertGreater(len(playlists), 0)
-        p = playlists[0]
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('browse', 'delete_playlist', 'success',
+                                                                sid=sid, cid=cid)):
+            self._pytheos.api.browse.delete_playlist(sid, cid)
+            self._pytheos.api.send_command.assert_called_with('browse', 'delete_playlist', sid=sid, cid=cid)
 
-        self._pytheos.api.browse.delete_playlist(sid, p.container_id)
-        new_playlists = self._pytheos.api.browse.browse_source(sid)
-        self.assertTrue(len(new_playlists) == len(playlists) - 1)
-
-    @unittest.skip("Meh, don't feel like dealing with Rhapsody or Napster.")
     def test_browse_retrieve_metadata(self):
         sid = 1 # FIXME
         cid = 1 # FIXME
-        results = self._pytheos.api.browse.retrieve_metadata(sid, cid)
-        self.assertEqual(results, AlbumMetadata)
+
+        response = self._get_basic_response('browse', 'retrieve_metadata', 'success', sid=sid, cid=cid)
+        response['payload'] = [
+            {
+                "album_id": "1",
+                "images": [
+                    {
+                        "image_url": "http://someserver/someimage.jpg",
+                        "width": 240,
+                    },
+                    {
+                        "image_url": "http://otherserver/someimage.jpg",
+                        "width": 240,
+                    },
+                ]
+            }
+        ]
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            results = self._pytheos.api.browse.retrieve_metadata(sid, cid)
+            self._pytheos.api.send_command.assert_called_with('browse', 'retrieve_metadata', sid=sid, cid=cid)
+            self.assertGreater(len(results), 0)
+            self.assertIsInstance(results[0], AlbumMetadata)
 
     def test_browse_set_service_option(self):
-        sid = 1 # FIXME: Pandora
-        query = 'some band'
-        results = self._pytheos.api.browse.set_service_option(sid, ServiceOption.CreateNewStation, name=query)
-        self.assertGreater(int(results.header.vars.get('returned', 0)), 0)
+        sid = 1
+        query = 'foobar'
+
+        response = self._get_basic_response('browse', 'retrieve_metadata', 'success',
+                                            sid=sid, search=query, scid=1, range='0,100',
+                                            returned=2, count=2)
+        response['payload'] = [
+            {
+                "container": "no",
+                "mid": "CREATE_STATION-R297856",
+                "type": "station",
+                "playable": "yes",
+                "name": "Finbar Furey",
+                "image_url": ""
+            },
+            {
+                "container": "no",
+                "mid": "CREATE_STATION-R736713",
+                "type": "station",
+                "playable": "yes",
+                "name": "Finbar Wright",
+                "image_url": ""
+            }
+        ]
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
+            results = self._pytheos.api.browse.set_service_option(sid, ServiceOption.CreateNewStation, name=query)
+            self._pytheos.api.send_command.assert_called_with('browse', 'set_service_option', sid=sid, option=ServiceOption.CreateNewStation, name=query)
+            self.assertGreater(int(results.header.vars.get('returned', 0)), 0)
 
     # Utils
-    def _get_gid_to_query(self):
-        groups = self._pytheos.api.group.get_groups()
-        self.assertGreater(len(groups), 0)
-        self.assertIsInstance(groups[0], GroupAPI)
-
-        return groups[0].group_id
-
     def _get_demo_queue(self):
         return {
             "heos": {

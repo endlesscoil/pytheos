@@ -39,22 +39,31 @@ class BrowseAPI(API):
     def browse_source(self,
                       source_id: int,
                       options: Optional[int]=None,
-                      scid: Optional[int]=None,
+                      create_criteria: Optional[int]=None,
                       item_range: Optional[tuple]=None) -> list:
         """ Browses a music source and retrieves a list of the media it contains
 
         :param source_id: Source ID
         :param options: Optional features
-        :param scid: Options for creating new stations # FIXME - rename this.
+        :param create_criteria: Options for creating new stations
         :param item_range: Tuple specifying the start and end range to query
         :return: list of SourceMedia
         """
         kwargs = {}
+        if source_id is not None:
+            kwargs['sid'] = source_id
+
+        if create_criteria is not None:
+            kwargs['scid'] = create_criteria
+
+        if options is not None:
+            kwargs['id'] = options # NOTE: This is correct.. the options are called 'id' in the spec for some reason.
+
         if item_range is not None:
             kwargs['item_range'] = ','.join(item_range)
 
         # FIXME: This needs a whole bunch of work.  There are three different formats to this command.
-        results = self._api.call('browse', 'browse', sid=source_id, id=options, scid=scid, **kwargs)
+        results = self._api.call('browse', 'browse', **kwargs)
         return [SourceMedia(media) for media in results.payload.data]
 
     def browse_source_container(self,
@@ -246,7 +255,7 @@ class BrowseAPI(API):
         """
         self._api.call('browse', 'delete_playlist', sid=source_id, cid=container_id)
 
-    def retrieve_metadata(self, source_id: int, container_id: int) -> AlbumMetadata:
+    def retrieve_metadata(self, source_id: int, container_id: int) -> list:
         """ Retrieves image data for a specific container.  This only applies to Rhapsody and Napster.
 
         :param source_id: Source ID
@@ -254,7 +263,8 @@ class BrowseAPI(API):
         :return: AlbumMetadata
         """
         results = self._api.call('browse', 'retrieve_metadata', sid=source_id, cid=container_id)
-        return AlbumMetadata(results.payload)
+
+        return [AlbumMetadata(itm) for itm in results.payload]
 
     def set_service_option(self, source_id: int, option: ServiceOption, **kwargs) -> HEOSResult:
         """

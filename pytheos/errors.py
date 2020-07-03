@@ -28,7 +28,11 @@ class CommandFailedError(PytheosError):
         if eid:
             self.error_code = HEOSErrorCode(int(eid))
             if self.error_code == HEOSErrorCode.SystemError:
-                self.system_error_code = HEOSSystemErrorCode(result.header.vars.get('syserrno'))
+                system_error_code = result.header.vars.get('syserrno')
+                try:
+                    self.system_error_code = HEOSSystemErrorCode(system_error_code)
+                except ValueError:
+                    self.system_error_code = system_error_code # Unknown error code
 
 class SignInFailedError(CommandFailedError):
     """ Error returned when the system/sign_in command fails """

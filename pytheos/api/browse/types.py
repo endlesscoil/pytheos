@@ -17,6 +17,7 @@ class SourceType(Enum):
     Song = 'song'
     Container = 'container'
     Station = 'station'
+    Playlist = 'playlist'
 
     def __str__(self):
         return str(self.value)
