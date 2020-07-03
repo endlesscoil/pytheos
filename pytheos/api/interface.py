@@ -68,7 +68,7 @@ class APIInterface:
         self._connection.write(command_string.encode('utf-8'))
         logger.debug(f"Sending command: {command_string.rstrip()}")
 
-    def read_message(self, timeout: int=1, delimiter: bytes=b'\r\n') -> Optional[bytes]:
+    def read_message(self, timeout: int=1, delimiter: bytes=b'\r\n') -> Optional[dict]:
         """ Reads a message from the connection
 
         :param timeout: Timeout (seconds)

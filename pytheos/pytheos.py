@@ -5,15 +5,15 @@ from __future__ import annotations
 
 import logging
 import queue
-import threading
-import time
-from typing import Optional, Callable
+from typing import Callable
 
 from . import utils
 from .api.interface import APIInterface
 from .connection import Connection
 from .errors import ChannelUnavailableError
-from .types import HEOSEvent, HEOSResult, SSDPResponse
+from .events.handler import EventHandlerThread
+from .events.receiver import EventReceiverThread
+from .types import HEOSEvent, SSDPResponse
 
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('pytheos')
@@ -118,7 +118,7 @@ class Pytheos:
 
             # FIXME: Figure out exactly how I'm consuming these.
             self._event_queue = queue.Queue()
-            self._event_thread = EventThread(self._event_channel, self._event_queue)
+            self._event_thread = EventReceiverThread(self._event_channel, self._event_queue)
             self._event_thread.start()
             self._event_handler_thread = EventHandlerThread(self, self._event_queue)
             self._event_handler_thread.start()
@@ -149,18 +149,6 @@ class Pytheos:
             self._command_channel.close()
 
         self._connected = False
-
-    def call(self, group: str, command: str, **kwargs: dict) -> HEOSResult:
-        """ Proxy interface to call an API on our Command Channel
-
-        :param group: Group name (e.g. system, player, etc)
-        :param command: Command name (e.g. heart_beat)
-        :param kwargs: Any parameters that should be sent along with the command
-        :return: HEOSResult
-        """
-        self._check_channel_availability(self._command_channel)
-
-        return self.api.call(group, command, **kwargs)
 
     def subscribe(self, event_name: str, callback: Callable) -> None:
         """ Subscribe a callback function to a specific event
@@ -257,77 +245,3 @@ class Pytheos:
 
     def _handle_user_changed(self, event: HEOSEvent):
         raise NotImplementedError()
-
-
-class EventThread(threading.Thread):
-    """ Thread that handles receiving events from the event connection """
-
-    def __init__(self, conn: Connection, out_queue: queue.Queue) -> None:
-        super().__init__()
-
-        self._connection = conn
-        self._out_queue = out_queue
-        self._api = APIInterface(conn)
-        self.running = False
-
-    def run(self) -> None:
-        """ Primary thread function
-
-        :return: None
-        """
-        self.running = True
-
-        while self.running:
-            results = self._api.read_message()
-            if results:
-                event = HEOSEvent(results)
-                logger.debug(f"Received event: {event!r}")
-
-                try:
-                    self._out_queue.put_nowait(event)
-                except queue.Full:
-                    pass # throw it away if the queue is full
-
-            time.sleep(0.01)
-
-    def stop(self) -> None:
-        """ Signals the thread that it needs to stop
-
-        :return: None
-        """
-        self.running = False
-
-class EventHandlerThread(threading.Thread):
-    def __init__(self, service: Pytheos, in_queue: queue.Queue) -> None:
-        super().__init__()
-
-        self._service: Pytheos = service
-        self._in_queue: queue.Queue = in_queue
-        self.running = False
-
-    def run(self) -> None:
-        """ Primary thread function
-
-        :return: None
-        """
-        self.running = True
-
-        while self.running:
-            event = None
-
-            try:
-                event = self._in_queue.get_nowait()
-            except queue.Empty:
-                pass
-
-            if event:
-                self._service._event_handler(event)
-
-            time.sleep(0.01)
-
-    def stop(self) -> None:
-        """ Signals the thread that it needs to stop
-
-        :return: None
-        """
-        self.running = False
