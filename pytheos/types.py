@@ -15,6 +15,14 @@ from pytheos import utils
 logger = logging.getLogger(__name__)
 
 
+class AccountStatus(Enum):
+    SignedOut = 'signed_out'
+    SignedIn = 'signed_in'
+
+    def __str__(self):
+        return str(self.value)
+
+
 class SSDPResponse(http.client.HTTPResponse):
     """ Specialized http.client Response object to facilitate parsing SSDP responses """
 

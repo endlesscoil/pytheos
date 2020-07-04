@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from pytheos.api.types import Mute
+from pytheos.types import AccountStatus
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -54,8 +55,16 @@ class TestAPIs(unittest.TestCase):
                           return_value=self._get_basic_response('system', 'check_account', 'success',
                                                                 message=f"signed_in&un={TEST_EMAIL}")):
             status, email = self._pytheos.api.system.check_account()
-            self.assertEqual(status, 'signed_in')
+            self.assertEqual(status, AccountStatus.SignedIn)
             self.assertEqual(email, TEST_EMAIL)
+            self._pytheos.api.send_command.assert_called_with('system', 'check_account')
+
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message',
+                          return_value=self._get_basic_response('system', 'check_account', 'success',
+                                                                message=f"signed_out")):
+            status, email = self._pytheos.api.system.check_account()
+            self.assertEqual(status, AccountStatus.SignedOut)
+            self.assertIsNone(email)
             self._pytheos.api.send_command.assert_called_with('system', 'check_account')
 
     def test_system_sign_in(self):

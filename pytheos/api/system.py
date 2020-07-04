@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from .api import API
 from ..errors import CommandFailedError, SignInFailedError
+from ..types import AccountStatus
 
 
 class SystemAPI(API):
@@ -22,7 +23,7 @@ class SystemAPI(API):
         if not result:
             result = results.header.vars.get('signed_in')
 
-        return result, username
+        return AccountStatus(result), username
 
     def heart_beat(self) -> None:
         """ Executes the heart_beat command

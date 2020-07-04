@@ -51,6 +51,8 @@ class SSDPBroadcastMessage:
             'MAN: "ssdp:discover"',
             f'ST: {self.service}',
             f'MX: {self.mx}',
+            '',
+            ''
         ])
 
 

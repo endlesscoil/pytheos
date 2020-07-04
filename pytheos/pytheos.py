@@ -13,7 +13,10 @@ from .connection import Connection
 from .errors import ChannelUnavailableError
 from .events.handler import EventHandlerThread
 from .events.receiver import EventReceiverThread
-from .types import HEOSEvent, SSDPResponse
+from .group import PytheosGroup
+from .player import PytheosPlayer
+from .source import PytheosSource
+from .types import HEOSEvent, SSDPResponse, AccountStatus
 
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('pytheos')
@@ -50,16 +53,36 @@ class Pytheos:
     DEFAULT_PORT = 1255
 
     @property
-    def connected(self):
-        return self._connected
-
-    @property
     def log_level(self):
         return logger.level
 
     @log_level.setter
     def log_level(self, value):
         logger.setLevel(value)
+
+    @property
+    def connected(self):
+        return self._connected
+
+    @property
+    def signed_in(self):
+        return self._account_status == AccountStatus.SignedIn
+
+    @property
+    def username(self):
+        return self._account_username
+
+    @property
+    def players(self):
+        return self._players
+
+    @property
+    def groups(self):
+        return self._groups
+
+    @property
+    def sources(self):
+        return self._sources
 
     def __init__(self, server: Optional[str]=None, port: Optional[int]=DEFAULT_PORT, from_response: SSDPResponse=None):
         """ Constructor
@@ -81,6 +104,12 @@ class Pytheos:
         self._connected = False
         self._event_subscriptions = {}
 
+        self._account_status: Optional[AccountStatus] = None
+        self._account_username: Optional[str] = None
+        self._players = []
+        self._groups = []
+        self._sources = []
+
         self.api: APIInterface = APIInterface(self._command_channel)
 
         self._init_internal_event_handlers()
@@ -98,9 +127,11 @@ class Pytheos:
         if self._connected:
             self.close()
 
-    def connect(self, enable_event_connection: bool=True) -> Pytheos:
+    def connect(self, enable_event_connection: bool=True, refresh: bool=True) -> Pytheos:
         """ Connect to our HEOS device.
 
+        :param enable_event_connection: Enables establishing an additional connection for system events
+        :param refresh: Determines if the system state should be automatically refreshed
         :return: self
         """
         logger.info(f'Connecting to {self.server}:{self.port}')
@@ -120,7 +151,8 @@ class Pytheos:
             self._event_handler_thread.start()
             #/FIXME
 
-        # TODO: get status
+        if refresh:
+            self.refresh()
 
         return self
 
@@ -158,6 +190,47 @@ class Pytheos:
             self._event_subscriptions[event_name] = []
 
         self._event_subscriptions[event_name].append(callback)
+
+    def refresh(self):
+        self.check_account()
+        self.get_players()
+        self.get_groups()
+        self.get_sources()
+
+    def check_account(self) -> tuple:
+        self._account_status, self._account_username = self.api.system.check_account()
+
+        return self._account_status, self._account_username
+
+    def sign_in(self, username: str, password: str):
+        self.api.system.sign_in(username, password)
+
+    def sign_out(self):
+        self.api.system.sign_out()
+
+    def get_players(self):
+        self._players = []
+
+        for player in self.api.player.get_players():
+            self._players.append(PytheosPlayer(self, player))
+
+        return self._players
+
+    def get_groups(self):
+        self._groups = []
+
+        for group in self.api.group.get_groups():
+            self._groups.append(PytheosGroup(self, group))
+
+        return self._groups
+
+    def get_sources(self):
+        self._sources = []
+
+        for source in self.api.browse.get_music_sources():
+            self._sources.append(PytheosSource(self, source))
+
+        return self._sources
 
     def _check_channel_availability(self, channel: Connection):
         """ Checks to make sure that the provided channel is available.

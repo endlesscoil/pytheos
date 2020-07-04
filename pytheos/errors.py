@@ -6,6 +6,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional
 
+from pytheos.types import HEOSResult
+
 
 class HEOSErrorCode(Enum):
     UnrecognizedCommand = 1
@@ -52,7 +54,7 @@ class CommandFailedError(PytheosError):
         self.error_code = None
         self.system_error_code = None
 
-        eid = result.header.vars.get('eid')
+        eid = result.header.vars.get('eid') if result else None
         if eid:
             self.error_code = HEOSErrorCode(int(eid))
             if self.error_code == HEOSErrorCode.SystemError:

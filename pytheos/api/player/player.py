@@ -293,7 +293,7 @@ class PlayerAPI(API):
 
         self._api.call('player', 'volume_up', pid=player_id, step=step_level)
 
-    def volume_down(self, player_id: int, step_level: int = 5) -> None:
+    def volume_down(self, player_id: int, step_level: int=5) -> None:
         """ Turn the volume down by the specified step level.
 
         :param player_id: Player ID
