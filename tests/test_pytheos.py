@@ -73,22 +73,25 @@ class TestPytheos(unittest.TestCase):
             self._pytheos.api.system.sign_out.assert_called()
 
     def test_get_players(self):
-        with patch.object(PlayerAPI, 'get_players', return_value=[Player(), Player()]):
+        with patch.object(PlayerAPI, 'get_players', return_value=[Player({'pid': 1}), Player({'pid': 2})]):
             players = self._pytheos.get_players()
             self.assertGreater(len(players), 0)
-            self.assertIsInstance(players[0], PytheosPlayer)
+            self.assertIsInstance(players[list(players.keys())[0]], PytheosPlayer)
 
     def test_get_groups(self):
-        with patch.object(GroupAPI, 'get_groups', return_value=[Group(), Group()]):
+        with patch.object(GroupAPI, 'get_groups', return_value=[Group({'gid': 1}), Group({'gid': 2})]):
             groups = self._pytheos.get_groups()
             self.assertGreater(len(groups), 0)
-            self.assertIsInstance(groups[0], PytheosGroup)
+            self.assertIsInstance(groups[list(groups.keys())[0]], PytheosGroup)
 
     def test_get_sources(self):
-        with patch.object(BrowseAPI, 'get_music_sources', return_value=[MusicSource(), MusicSource()]):
-            groups = self._pytheos.get_sources()
-            self.assertGreater(len(groups), 0)
-            self.assertIsInstance(groups[0], PytheosSource)
+        with patch.object(BrowseAPI, 'get_music_sources', return_value=[
+            MusicSource({'sid': 1, 'type': 'music_service'}),
+            MusicSource({'sid': 2, 'type': 'music_service'})
+        ]):
+            sources = self._pytheos.get_sources()
+            self.assertGreater(len(sources), 0)
+            self.assertIsInstance(sources[list(sources.keys())[0]], PytheosSource)
 
 if __name__== '__main__':
     unittest.main()

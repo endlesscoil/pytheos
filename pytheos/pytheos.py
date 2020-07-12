@@ -73,16 +73,34 @@ class Pytheos:
         return self._account_username
 
     @property
-    def players(self):
-        return self._players
+    def players(self) -> tuple:
+        if self._players is None:
+            self.get_players()
+
+        return tuple(self._players)
 
     @property
-    def groups(self):
-        return self._groups
+    def groups(self) -> tuple:
+        if self._groups is None:
+            self.get_groups()
+
+        return tuple(self._groups)
 
     @property
-    def sources(self):
-        return self._sources
+    def sources(self) -> tuple:
+        if self._sources is None:
+            self.get_sources()
+
+        return tuple(self._sources)
+
+    @property
+    def receive_events(self):
+        return self._receive_events
+
+    @receive_events.setter
+    def receive_events(self, value):
+        self._receive_events = value
+        self._set_register_for_change_events(value)
 
     def __init__(self, server: Optional[str]=None, port: Optional[int]=DEFAULT_PORT, from_response: SSDPResponse=None):
         """ Constructor
@@ -103,12 +121,13 @@ class Pytheos:
         self._event_handler_thread: Optional[EventHandlerThread] = None
         self._connected = False
         self._event_subscriptions = {}
+        self._receive_events = True
 
         self._account_status: Optional[AccountStatus] = None
         self._account_username: Optional[str] = None
-        self._players = []
-        self._groups = []
-        self._sources = []
+        self._players: Optional[dict] = None
+        self._groups: Optional[dict] = None
+        self._sources: Optional[dict] = None
 
         self.api: APIInterface = APIInterface(self._command_channel)
 
@@ -139,9 +158,10 @@ class Pytheos:
         self._command_channel.connect(self.server, self.port)
         self._connected = True
 
-        if enable_event_connection:
+        self._receive_events = enable_event_connection
+        if self._receive_events:
             self._event_channel.connect(self.server, self.port, deduplicate=True)
-            APIInterface(self._event_channel).system.register_for_change_events(True)
+            self._set_register_for_change_events(True)
 
             # FIXME: Figure out exactly how I'm consuming these.
             self._event_queue = queue.Queue()
@@ -155,6 +175,9 @@ class Pytheos:
             self.refresh()
 
         return self
+
+    def _set_register_for_change_events(self, value: bool):
+        APIInterface(self._event_channel).system.register_for_change_events(value)
 
     def close(self):
         """ Close the connection to our HEOS device
@@ -192,43 +215,80 @@ class Pytheos:
         self._event_subscriptions[event_name].append(callback)
 
     def refresh(self):
+        """ Refreshes internal information from the HEOS system.
+
+        :return: None
+        """
         self.check_account()
         self.get_players()
         self.get_groups()
         self.get_sources()
 
+    def reboot(self):
+        """ Instructs the system to reboot.
+
+        :return: None
+        """
+        self.api.system.reboot()
+
     def check_account(self) -> tuple:
+        """ Checks if the system is logged into HEOS and returns the status and account name, if available.
+
+        :return: tuple
+        """
         self._account_status, self._account_username = self.api.system.check_account()
 
         return self._account_status, self._account_username
 
     def sign_in(self, username: str, password: str):
+        """ Signs the system into the HEOS service.
+
+        :param username: Username
+        :param password: Password
+        :return: None
+        """
         self.api.system.sign_in(username, password)
 
     def sign_out(self):
+        """ Signs out from the HEOS service.
+
+        :return: None
+        """
         self.api.system.sign_out()
 
     def get_players(self):
-        self._players = []
+        """ Retrieves a mapping of IDs to Players present in the HEOS system.
+
+        :return: dict
+        """
+        self._players = {}
 
         for player in self.api.player.get_players():
-            self._players.append(PytheosPlayer(self, player))
+            self._players[player.player_id] = PytheosPlayer(self, player)
 
         return self._players
 
     def get_groups(self):
-        self._groups = []
+        """ Retrieves a mapping of IDs to Groups present in the HEOS system.
+
+        :return: dict
+        """
+        self._groups = {}
 
         for group in self.api.group.get_groups():
-            self._groups.append(PytheosGroup(self, group))
+            self._groups[group.group_id] = PytheosGroup(self, group)
 
         return self._groups
 
     def get_sources(self):
-        self._sources = []
+        """ Retrieves a mapping of IDs to Sources present in the HEOS system.
+
+        :return:
+        """
+        self._sources = {}
 
         for source in self.api.browse.get_music_sources():
-            self._sources.append(PytheosSource(self, source))
+            self._sources[source.source_id] = PytheosSource(self, source)
 
         return self._sources
 

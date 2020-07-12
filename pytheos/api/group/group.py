@@ -11,6 +11,11 @@ from pytheos.api.types import Mute
 class GroupAPI(API):
     """ API interface for the 'group' command group """
 
+    VOLUME_MIN = 0
+    VOLUME_MAX = 100
+    VOLUME_STEP_MIN = 1
+    VOLUME_STEP_MAX = 10
+
     def get_groups(self) -> list:
         """ Retrieves a list of all groups.
 
@@ -81,8 +86,8 @@ class GroupAPI(API):
         :raises: ValueError
         :return: None
         """
-        if not 0 <= level <= 100:
-            raise ValueError('Level must be between 0 and 100')
+        if not self.VOLUME_MIN <= level <= self.VOLUME_MAX:
+            raise ValueError(f'Level must be between {self.VOLUME_MIN} and {self.VOLUME_MAX}')
 
         self._api.call('group', 'set_volume', gid=group_id, level=level)
 
@@ -102,8 +107,8 @@ class GroupAPI(API):
         :raises: ValueError
         :return: None
         """
-        if not 0 < step_level <= 10:
-            raise ValueError('Step level must be between 1 and 10')
+        if not self.VOLUME_STEP_MIN < step_level <= self.VOLUME_STEP_MAX:
+            raise ValueError(f'Step level must be between {self.VOLUME_STEP_MIN} and {self.VOLUME_STEP_MAX}')
 
         self._api.call('group', 'volume_up', gid=group_id, step=step_level)
 
@@ -115,7 +120,7 @@ class GroupAPI(API):
         :raises: ValueError
         :return: None
         """
-        if not 0 < step_level <= 10:
-            raise ValueError('Step level must be between 1 and 10')
+        if not self.VOLUME_STEP_MIN < step_level <= self.VOLUME_STEP_MAX:
+            raise ValueError(f'Step level must be between {self.VOLUME_STEP_MIN} and {self.VOLUME_STEP_MAX}')
 
         self._api.call('group', 'volume_down', gid=group_id, step=step_level)

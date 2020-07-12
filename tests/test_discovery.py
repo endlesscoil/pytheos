@@ -43,7 +43,9 @@ class TestDiscovery(unittest.TestCase):
             'HOST: 239.255.255.250:1900',
             'MAN: "ssdp:discover"',
             'ST: urn:schemas-denon-com:device:ACT-Denon:1',
-            'MX: 3'
+            'MX: 3',
+            '',
+            ''
         )))
 
     def test_discover(self):

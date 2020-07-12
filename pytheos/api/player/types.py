@@ -91,9 +91,9 @@ class Player:
             self.group_id = from_dict.get('gid')
             self.model = from_dict.get('model')
             self.version = from_dict.get('version')
-            self.network = Network(from_dict.get('network'))
+            self.network = Network(from_dict.get('network', Network.Unknown))
             self.ip = from_dict.get('ip')
-            self.lineout = Lineout(int(from_dict.get('lineout')))
+            self.lineout = Lineout(int(from_dict.get('lineout', str(Lineout.NoLineout))))
             self.serial = from_dict.get('serial')
 
             control = from_dict.get('control')
@@ -109,12 +109,15 @@ class MediaItem:
     artist: str
     image_url: str
     queue_id: int
-    media_id: int
-    album_id: int
+    media_id: str
+    album_id: str
 
     # Special fields to support get_now_playing_media
     type: str
-    source_id: int = None
+    source_id: str = None
+
+    # FIXME - testing
+    container_id: str = None
 
     def __init__(self, from_dict: Optional[dict]=None):
         """ Constructor
@@ -132,3 +135,6 @@ class MediaItem:
 
             self.type = from_dict.get('type')
             self.source_id = from_dict.get('sid')
+
+            # FIXME - testing
+            self.container_id = from_dict.get('cid')

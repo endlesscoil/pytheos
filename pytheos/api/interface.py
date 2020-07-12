@@ -47,8 +47,8 @@ class APIInterface:
         results = HEOSResult(message)
 
         if results.header:
-            if results.header.result is None:
-                raise CommandFailedError('No "result" found in "heos" response', results)
+            #if results.header.result is None:
+            #    raise CommandFailedError('No "result" found in "heos" response', results)
 
             if results.header.result == 'fail':
                 raise CommandFailedError('Failed to execute command', results)
@@ -99,7 +99,8 @@ class APIInterface:
                     response = b'' # Not valid JSON; reset & retry
                     continue
 
-                if "command under process" in results['heos'].get('message', ''):
+                if "command under process" in results['heos'].get('message', '') \
+                        or "Processing previous command" in results['heos'].get('message', ''): # FIXME
                     logger.debug("Delayed - command under process")
                     response = b''
                     continue

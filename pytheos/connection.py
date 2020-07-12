@@ -8,6 +8,8 @@ import telnetlib
 import threading
 from typing import Optional
 
+from pytheos.api.interface import APIInterface
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,11 +20,21 @@ class Connection:
     def connected(self) -> bool:
         return self._conn.get_socket() is not None if self._conn else None
 
+    @property
+    def prettify_json_response(self):
+        return self._prettify_json_response
+
+    @prettify_json_response.setter
+    def prettify_json_response(self, value):
+        self._prettify_json_response = value
+        APIInterface(self).system.prettify_json_response(value)
+
     def __init__(self):
         self.server = None
         self.port = None
         self.deduplicate = None
 
+        self._prettify_json_response = False
         self._lock = threading.Lock()
         self._conn: Optional[telnetlib.Telnet] = None
 
@@ -79,3 +91,10 @@ class Connection:
                 data = self._conn.read_until(target, timeout=timeout)
 
         return data
+
+    def heart_beat(self):
+        """ Performs a system/heart_beat API call on the connection in order to keep the connection alive.
+
+        :return: None
+        """
+        APIInterface(self).system.heart_beat()

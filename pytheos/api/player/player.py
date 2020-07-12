@@ -14,6 +14,10 @@ from ...errors import InvalidResponse
 class PlayerAPI(API):
     """ API interface for the 'player' command group """
 
+    VOLUME_MIN = 0
+    VOLUME_MAX = 100
+    VOLUME_DEFAULT_STEP = 5
+
     def check_update(self, player_id: int) -> bool:
         """ Checks whether or not there is an update available for the player
 
@@ -81,7 +85,7 @@ class PlayerAPI(API):
             shuffle=ShuffleMode(results.header.vars.get('shuffle'))
         )
 
-    def get_play_state(self, player_id: int) -> Optional[str]:
+    def get_play_state(self, player_id: int) -> PlayState:
         """ Retrieves the current playing state (e.g. play, pause, stop)
 
         :param player_id: Player ID
@@ -267,7 +271,7 @@ class PlayerAPI(API):
         :raises: ValueError
         :return: None
         """
-        if not 0 <= level <= 100:
+        if not self.VOLUME_MIN <= level <= self.VOLUME_MAX:
             raise ValueError('Level must be between 0 and 100')
 
         self._api.call('player', 'set_volume', pid=player_id, level=level)
@@ -280,7 +284,7 @@ class PlayerAPI(API):
         """
         self._api.call('player', 'toggle_mute', pid=player_id)
 
-    def volume_up(self, player_id: int, step_level: int=5) -> None:
+    def volume_up(self, player_id: int, step_level: int=VOLUME_DEFAULT_STEP) -> None:
         """ Turn the volume up by the specified step level.
 
         :param player_id: Player ID
@@ -293,7 +297,7 @@ class PlayerAPI(API):
 
         self._api.call('player', 'volume_up', pid=player_id, step=step_level)
 
-    def volume_down(self, player_id: int, step_level: int=5) -> None:
+    def volume_down(self, player_id: int, step_level: int=VOLUME_DEFAULT_STEP) -> None:
         """ Turn the volume down by the specified step level.
 
         :param player_id: Player ID
