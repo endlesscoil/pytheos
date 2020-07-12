@@ -19,7 +19,7 @@ def discover(timeout: Optional[int]=None, retries: Optional[int]=None, mx: Optio
 
     :param timeout: Optional override for the default timeout
     :param retries: Optional override for the default number of retries
-    :param mx: Optiona override for the default MX value
+    :param mx: Optional override for the default MX value
     :return: list
     """
     discovery = Discovery()

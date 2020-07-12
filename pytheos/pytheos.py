@@ -22,32 +22,6 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(leve
 logger = logging.getLogger('pytheos')
 
 
-def connect(host: Union[Pytheos, tuple, str]) -> Pytheos:
-    """ Connect to the provided host and return a context manager for use with the connection.
-
-    :param host: Host to connect to
-    :raises: ValueError
-    :return: The Pytheos instance
-    """
-    conn = None
-    port = None
-
-    if isinstance(host, Pytheos):
-        conn = host
-    elif isinstance(host, tuple):
-        host, port = host
-    elif isinstance(host, str) and ':' in host:
-        host, port = host.split(':')
-        port = int(port)
-    else:
-        raise ValueError(f'Unrecognized host format: {host}')
-
-    if not conn:
-        conn = Pytheos(host, port)
-
-    return conn.connect()
-
-
 class Pytheos:
     """ Pytheos interface """
     DEFAULT_PORT = 1255
@@ -374,3 +348,22 @@ class Pytheos:
 
     def _handle_user_changed(self, event: HEOSEvent):
         raise NotImplementedError()
+
+
+def connect(host: Union[Pytheos, str], port: int=Pytheos.DEFAULT_PORT) -> Pytheos:
+    """ Connect to the provided host and return a context manager for use with the connection.
+
+    :param host: Host to connect to
+    :raises: ValueError
+    :return: The Pytheos instance
+    """
+    conn = None
+
+    if isinstance(host, Pytheos):
+        conn = host
+    elif isinstance(host, str):
+        conn = Pytheos(host, port)
+    else:
+        raise ValueError(f'Unrecognized host format: {host}')
+
+    return conn.connect()

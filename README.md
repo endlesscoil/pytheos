@@ -63,7 +63,7 @@ After connection you can make use of the API interface to start controlling your
 ```python
 import pytheos
 
-with pytheos.connect(('10.10.0.7', 1255)) as svc:
+with pytheos.connect('10.10.0.7') as svc:
     players = svc.api.player.get_players()
     for p in players:
         print(f'- {p}')
@@ -90,7 +90,7 @@ def _on_player_state_changed(event: HEOSEvent):
     print(f'Player State Changed Event: {event}')
 
 
-with pytheos.connect(('10.10.0.7', 1255)) as svc:
+with pytheos.connect('10.10.0.7') as svc:
     svc.subscribe('event/player_state_changed', _on_player_state_changed)
     svc.subscribe('event/player_now_playing_changed', _on_now_playing_changed)
 
