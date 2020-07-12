@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 class APIInterface:
     """ Container class for raw command functionality and object references to the API groups """
 
+    CONNECTION_READ_TIMEOUT = 1
+    MESSAGE_READ_TIMEOUT = 1        # FIXME: I suspect that this needs to be larger.
+    DELAY_MESSAGES = (
+        "command under process",
+        "processing previous command"
+    )
+
     def __init__(self, connection):
         self.system = SystemAPI(self)
         self.player = PlayerAPI(self)
@@ -68,7 +75,7 @@ class APIInterface:
         self._connection.write(command_string.encode('utf-8'))
         logger.debug(f"Sending command: {command_string.rstrip()}")
 
-    def read_message(self, timeout: int=1, delimiter: bytes=b'\r\n') -> Optional[dict]:
+    def read_message(self, timeout: int=MESSAGE_READ_TIMEOUT, delimiter: bytes=b'\r\n') -> Optional[dict]:
         """ Reads a message from the connection
 
         :param timeout: Timeout (seconds)
@@ -80,7 +87,7 @@ class APIInterface:
 
         started = time.time()
         while True:
-            response += self._connection.read_until(delimiter, timeout=1) # FIXME: do something about this hardcoded timeout
+            response += self._connection.read_until(delimiter, timeout=self.CONNECTION_READ_TIMEOUT)
 
             if delimiter in response:
                 response = response.strip()
@@ -99,8 +106,7 @@ class APIInterface:
                     response = b'' # Not valid JSON; reset & retry
                     continue
 
-                if "command under process" in results['heos'].get('message', '') \
-                        or "Processing previous command" in results['heos'].get('message', ''): # FIXME
+                if self._results_are_delayed(results['heos'].get('message', '')):
                     logger.debug("Delayed - command under process")
                     response = b''
                     continue
@@ -113,3 +119,12 @@ class APIInterface:
                 break
 
         return results
+
+    def _results_are_delayed(self, message) -> bool:
+        """ Checks for a message matching known messages that indicate there is a delay in processing
+        results.
+
+        :param message: Message string
+        :return: bool
+        """
+        return any([msg.lower() in message.lower() for msg in self.DELAY_MESSAGES])

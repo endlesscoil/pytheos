@@ -42,7 +42,6 @@ def build_command_string(group: str, command: str, **kwargs) -> str:
 
     command_string = f"heos://{group}/{command}"
     if attributes:
-        # FIXME: Do we need to wrap string arguments in quotes?
         command_string += f"?{attributes}"
 
     return command_string + "\n"

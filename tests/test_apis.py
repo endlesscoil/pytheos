@@ -890,8 +890,8 @@ class TestAPIs(unittest.TestCase):
             self._pytheos.api.send_command.assert_called_with('browse', 'delete_playlist', sid=sid, cid=cid)
 
     def test_browse_retrieve_metadata(self):
-        sid = 1 # FIXME
-        cid = 1 # FIXME
+        sid = 1
+        cid = 1
 
         response = self._get_basic_response('browse', 'retrieve_metadata', 'success', sid=sid, cid=cid)
         response['payload'] = [

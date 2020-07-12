@@ -96,9 +96,8 @@ class PytheosGroup:
         if player in self._members:
             self._members.remove(player)
 
-        if self._leader == player:
-            if len(self._members) > 1:
-                self._leader = self._members[0]
+        if self._leader == player and len(self._members) > 1:
+            self._leader = self._members[0]
 
         self._set_group()
 

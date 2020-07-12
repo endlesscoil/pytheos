@@ -8,7 +8,7 @@ from typing import Optional
 
 
 class Lineout(Enum):
-    NoLineout = 0   # FIXME: Correct?
+    NoLineout = 0   # FIXME: Is this correct?  Zero is not defined in the specification but my device reports as such.
     Variable = 1
     Fixed = 2
 
@@ -115,8 +115,6 @@ class MediaItem:
     # Special fields to support get_now_playing_media
     type: str
     source_id: str = None
-
-    # FIXME - testing
     container_id: str = None
 
     def __init__(self, from_dict: Optional[dict]=None):
@@ -135,6 +133,4 @@ class MediaItem:
 
             self.type = from_dict.get('type')
             self.source_id = from_dict.get('sid')
-
-            # FIXME - testing
             self.container_id = from_dict.get('cid')
