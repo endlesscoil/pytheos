@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import time
 import logging
-from typing import Optional
+from typing import Optional, Union
 
 from pytheos import utils
 from pytheos.api.browse.browse import BrowseAPI
@@ -114,17 +114,24 @@ class APIInterface:
                 # Valid data
                 break
 
-            # And break out if we exceeded our time limit to read a valid message
-            if time.time() - started > timeout:
+            # And break out if we exceeded our time limit to read a valid message.  We are also considering delayed
+            # responses as valid in terms of timeout.
+            if time.time() - started > timeout and not self._results_are_delayed(self._last_response):
                 break
 
         return results
 
-    def _results_are_delayed(self, message) -> bool:
+    def _results_are_delayed(self, message: Union[str, bytes]) -> bool:
         """ Checks for a message matching known messages that indicate there is a delay in processing
         results.
 
         :param message: Message string
         :return: bool
         """
+        if not message:
+            return False
+
+        if isinstance(message, bytes):
+            message = message.decode('utf-8', 'ignore')
+
         return any([msg.lower() in message.lower() for msg in self.DELAY_MESSAGES])
