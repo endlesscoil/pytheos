@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 from collections.abc import MutableSequence
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pytheos.api.browse.types import AddToQueueType
 from pytheos.api.player.types import MediaItem, PlayState
+from pytheos.source import PytheosMedia
 
 if TYPE_CHECKING:
     from pytheos import Pytheos
@@ -126,7 +127,9 @@ class PytheosQueue(MutableSequence):
         if self._queue:
             self._pytheos.api.player.remove_from_queue(self._player.player_id, (qi.queue_id for qi in self._queue))
 
-    def _insert_queue_item(self, index: int, object: MediaItem):
+        self._refresh_queue(True)
+
+    def _insert_queue_item(self, index: int, object: PytheosMedia):
         """ Provides the logic to properly do an insertion using the HEOS API.  This removes the items after the insertion
         point, adds the new track to the queue, and then re-adds the removed items to finish the queue.
 
@@ -137,12 +140,20 @@ class PytheosQueue(MutableSequence):
         if self._queue and index + 1 < len(self._queue):
             self._pytheos.api.player.remove_from_queue(self._player.player_id, list(range(index + 1, len(self._queue))))
 
-        self._pytheos.api.browse.add_to_queue(self._player.player_id, object.source_id, object.container_id, object.media_id, AddToQueueType.AddToEnd)
+        cid, mid = self._get_queue_insert_ids(object)
+        self._pytheos.api.browse.add_to_queue(self._player.player_id, object._parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
         for qi in self._queue[index:]:
-            self._pytheos.api.browse.add_to_queue(self._player.player_id, qi.source_id, qi.container_id, qi.media_id, AddToQueueType.AddToEnd)
+            cid, mid = self._get_queue_insert_ids(qi)
+            self._pytheos.api.browse.add_to_queue(self._player.player_id, qi._parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
-        self._queue.insert(index, object)
+        self._refresh_queue(True)
+
+    def _get_queue_insert_ids(self, object):
+        cid = object.id if object.is_container_type else object._parent.id
+        mid = None if object.is_container_type else object.id
+
+        return cid, mid
 
     def _refresh_queue(self, force: bool=False):
         """ Refreshes the queue if it is uninitialized, this call is forced, or if caching is disabled.
@@ -151,6 +162,6 @@ class PytheosQueue(MutableSequence):
         :return: None
         """
         if self._queue is None or self.nocache or force:
-            self._queue = self._pytheos.api.player.get_queue(self._player.player_id)
+            self._queue = [PytheosMedia(self._pytheos, qi, None) for qi in self._pytheos.api.player.get_queue(self._player.player_id)]
 
         return self._queue

@@ -58,14 +58,14 @@ class Pytheos:
         if self._groups is None:
             self.get_groups()
 
-        return tuple(self._groups)
+        return tuple(self._groups.values())
 
     @property
     def sources(self) -> tuple:
         if self._sources is None:
             self.get_sources()
 
-        return tuple(self._sources)
+        return tuple(self._sources.values())
 
     @property
     def receive_events(self):

@@ -21,6 +21,15 @@ class SourceType(Enum):
     Station = 'station'
     Playlist = 'playlist'
 
+    @property
+    def is_container(self):
+        return self in [
+            SourceType.Album,
+            SourceType.Container,
+            SourceType.Station,
+            SourceType.Playlist
+        ]
+
     def __str__(self):
         return str(self.value)
 
@@ -140,6 +149,7 @@ class MusicSource(Source):
 class SourceMedia(Source):
     playable: bool = False
     media_id: int = None
+    queue_id: int = None
 
     def __init__(self, from_dict: Optional[dict]=None):
         """ Constructor
@@ -151,7 +161,7 @@ class SourceMedia(Source):
         if from_dict:
             self.container = from_dict.get('container')
             self.playable = from_dict.get('playable')
-            self.type = from_dict.get('type')
+            self.type = SourceType(from_dict.get('type'))
             self.name = from_dict.get('name')
             self.image_url = from_dict.get('image_url')
             self.source_id = from_dict.get('sid')

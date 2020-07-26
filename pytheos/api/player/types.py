@@ -117,6 +117,10 @@ class MediaItem:
     source_id: str = None
     container_id: str = None
 
+    @property
+    def name(self):
+        return f"{self.artist} - {self.song}"
+
     def __init__(self, from_dict: Optional[dict]=None):
         """ Constructor
 
