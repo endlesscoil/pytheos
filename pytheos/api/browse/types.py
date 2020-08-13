@@ -126,7 +126,7 @@ class Source:
             self.type = SourceType(from_dict.get('type'))
             self.image_url = from_dict.get('image_url')
             self.source_id = from_dict.get('sid')
-            self.container = from_dict.get('container')
+            self.container = bool(from_dict.get('container'))
             self.container_id = from_dict.get('cid')
 
 @dataclass
@@ -159,7 +159,7 @@ class SourceMedia(Source):
         super().__init__(from_dict)
 
         if from_dict:
-            self.container = from_dict.get('container')
+            self.container = bool(from_dict.get('container'))
             self.playable = from_dict.get('playable')
             self.type = SourceType(from_dict.get('type'))
             self.name = from_dict.get('name')

@@ -174,7 +174,7 @@ class PytheosMedia:
 
 
 def _node_factory(item, parent, pytheos):
-    if item.container == "yes": # FIXME
+    if item.container:
         return PytheosContainer(pytheos, item, parent, source_id=parent.source_id)
     elif item.media_id is None:
         return PytheosSource(pytheos, item, parent)

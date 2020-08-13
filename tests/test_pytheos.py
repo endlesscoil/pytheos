@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-import os
-import sys
+import unittest
+import unittest.mock
+from unittest.mock import patch
 
+import pytheos
 from pytheos.api.browse.browse import BrowseAPI
 from pytheos.api.browse.types import MusicSource
 from pytheos.api.group.group import GroupAPI
@@ -15,13 +17,6 @@ from pytheos.group import PytheosGroup
 from pytheos.player import PytheosPlayer
 from pytheos.source import PytheosSource
 from pytheos.types import AccountStatus
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
-
-import unittest
-import unittest.mock
-from unittest.mock import patch
-import pytheos
 from pytheos.api.system import SystemAPI
 
 

@@ -1,19 +1,10 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-import io
-import os
-import sys
-from socket import socket
-from unittest.mock import patch, MagicMock
-
 from pytheos.discovery import SSDPBroadcastMessage
-from pytheos.types import SSDPResponse
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..")) # FIXME
 
 import unittest
-import pytheos
+
 
 DISCOVERY_RESPONSE = "\r\n".join((
     'HTTP/1.1 200 OK',

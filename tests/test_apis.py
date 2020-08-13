@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-import os
-import sys
-
 import unittest
 from unittest.mock import patch
 
 from pytheos.api.types import Mute
 from pytheos.types import AccountStatus
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource, AddToQueueType, \
     AlbumMetadata, ServiceOption

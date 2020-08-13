@@ -125,7 +125,7 @@ class PytheosQueue(MutableSequence):
         """
         self._refresh_queue(True)
         if self._queue:
-            self._pytheos.api.player.remove_from_queue(self._player.player_id, (qi.queue_id for qi in self._queue))
+            self._pytheos.api.player.clear_queue(self._player.player_id)
 
         self._refresh_queue(True)
 
