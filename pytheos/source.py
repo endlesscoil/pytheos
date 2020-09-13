@@ -161,7 +161,7 @@ class PytheosMedia:
     def queue_id(self):
         return self._media.queue_id
 
-    def __init__(self, pytheos: 'Pytheos', media: SourceMedia, parent: Union[PytheosSource, PytheosContainer]):
+    def __init__(self, pytheos: 'Pytheos', media: SourceMedia, parent: Optional[Union[PytheosSource, PytheosContainer]]):
         self._pytheos = pytheos
         self._parent = parent
         self._media = media

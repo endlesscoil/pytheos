@@ -42,9 +42,9 @@ class SSDPResponse(http.client.HTTPResponse):
 class HEOSHeader:
     """ Representation of the 'heos' block returned from HEOS command execution """
 
-    command: str = None     # HEOS Command (e.g. system/heart_beat)
-    result: str = None      # 'success' or 'fail'
-    message: str = None     # URL-ish parameter string with additional details
+    command: Optional[str] = None     # HEOS Command (e.g. system/heart_beat)
+    result: Optional[str] = None      # 'success' or 'fail'
+    message: Optional[str] = None     # URL-ish parameter string with additional details
 
     def __init__(self, from_dict=None):
         self.command = from_dict.get('command')
@@ -89,6 +89,7 @@ class HEOSListPayloadIterator(object):
         self._current_index += 1
         return result
 
+
 class HEOSListPayload(HEOSPayload):
     """ Represents a list that is returned from some HEOS command execution """
 
@@ -114,8 +115,8 @@ class HEOSDictPayload(HEOSPayload):
 class HEOSResult(object):
     """ Represents the result of executing a HEOS command """
 
-    header: HEOSHeader
-    payload: HEOSPayload
+    header: Optional[HEOSHeader]
+    payload: Optional[HEOSPayload]
 
     @property
     def succeeded(self) -> bool:
@@ -151,9 +152,9 @@ class HEOSEvent(object):
     """ Represents a message received from the event channel that signifies a new event has occurred. """
 
     vars: dict
-    command: str = None
-    message: str = None
-    raw: str = None
+    command: Optional[str] = None
+    message: Optional[str] = None
+    raw: Optional[str] = None
 
     def __init__(self, from_dict: dict=None):
         if from_dict:

@@ -88,5 +88,6 @@ class TestPytheos(unittest.TestCase):
             self.assertGreater(len(sources), 0)
             self.assertIsInstance(sources[list(sources.keys())[0]], PytheosSource)
 
-if __name__== '__main__':
+
+if __name__ == '__main__':
     unittest.main()

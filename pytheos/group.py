@@ -3,7 +3,8 @@ from pytheos.api.group.types import Group
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from pytheos import Pytheos, PytheosPlayer
+    from pytheos import Pytheos
+    from pytheos.player import PytheosPlayer
 
 
 class PytheosGroup:
@@ -49,7 +50,7 @@ class PytheosGroup:
         self._pytheos.api.group.set_volume(self._group.group_id, value)
 
     def __contains__(self, player):
-        return player.player_id == self._leader.player_id or any([p.player_id == player.player_id for p in self._members])
+        return player.id == self._leader.id or any([p.id == player.id for p in self._members])
 
     def __init__(self, pytheos: 'Pytheos', group: Group):
         self._pytheos: 'Pytheos' = pytheos
@@ -106,4 +107,4 @@ class PytheosGroup:
 
         :return: None
         """
-        self._pytheos.api.group.set_group(self._leader.player_id, [p.player_id for p in self._members])
+        self._pytheos.api.group.set_group(self._leader.id, [p.id for p in self._members])

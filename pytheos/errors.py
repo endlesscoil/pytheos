@@ -28,6 +28,7 @@ class HEOSErrorCode(Enum):
     CommandQueueFull = 16
     ReachedSkipLimit = 17
 
+
 class HEOSSystemErrorCode(Enum):
     RemoteServiceReturnedError = -9
     UserNotRegisters = -1061
@@ -42,9 +43,11 @@ class PytheosError(Exception):
     """ Base Pytheos error class """
     pass
 
+
 class ChannelUnavailableError(PytheosError):
     """ Error returned when a channel is unavailable """
     pass
+
 
 class CommandFailedError(PytheosError):
     """ Error returned with a command fails to execute """
@@ -64,9 +67,11 @@ class CommandFailedError(PytheosError):
                 except ValueError:
                     self.system_error_code = system_error_code # Unknown error code
 
+
 class SignInFailedError(CommandFailedError):
     """ Error returned when the system/sign_in command fails """
     pass
+
 
 class InvalidResponse(PytheosError):
     """ Error returned when the response to a command appears invalid """

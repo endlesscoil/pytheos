@@ -58,29 +58,29 @@ class PytheosQueue(MutableSequence):
     def nocache(self, value):
         self._nocache = value
 
-    def insert(self, index: int, object: MediaItem):
+    def insert(self, index: int, obj: PytheosMedia):
         """ Inserts a MediaItem into the specified location in the queue.
 
         :param index: Index
-        :param object: MediaItem
+        :param obj: MediaItem
         :return: None
         """
         self._refresh_queue()
-        self._insert_queue_item(index, object)
+        self._insert_queue_item(index, obj)
 
-    def play(self, id: int=None):
+    def play(self, play_id: int=None):
         """ Starts playing the queue.  Optionally takes a queue ID to play.
 
-        :param id: Queue ID
+        :param play_id: Queue ID
         :return: None
         """
         self._refresh_queue()
 
         if self._queue:
-            if id is None:
-                id = self._queue[0].queue_id
+            if play_id is None:
+                play_id = self._queue[0].queue_id
 
-            self._pytheos.api.player.play_queue(self._player.player_id, id)
+            self._pytheos.api.player.play_queue(self._player.player_id, play_id)
 
     def next(self):
         """ Plays the next track in the queue.
@@ -129,19 +129,19 @@ class PytheosQueue(MutableSequence):
 
         self._refresh_queue(True)
 
-    def _insert_queue_item(self, index: int, object: PytheosMedia):
+    def _insert_queue_item(self, index: int, obj: PytheosMedia):
         """ Provides the logic to properly do an insertion using the HEOS API.  This removes the items after the insertion
         point, adds the new track to the queue, and then re-adds the removed items to finish the queue.
 
         :param index: Index to insert at
-        :param object: MediaItem to insert
+        :param obj: MediaItem to insert
         :return: None
         """
         if self._queue and index + 1 < len(self._queue):
             self._pytheos.api.player.remove_from_queue(self._player.player_id, list(range(index + 1, len(self._queue))))
 
-        cid, mid = self._get_queue_insert_ids(object)
-        self._pytheos.api.browse.add_to_queue(self._player.player_id, object._parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+        cid, mid = self._get_queue_insert_ids(obj)
+        self._pytheos.api.browse.add_to_queue(self._player.player_id, obj._parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
         for qi in self._queue[index:]:
             cid, mid = self._get_queue_insert_ids(qi)

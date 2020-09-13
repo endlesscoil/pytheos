@@ -27,7 +27,7 @@ class PytheosPlayer:
 
     @property
     def group(self) -> PytheosGroup:
-        return self._pytheos.groups.get(self._player.group_id)
+        return self._pytheos.get_group(self._player.group_id)
 
     @property
     def model(self) -> str:
@@ -222,7 +222,7 @@ class PytheosPlayer:
         """
         self.playing = True
 
-    resume = play # Resume and Play are fundamentally the same.
+    resume = play   # Resume and Play are functionally the same.
 
     def pause(self):
         """ Set the current player state to Paused.

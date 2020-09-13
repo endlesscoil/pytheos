@@ -242,6 +242,14 @@ class Pytheos:
 
         return self._players
 
+    def get_group(self, group_id):
+        """ Retrieve a specific group by ID.
+
+        :param group_id: Group ID
+        :return: PytheosGroup
+        """
+        return self._groups.get(group_id)
+
     def get_groups(self):
         """ Retrieves a mapping of IDs to Groups present in the HEOS system.
 
