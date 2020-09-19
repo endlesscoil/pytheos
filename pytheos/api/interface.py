@@ -103,7 +103,7 @@ class APIInterface:
                 try:
                     results = json.loads(response.decode('utf-8'))
                 except (ValueError, TypeError):
-                    response = b'' # Not valid JSON; reset & retry
+                    response = b''  # Not valid JSON; reset & retry
                     continue
 
                 if self._results_are_delayed(results['heos'].get('message', '')):

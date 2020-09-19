@@ -15,6 +15,7 @@ class Lineout(Enum):
     def __str__(self):
         return str(self.value)
 
+
 class Control(Enum):
     NoControl = 1
     IR = 2
@@ -24,6 +25,7 @@ class Control(Enum):
     def __str__(self):
         return str(self.value)
 
+
 class Network(Enum):
     Wired = 'wired'
     Wifi = 'wifi'
@@ -31,6 +33,7 @@ class Network(Enum):
 
     def __str__(self):
         return self.value
+
 
 class RepeatMode(Enum):
     All = 'on_all'
@@ -40,12 +43,14 @@ class RepeatMode(Enum):
     def __str__(self):
         return self.value
 
+
 class ShuffleMode(Enum):
     On = 'on'
     Off = 'off'
 
     def __str__(self):
         return self.value
+
 
 class PlayState(Enum):
     Stopped = 'stop'
@@ -55,15 +60,18 @@ class PlayState(Enum):
     def __str__(self):
         return self.value
 
+
 @dataclass
 class PlayMode:
     repeat: RepeatMode
     shuffle: ShuffleMode
 
+
 @dataclass
 class QuickSelect:
     id: int
     name: str
+
 
 @dataclass
 class Player:
@@ -100,6 +108,7 @@ class Player:
             if control is not None:
                 control = Control(int(control))
             self.control = control
+
 
 @dataclass
 class MediaItem:

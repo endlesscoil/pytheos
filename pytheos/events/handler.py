@@ -5,16 +5,18 @@ import logging
 import queue
 import threading
 import time
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 
 
 class EventHandlerThread(threading.Thread):
-    def __init__(self, service, in_queue: queue.Queue) -> None:
+    def __init__(self, service, event_handler: Callable, in_queue: queue.Queue) -> None:
         super().__init__()
 
         self._service = service
         self._in_queue: queue.Queue = in_queue
+        self._event_handler = event_handler
         self.running = False
 
     def run(self) -> None:
@@ -33,7 +35,7 @@ class EventHandlerThread(threading.Thread):
                 pass
 
             if event:
-                self._service._event_handler(event)
+                self._event_handler(event)
 
             time.sleep(0.01)
 

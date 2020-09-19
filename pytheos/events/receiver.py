@@ -40,7 +40,7 @@ class EventReceiverThread(threading.Thread):
                 try:
                     self._out_queue.put_nowait(event)
                 except queue.Full:
-                    pass # throw it away if the queue is full
+                    pass    # throw it away if the queue is full
 
             time.sleep(0.01)
 

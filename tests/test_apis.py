@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import unittest
+from typing import Union, List, Dict
 from unittest.mock import patch
 
 from pytheos.api.types import Mute
@@ -29,34 +30,34 @@ class TestAPIs(unittest.TestCase):
 
     def test_command_failure(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'register_for_change_events', 'fail')):
+                          return_value=TestAPIs.get_basic_response('system', 'register_for_change_events', 'fail')):
             self.assertRaises(CommandFailedError, self._pytheos.api.system.register_for_change_events, True)
 
     def test_system_register_for_change_events(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'register_for_change_events', 'success',
-                                                                enable='on')):
+                          return_value=TestAPIs.get_basic_response('system', 'register_for_change_events', 'success',
+                                                                   enable='on')):
             self._pytheos.api.system.register_for_change_events(True)
             self._pytheos.api.send_command.assert_called_with('system', 'register_for_change_events', enable='on')
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'register_for_change_events', 'success',
-                                                                enable='off')):
+                          return_value=TestAPIs.get_basic_response('system', 'register_for_change_events', 'success',
+                                                                   enable='off')):
             self._pytheos.api.system.register_for_change_events(False)
             self._pytheos.api.send_command.assert_called_with('system', 'register_for_change_events', enable='off')
 
     def test_system_check_account(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'check_account', 'success',
-                                                                message=f"signed_in&un={TEST_EMAIL}")):
+                          return_value=TestAPIs.get_basic_response('system', 'check_account', 'success',
+                                                                   message=f"signed_in&un={TEST_EMAIL}")):
             status, email = self._pytheos.api.system.check_account()
             self.assertEqual(status, AccountStatus.SignedIn)
             self.assertEqual(email, TEST_EMAIL)
             self._pytheos.api.send_command.assert_called_with('system', 'check_account')
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'check_account', 'success',
-                                                                message=f"signed_out")):
+                          return_value=TestAPIs.get_basic_response('system', 'check_account', 'success',
+                                                                   message=f"signed_out")):
             status, email = self._pytheos.api.system.check_account()
             self.assertEqual(status, AccountStatus.SignedOut)
             self.assertIsNone(email)
@@ -66,24 +67,24 @@ class TestAPIs(unittest.TestCase):
         password = 'somepassword'
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'sign_in', 'success',
-                                                                message=f"signed_in&un={TEST_EMAIL}")):
+                          return_value=TestAPIs.get_basic_response('system', 'sign_in', 'success',
+                                                                   message=f"signed_in&un={TEST_EMAIL}")):
             self._pytheos.api.system.sign_in(TEST_EMAIL, password)
             self._pytheos.api.send_command.assert_called_with('system', 'sign_in', un=TEST_EMAIL, pw=password)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'sign_in', 'fail')):
+                          return_value=TestAPIs.get_basic_response('system', 'sign_in', 'fail')):
             self.assertRaises(SignInFailedError, self._pytheos.api.system.sign_in, TEST_EMAIL, password)
 
     def test_system_sign_out(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'sign_out', 'success', message='signed_out')):
+                          return_value=TestAPIs.get_basic_response('system', 'sign_out', 'success', message='signed_out')):
             self._pytheos.api.system.sign_out()
             self._pytheos.api.send_command.assert_called_with('system', 'sign_out')
 
     def test_system_heart_beat(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'heart_beat', 'success')):
+                          return_value=TestAPIs.get_basic_response('system', 'heart_beat', 'success')):
             self._pytheos.api.system.heart_beat()
             self._pytheos.api.send_command.assert_called_with('system', 'heart_beat')
 
@@ -94,17 +95,17 @@ class TestAPIs(unittest.TestCase):
 
     def test_system_prettify_json_response(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'prettify_json_response', 'success', enable='on')):
+                          return_value=TestAPIs.get_basic_response('system', 'prettify_json_response', 'success', enable='on')):
             self._pytheos.api.system.prettify_json_response(True)
             self._pytheos.api.send_command.assert_called_with('system', 'prettify_json_response', enable='on')
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('system', 'prettify_json_response', 'success', enable='off')):
+                          return_value=TestAPIs.get_basic_response('system', 'prettify_json_response', 'success', enable='off')):
             self._pytheos.api.system.prettify_json_response(False)
             self._pytheos.api.send_command.assert_called_with('system', 'prettify_json_response', enable='off')
 
     def test_player_get_players(self):
-        response = self._get_basic_response('player', 'get_players', 'success')
+        response = TestAPIs.get_basic_response('player', 'get_players', 'success')
         response['payload'] = [
             {
                 "name": "Marantz PM7000N",
@@ -124,7 +125,7 @@ class TestAPIs(unittest.TestCase):
             self.assertIsInstance(players[0], Player)
 
     def test_player_get_player_info(self):
-        response = self._get_basic_response('player', 'get_player_info', 'success')
+        response = TestAPIs.get_basic_response('player', 'get_player_info', 'success')
         response['payload'] = {
             "name": "Marantz PM7000N",
             "pid": TEST_PLAYER_ID,
@@ -143,49 +144,49 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_get_play_state(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_play_state', 'success',
-                                                                pid=TEST_PLAYER_ID, state='stop')):
+                          return_value=TestAPIs.get_basic_response('player', 'get_play_state', 'success',
+                                                                   pid=TEST_PLAYER_ID, state='stop')):
             play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
             self.assertEqual(play_state, PlayState.Stopped)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_play_state', 'success',
-                                                                pid=TEST_PLAYER_ID, state='play')):
+                          return_value=TestAPIs.get_basic_response('player', 'get_play_state', 'success',
+                                                                   pid=TEST_PLAYER_ID, state='play')):
             play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
             self.assertEqual(play_state, PlayState.Playing)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_play_state', 'success',
-                                                                pid=TEST_PLAYER_ID, state='pause')):
+                          return_value=TestAPIs.get_basic_response('player', 'get_play_state', 'success',
+                                                                   pid=TEST_PLAYER_ID, state='pause')):
             play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
             self.assertEqual(play_state, PlayState.Paused)
 
     def test_player_set_play_state(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_play_state', 'success',
-                                                                pid=TEST_PLAYER_ID, state='stop')):
+                          return_value=TestAPIs.get_basic_response('player', 'set_play_state', 'success',
+                                                                   pid=TEST_PLAYER_ID, state='stop')):
             self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Stopped)
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Stopped)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_play_state', 'success',
-                                                                pid=TEST_PLAYER_ID, state='play')):
+                          return_value=TestAPIs.get_basic_response('player', 'set_play_state', 'success',
+                                                                   pid=TEST_PLAYER_ID, state='play')):
             self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Playing)
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Playing)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_play_state', 'success',
-                                                                pid=TEST_PLAYER_ID, state='pause')):
+                          return_value=TestAPIs.get_basic_response('player', 'set_play_state', 'success',
+                                                                   pid=TEST_PLAYER_ID, state='pause')):
             self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Paused)
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Paused)
 
         self.assertRaises(ValueError, self._pytheos.api.player.set_play_state, TEST_PLAYER_ID, 'invalid_state')
 
     def test_player_get_now_playing_media(self):
-        response = self._get_basic_response('player', 'get_now_playing_media', 'success', pid=TEST_PLAYER_ID)
+        response = TestAPIs.get_basic_response('player', 'get_now_playing_media', 'success', pid=TEST_PLAYER_ID)
         response['payload'] = {
             "type": "station",
             "song": "TOOL Radio",
@@ -209,24 +210,24 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
-            now_playing = self._pytheos.api.player.get_now_playing_media(TEST_PLAYER_ID) # FIXME?: What about the options?
+            now_playing = self._pytheos.api.player.get_now_playing_media(TEST_PLAYER_ID)    # FIXME?: What about the options?
             self._pytheos.api.send_command.assert_called_with('player', 'get_now_playing_media', pid=TEST_PLAYER_ID)
             self.assertIsInstance(now_playing, MediaItem)
 
     def test_player_get_volume(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_volume', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                level=10)):
+                          return_value=TestAPIs.get_basic_response('player', 'get_volume', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   level=10)):
             volume = self._pytheos.api.player.get_volume(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'get_volume', pid=TEST_PLAYER_ID)
             self.assertEqual(volume, 10)
 
     def test_player_set_volume(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_volume', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                level=20)):
+                          return_value=TestAPIs.get_basic_response('player', 'set_volume', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   level=20)):
             self._pytheos.api.player.set_volume(TEST_PLAYER_ID, 20)
             self._pytheos.api.send_command.assert_called_with('player', 'set_volume', pid=TEST_PLAYER_ID, level=20)
 
@@ -235,9 +236,9 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_volume_up(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'volume_up', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                step=5)):
+                          return_value=TestAPIs.get_basic_response('player', 'volume_up', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   step=5)):
             self._pytheos.api.player.volume_up(TEST_PLAYER_ID, 5)
             self._pytheos.api.send_command.assert_called_with('player', 'volume_up', pid=TEST_PLAYER_ID, step=5)
 
@@ -246,9 +247,9 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_volume_down(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'volume_down', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                step=5)):
+                          return_value=TestAPIs.get_basic_response('player', 'volume_down', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   step=5)):
             self._pytheos.api.player.volume_down(TEST_PLAYER_ID, 5)
             self._pytheos.api.send_command.assert_called_with('player', 'volume_down', pid=TEST_PLAYER_ID, step=5)
 
@@ -257,49 +258,49 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_get_mute(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_mute', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                state='off')):
+                          return_value=TestAPIs.get_basic_response('player', 'get_mute', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   state='off')):
             muted = self._pytheos.api.player.get_mute(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'get_mute', pid=TEST_PLAYER_ID)
             self.assertEqual(muted, False)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_mute', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                state='on')):
+                          return_value=TestAPIs.get_basic_response('player', 'get_mute', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   state='on')):
             muted = self._pytheos.api.player.get_mute(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'get_mute', pid=TEST_PLAYER_ID)
             self.assertEqual(muted, True)
 
     def test_player_set_mute(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_mute', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                state='on')):
+                          return_value=TestAPIs.get_basic_response('player', 'set_mute', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   state='on')):
             self._pytheos.api.player.set_mute(TEST_PLAYER_ID, True)
             self._pytheos.api.send_command.assert_called_with('player', 'set_mute', pid=TEST_PLAYER_ID, state=Mute.On)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_mute', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                state='off')):
+                          return_value=TestAPIs.get_basic_response('player', 'set_mute', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   state='off')):
             self._pytheos.api.player.set_mute(TEST_PLAYER_ID, False)
             self._pytheos.api.send_command.assert_called_with('player', 'set_mute', pid=TEST_PLAYER_ID, state=Mute.Off)
 
     def test_player_toggle_mute(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_mute', 'success',
-                                                                pid=TEST_PLAYER_ID)):
+                          return_value=TestAPIs.get_basic_response('player', 'get_mute', 'success',
+                                                                   pid=TEST_PLAYER_ID)):
             self._pytheos.api.player.toggle_mute(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'toggle_mute', pid=TEST_PLAYER_ID)
 
     def test_player_get_play_mode(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'get_play_mode', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                repeat='off',
-                                                                shuffle='off')):
+                          return_value=TestAPIs.get_basic_response('player', 'get_play_mode', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   repeat='off',
+                                                                   shuffle='off')):
             play_mode = self._pytheos.api.player.get_play_mode(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_mode', pid=TEST_PLAYER_ID)
             self.assertIsInstance(play_mode, PlayMode)
@@ -308,10 +309,10 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_set_play_mode(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_play_mode', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                repeat='off',
-                                                                shuffle='off')):
+                          return_value=TestAPIs.get_basic_response('player', 'set_play_mode', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   repeat='off',
+                                                                   shuffle='off')):
             self._pytheos.api.player.set_play_mode(TEST_PLAYER_ID, PlayMode(repeat=RepeatMode.Off, shuffle=ShuffleMode.Off))
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_mode', pid=TEST_PLAYER_ID, repeat=RepeatMode.Off, shuffle=ShuffleMode.Off)
 
@@ -319,7 +320,7 @@ class TestAPIs(unittest.TestCase):
         start_pos = 0
         retrieve_count = 10
 
-        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=self._get_demo_queue()):
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=TestAPIs.get_demo_queue()):
             queue = self._pytheos.api.player.get_queue(TEST_PLAYER_ID, start_pos, retrieve_count)
             self._pytheos.api.send_command.assert_called_with('player', 'get_queue',
                                                               pid=TEST_PLAYER_ID,
@@ -333,7 +334,7 @@ class TestAPIs(unittest.TestCase):
         self.assertRaises(ValueError, self._pytheos.api.player.get_queue, TEST_PLAYER_ID, 0, 0)    # Number to retrieve too small
 
     def test_player_play_queue(self):
-        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=self._get_demo_queue()):
+        with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=TestAPIs.get_demo_queue()):
             queue = self._pytheos.api.player.get_queue(TEST_PLAYER_ID, 0, 10)
 
             self._pytheos.api.player.play_queue(TEST_PLAYER_ID, queue[0].queue_id)
@@ -341,51 +342,50 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_remove_from_queue(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'remove_from_queue', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                qid=0)):
+                          return_value=TestAPIs.get_basic_response('player', 'remove_from_queue', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   qid=0)):
             self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0,))
             self._pytheos.api.send_command.assert_called_with('player', 'remove_from_queue', pid=TEST_PLAYER_ID, qid='0')
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'remove_from_queue', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                qid='0,1')):
+                          return_value=TestAPIs.get_basic_response('player', 'remove_from_queue', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   qid='0,1')):
             self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0, 1))
             self._pytheos.api.send_command.assert_called_with('player', 'remove_from_queue', pid=TEST_PLAYER_ID, qid='0,1')
 
     def test_player_save_queue(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'save_queue', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                name='Test Playlist')):
+                          return_value=TestAPIs.get_basic_response('player', 'save_queue', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   name='Test Playlist')):
             self._pytheos.api.player.save_queue(TEST_PLAYER_ID, "Test Playlist")
             self._pytheos.api.send_command.assert_called_with('player', 'save_queue',
                                                               pid=TEST_PLAYER_ID, name='Test Playlist')
 
-        self.assertRaises(ValueError, self._pytheos.api.player.save_queue, TEST_PLAYER_ID, '*'*129) # Name too long
+        self.assertRaises(ValueError, self._pytheos.api.player.save_queue, TEST_PLAYER_ID, '*'*129)     # Name too long
 
     def test_player_clear_queue(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value = self._get_basic_response('player', 'clear_queue', 'success',
-                                                                  pid=TEST_PLAYER_ID)):
+                          return_value=TestAPIs.get_basic_response('player', 'clear_queue', 'success', pid=TEST_PLAYER_ID)):
             self._pytheos.api.player.clear_queue(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'clear_queue', pid=TEST_PLAYER_ID)
 
     def test_player_move_queue_item(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'move_queue_item', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                sqid=1,
-                                                                dqid=1)):
+                          return_value=TestAPIs.get_basic_response('player', 'move_queue_item', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   sqid=1,
+                                                                   dqid=1)):
             self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1,), destination_queue_id=1)
             self._pytheos.api.send_command.assert_called_with('player', 'move_queue_item', pid=TEST_PLAYER_ID, sqid='1', dqid=1)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'move_queue_item', 'success',
-                                                                pid=TEST_PLAYER_ID,
-                                                                sqid='1,2',
-                                                                dqid=3)):
+                          return_value=TestAPIs.get_basic_response('player', 'move_queue_item', 'success',
+                                                                   pid=TEST_PLAYER_ID,
+                                                                   sqid='1,2',
+                                                                   dqid=3)):
             self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1, 2), destination_queue_id=3)
             self._pytheos.api.send_command.assert_called_with('player', 'move_queue_item', pid=TEST_PLAYER_ID, sqid='1,2', dqid=3)
 
@@ -394,40 +394,40 @@ class TestAPIs(unittest.TestCase):
 
     def test_player_play_next(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'play_next', 'success',
-                                                                pid=TEST_PLAYER_ID)):
+                          return_value=TestAPIs.get_basic_response('player', 'play_next', 'success',
+                                                                   pid=TEST_PLAYER_ID)):
             self._pytheos.api.player.play_next(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'play_next', pid=TEST_PLAYER_ID)
 
     def test_player_play_previous(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'play_previous', 'success',
-                                                                pid=TEST_PLAYER_ID)):
+                          return_value=TestAPIs.get_basic_response('player', 'play_previous', 'success',
+                                                                   pid=TEST_PLAYER_ID)):
             self._pytheos.api.player.play_previous(TEST_PLAYER_ID)
             self._pytheos.api.send_command.assert_called_with('player', 'play_previous', pid=TEST_PLAYER_ID)
 
     def test_player_set_quickselect(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'set_quickselect', 'success',
-                                                                pid=TEST_PLAYER_ID, id=1)):
+                          return_value=TestAPIs.get_basic_response('player', 'set_quickselect', 'success',
+                                                                   pid=TEST_PLAYER_ID, id=1)):
             self._pytheos.api.player.set_quickselect(TEST_PLAYER_ID, 1)
             self._pytheos.api.send_command.assert_called_with('player', 'set_quickselect', pid=TEST_PLAYER_ID, id=1)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, TEST_PLAYER_ID, 0) # Value too small
-        self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, TEST_PLAYER_ID, 7) # Value too large
+        self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, TEST_PLAYER_ID, 0)  # Value too small
+        self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, TEST_PLAYER_ID, 7)  # Value too large
 
     def test_player_play_quickselect(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('player', 'play_quickselect', 'success',
-                                                                pid=TEST_PLAYER_ID, id=1)):
+                          return_value=TestAPIs.get_basic_response('player', 'play_quickselect', 'success',
+                                                                   pid=TEST_PLAYER_ID, id=1)):
             self._pytheos.api.player.play_quickselect(TEST_PLAYER_ID, 1)
             self._pytheos.api.send_command.assert_called_with('player', 'play_quickselect', pid=TEST_PLAYER_ID, id=1)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect, TEST_PLAYER_ID, 0) # Value too small
-        self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect, TEST_PLAYER_ID, 7) # Value too large
+        self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect, TEST_PLAYER_ID, 0)     # Value too small
+        self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect, TEST_PLAYER_ID, 7)     # Value too large
 
     def test_player_get_quickselects(self):
-        response = self._get_basic_response('player', 'get_quickselects', 'success', pid=TEST_PLAYER_ID)
+        response = TestAPIs.get_basic_response('player', 'get_quickselects', 'success', pid=TEST_PLAYER_ID)
         response['payload'] = [
             {'id': 1, 'name': 'Quick Select 1'},
             {'id': 2, 'name': 'Quick Select 2'},
@@ -443,7 +443,7 @@ class TestAPIs(unittest.TestCase):
             self.assertIsInstance(quick_selects[0], QuickSelect)
 
     def test_player_check_update(self):
-        response = self._get_basic_response('player', 'check_update', 'success', pid=TEST_PLAYER_ID)
+        response = TestAPIs.get_basic_response('player', 'check_update', 'success', pid=TEST_PLAYER_ID)
         response['payload'] = {'update': 'update_none'}
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
@@ -458,7 +458,7 @@ class TestAPIs(unittest.TestCase):
             self.assertEqual(update_available, True)
 
     def test_group_get_groups(self):
-        response = self._get_basic_response('group', 'get_groups', 'success')
+        response = TestAPIs.get_basic_response('group', 'get_groups', 'success')
         response['payload'] = [
             {
                 "name": "group name 1",
@@ -513,7 +513,7 @@ class TestAPIs(unittest.TestCase):
             self.assertIsInstance(groups[0].players[0].role, GroupRole)
 
     def test_group_get_group_info(self):
-        response = self._get_basic_response('group', 'get_group_info', 'success', gid=TEST_GROUP_ID)
+        response = TestAPIs.get_basic_response('group', 'get_group_info', 'success', gid=TEST_GROUP_ID)
         response['payload'] = {
             "name": "group name 1",
             "gid": f"{TEST_GROUP_ID}",
@@ -546,26 +546,26 @@ class TestAPIs(unittest.TestCase):
 
         # Create/modify group
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'set_group', 'success',
-                                                                gid='1',
-                                                                name='Group 1',
-                                                                pid=','.join(str(n) for n in [leader]+members))):
+                          return_value=TestAPIs.get_basic_response('group', 'set_group', 'success',
+                                                                   gid='1',
+                                                                   name='Group 1',
+                                                                   pid=','.join(str(n) for n in [leader]+members))):
             results = self._pytheos.api.group.set_group(leader, members)
             self._pytheos.api.send_command.assert_called_with('group', 'set_group', pid=','.join(str(n) for n in [leader]+members))
             self.assertIsInstance(results, Group)
 
         # Ungroup all
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'set_group', 'success', pid=leader)):
+                          return_value=TestAPIs.get_basic_response('group', 'set_group', 'success', pid=leader)):
             results = self._pytheos.api.group.set_group(leader)
             self._pytheos.api.send_command.assert_called_with('group', 'set_group', pid=str(leader))
             self.assertIsNone(results)
 
     def test_group_get_volume(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'get_volume', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                level=50)):
+                          return_value=TestAPIs.get_basic_response('group', 'get_volume', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   level=50)):
             volume = self._pytheos.api.group.get_volume(TEST_GROUP_ID)
             self._pytheos.api.send_command.assert_called_with('group', 'get_volume', gid=TEST_GROUP_ID)
             self.assertIsInstance(volume, int)
@@ -573,9 +573,9 @@ class TestAPIs(unittest.TestCase):
 
     def test_group_set_volume(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'set_volume', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                level=20)):
+                          return_value=TestAPIs.get_basic_response('group', 'set_volume', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   level=20)):
             self._pytheos.api.group.set_volume(TEST_GROUP_ID, 20)
             self._pytheos.api.send_command.assert_called_with('group', 'set_volume', gid=TEST_GROUP_ID, level=20)
 
@@ -584,9 +584,9 @@ class TestAPIs(unittest.TestCase):
 
     def test_group_volume_up(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'volume_up', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                step=5)):
+                          return_value=TestAPIs.get_basic_response('group', 'volume_up', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   step=5)):
             self._pytheos.api.group.volume_up(TEST_GROUP_ID, 5)
             self._pytheos.api.send_command.assert_called_with('group', 'volume_up', gid=TEST_GROUP_ID, step=5)
 
@@ -595,9 +595,9 @@ class TestAPIs(unittest.TestCase):
 
     def test_group_volume_down(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'volume_down', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                step=5)):
+                          return_value=TestAPIs.get_basic_response('group', 'volume_down', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   step=5)):
             self._pytheos.api.group.volume_down(TEST_GROUP_ID, 5)
             self._pytheos.api.send_command.assert_called_with('group', 'volume_down', gid=TEST_GROUP_ID, step=5)
 
@@ -606,44 +606,44 @@ class TestAPIs(unittest.TestCase):
 
     def test_group_get_mute(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'get_mute', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                state='on')):
+                          return_value=TestAPIs.get_basic_response('group', 'get_mute', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   state='on')):
             muted = self._pytheos.api.group.get_mute(TEST_GROUP_ID)
             self._pytheos.api.send_command.assert_called_with('group', 'get_mute', gid=TEST_GROUP_ID)
             self.assertEqual(muted, True)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'get_mute', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                state='off')):
+                          return_value=TestAPIs.get_basic_response('group', 'get_mute', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   state='off')):
             muted = self._pytheos.api.group.get_mute(TEST_GROUP_ID)
             self._pytheos.api.send_command.assert_called_with('group', 'get_mute', gid=TEST_GROUP_ID)
             self.assertEqual(muted, False)
 
     def test_group_set_mute(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'set_mute', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                state='on')):
+                          return_value=TestAPIs.get_basic_response('group', 'set_mute', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   state='on')):
             self._pytheos.api.group.set_mute(TEST_GROUP_ID, True)
             self._pytheos.api.send_command.assert_called_with('group', 'set_mute', gid=TEST_GROUP_ID, state=Mute.On)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'set_mute', 'success',
-                                                                gid=TEST_GROUP_ID,
-                                                                state='off')):
+                          return_value=TestAPIs.get_basic_response('group', 'set_mute', 'success',
+                                                                   gid=TEST_GROUP_ID,
+                                                                   state='off')):
             self._pytheos.api.group.set_mute(TEST_GROUP_ID, False)
             self._pytheos.api.send_command.assert_called_with('group', 'set_mute', gid=TEST_GROUP_ID, state=Mute.Off)
 
     def test_group_toggle_mute(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('group', 'toggle_mute', 'success')):
+                          return_value=TestAPIs.get_basic_response('group', 'toggle_mute', 'success')):
             self._pytheos.api.group.toggle_mute(TEST_GROUP_ID)
             self._pytheos.api.send_command.assert_called_with('group', 'toggle_mute', gid=TEST_GROUP_ID)
 
     def test_browse_get_music_sources(self):
-        response = self._get_basic_response('browse', 'get_music_sources', 'success')
+        response = TestAPIs.get_basic_response('browse', 'get_music_sources', 'success')
         response['payload'] = [
             {
                 "name": "Pandora",
@@ -668,7 +668,7 @@ class TestAPIs(unittest.TestCase):
             self.assertIsInstance(music_sources[0], MusicSource)
 
     def test_browse_get_source_info(self):
-        response = self._get_basic_response('browse', 'get_music_sources', 'success')
+        response = TestAPIs.get_basic_response('browse', 'get_music_sources', 'success')
         response['payload'] = {
             "name": "Pandora",
             "image_url": "https://production.ws.skyegloup.com:443/media/images/service/logos/pandora.png",
@@ -683,7 +683,7 @@ class TestAPIs(unittest.TestCase):
             self._pytheos.api.send_command.assert_called_with('browse', 'get_source_info', sid=1)
 
     def test_browse_browse_source(self):
-        response = self._get_basic_response('browse', 'browse', 'success', sid=1, returned=2, count=2)
+        response = TestAPIs.get_basic_response('browse', 'browse', 'success', sid=1, returned=2, count=2)
         response['payload'] = [
             {
                 "container": "yes",
@@ -715,7 +715,7 @@ class TestAPIs(unittest.TestCase):
         source_id = 1340337940
         container_id = 'abe6121c-1731-4683-815c-89e1dcd2bf11'
 
-        response = self._get_basic_response('browse', 'browse', 'success', sid=source_id, cid=container_id, returned=1, count=1)
+        response = TestAPIs.get_basic_response('browse', 'browse', 'success', sid=source_id, cid=container_id, returned=1, count=1)
         response['payload'] = [
             {
                 "container": "yes",
@@ -736,7 +736,7 @@ class TestAPIs(unittest.TestCase):
     def test_browse_get_search_criteria(self):
         sid = 1340337940
 
-        response = self._get_basic_response('browse', 'get_search_criteria', 'success', sid=sid)
+        response = TestAPIs.get_basic_response('browse', 'get_search_criteria', 'success', sid=sid)
         response['payload'] = [
             {
                 "name": "Artist",
@@ -766,9 +766,9 @@ class TestAPIs(unittest.TestCase):
     def test_browse_search(self):
         sid = 1340337940
 
-        response = self._get_basic_response('browse', 'search', 'success',
-                                            sid=sid, search='someband', scid=1,
-                                            returned=3, count=3)
+        response = TestAPIs.get_basic_response('browse', 'search', 'success',
+                                               sid=sid, search='someband', scid=1,
+                                               returned=3, count=3)
         response['payload'] = [
             {
                 "container": "no",
@@ -809,8 +809,8 @@ class TestAPIs(unittest.TestCase):
         mid = 1156081746731893318
         name = 'Shuffle'
 
-        response = self._get_basic_response('browse', 'play_stream', 'success',
-                                            pid=pid, sid=sid, cid=cid, mid=mid, name=name)
+        response = TestAPIs.get_basic_response('browse', 'play_stream', 'success',
+                                               pid=pid, sid=sid, cid=cid, mid=mid, name=name)
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message', return_value=response):
             self._pytheos.api.browse.play_station(pid, sid, cid, mid, name)
@@ -818,8 +818,8 @@ class TestAPIs(unittest.TestCase):
 
     def test_browse_play_preset(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('browse', 'play_preset', 'success',
-                                                                pid=TEST_PLAYER_ID, preset=1)):
+                          return_value=TestAPIs.get_basic_response('browse', 'play_preset', 'success',
+                                                                   pid=TEST_PLAYER_ID, preset=1)):
             self._pytheos.api.browse.play_preset(TEST_PLAYER_ID, 1)
             self._pytheos.api.send_command.assert_called_with('browse', 'play_preset', pid=TEST_PLAYER_ID, preset=1)
 
@@ -827,8 +827,8 @@ class TestAPIs(unittest.TestCase):
 
     def test_browse_play_input(self):
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('browse', 'play_input', 'success',
-                                                                pid=TEST_PLAYER_ID, input=str(InputSource.Phono))):
+                          return_value=TestAPIs.get_basic_response('browse', 'play_input', 'success',
+                                                                   pid=TEST_PLAYER_ID, input=str(InputSource.Phono))):
             self._pytheos.api.browse.play_input(TEST_PLAYER_ID, InputSource.Phono)
             self._pytheos.api.send_command.assert_called_with('browse', 'play_input', pid=TEST_PLAYER_ID, input=InputSource.Phono)
 
@@ -836,8 +836,8 @@ class TestAPIs(unittest.TestCase):
         url = 'http://someserver/somestream.mp3'
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('browse', 'play_url', 'success',
-                                                                pid=TEST_PLAYER_ID, url=url)):
+                          return_value=TestAPIs.get_basic_response('browse', 'play_url', 'success',
+                                                                   pid=TEST_PLAYER_ID, url=url)):
             self._pytheos.api.browse.play_url(TEST_PLAYER_ID, url)
 
     def test_browse_add_container_to_queue(self):
@@ -845,8 +845,8 @@ class TestAPIs(unittest.TestCase):
         cid = 'd4d42d93deb97cb2db7b'
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('browse', 'add_to_queue', 'success',
-                                                                pid=TEST_PLAYER_ID, sid=sid, cid=cid, aid=3)):
+                          return_value=TestAPIs.get_basic_response('browse', 'add_to_queue', 'success',
+                                                                   pid=TEST_PLAYER_ID, sid=sid, cid=cid, aid=3)):
             self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, add_type=AddToQueueType.AddToEnd)
             self._pytheos.api.send_command.assert_called_with('browse', 'add_to_queue', pid=TEST_PLAYER_ID,
                                                               sid=sid, cid=cid, aid=AddToQueueType.AddToEnd)
@@ -857,8 +857,8 @@ class TestAPIs(unittest.TestCase):
         mid = '36fad30531d3e5bceec6'
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('browse', 'add_to_queue', 'success',
-                                                                pid=TEST_PLAYER_ID, sid=sid, cid=cid, mid=mid, aid=3)):
+                          return_value=TestAPIs.get_basic_response('browse', 'add_to_queue', 'success',
+                                                                   pid=TEST_PLAYER_ID, sid=sid, cid=cid, mid=mid, aid=3)):
             self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
             self._pytheos.api.send_command.assert_called_with('browse', 'add_to_queue', pid=TEST_PLAYER_ID,
                                                               sid=sid, cid=cid, mid=mid, aid=AddToQueueType.AddToEnd)
@@ -869,8 +869,8 @@ class TestAPIs(unittest.TestCase):
         name = 'foobar'
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('browse', 'rename_playlist', 'success',
-                                                                sid=sid, cid=cid, name=name)):
+                          return_value=TestAPIs.get_basic_response('browse', 'rename_playlist', 'success',
+                                                                   sid=sid, cid=cid, name=name)):
             self._pytheos.api.browse.rename_playlist(sid, cid, name)
             self._pytheos.api.send_command.assert_called_with('browse', 'rename_playlist', sid=sid, cid=cid, name=name)
 
@@ -879,8 +879,8 @@ class TestAPIs(unittest.TestCase):
         cid = 259539
 
         with patch.object(pytheos.api.interface.APIInterface, 'read_message',
-                          return_value=self._get_basic_response('browse', 'delete_playlist', 'success',
-                                                                sid=sid, cid=cid)):
+                          return_value=TestAPIs.get_basic_response('browse', 'delete_playlist', 'success',
+                                                                   sid=sid, cid=cid)):
             self._pytheos.api.browse.delete_playlist(sid, cid)
             self._pytheos.api.send_command.assert_called_with('browse', 'delete_playlist', sid=sid, cid=cid)
 
@@ -888,7 +888,7 @@ class TestAPIs(unittest.TestCase):
         sid = 1
         cid = 1
 
-        response = self._get_basic_response('browse', 'retrieve_metadata', 'success', sid=sid, cid=cid)
+        response = TestAPIs.get_basic_response('browse', 'retrieve_metadata', 'success', sid=sid, cid=cid)
         response['payload'] = [
             {
                 "album_id": "1",
@@ -915,9 +915,9 @@ class TestAPIs(unittest.TestCase):
         sid = 1
         query = 'foobar'
 
-        response = self._get_basic_response('browse', 'retrieve_metadata', 'success',
-                                            sid=sid, search=query, scid=1, range='0,100',
-                                            returned=2, count=2)
+        response = TestAPIs.get_basic_response('browse', 'retrieve_metadata', 'success',
+                                               sid=sid, search=query, scid=1, range='0,100',
+                                               returned=2, count=2)
         response['payload'] = [
             {
                 "container": "no",
@@ -943,7 +943,8 @@ class TestAPIs(unittest.TestCase):
             self.assertGreater(int(results.header.vars.get('returned', 0)), 0)
 
     # Utils
-    def _get_demo_queue(self):
+    @staticmethod
+    def get_demo_queue():
         return {
             "heos": {
               "command": "player/get_queue",
@@ -990,7 +991,8 @@ class TestAPIs(unittest.TestCase):
             ]
         }
 
-    def _get_basic_response(self, group, command, success, message=None, **kwargs):
+    @staticmethod
+    def get_basic_response(group, command, success, message=None, **kwargs) -> Union[List, Dict]:
         return {
             "heos": {
                 "command": f"{group}/{command}",
@@ -999,5 +1001,6 @@ class TestAPIs(unittest.TestCase):
             }
         }
 
-if __name__== '__main__':
+
+if __name__ == '__main__':
     unittest.main()

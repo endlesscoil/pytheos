@@ -46,11 +46,16 @@ class PytheosSource(Sequence):
     def source_id(self):
         return self.id
 
+    @property
+    def parent(self):
+        return self._parent
+
     def __init__(self, pytheos: 'Pytheos', source: Union['PytheosSource', MusicSource], parent: Union['PytheosSource', 'PytheosContainer']=None):
         super().__init__()
 
         self._pytheos = pytheos
         self._source = source
+        self._parent = parent
 
         self._nocache = False
         self._items = None
@@ -108,6 +113,10 @@ class PytheosContainer(Sequence):
     def is_container_type(self):
         return self._container.type.is_container
 
+    @property
+    def parent(self):
+        return self._parent
+
     def __init__(self, pytheos: 'Pytheos', container: MusicSource, parent: Union[PytheosSource, 'PytheosContainer'], source_id=None):
         super().__init__()
 
@@ -160,6 +169,10 @@ class PytheosMedia:
     @property
     def queue_id(self):
         return self._media.queue_id
+
+    @property
+    def parent(self):
+        return self._parent
 
     def __init__(self, pytheos: 'Pytheos', media: SourceMedia, parent: Optional[Union[PytheosSource, PytheosContainer]]):
         self._pytheos = pytheos

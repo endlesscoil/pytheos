@@ -138,7 +138,7 @@ class PytheosPlayer:
         self._api.player.set_volume(self.id, value)
 
     @property
-    def now_playing(self) -> MediaItem: # FIXME: Maybe want to abstract MediaItem out
+    def now_playing(self) -> MediaItem:     # FIXME: Maybe want to abstract MediaItem out
         return self._api.player.get_now_playing_media(self.id)
 
     @property
@@ -169,26 +169,27 @@ class PytheosPlayer:
         self._shuffle: Optional[ShuffleMode] = None
         self._volume: Optional[int] = None
         self._quick_selects: Optional[dict] = None
+        self._play_state: Optional[PlayState] = None
         self._queue = PytheosQueue(pytheos, player)
 
-    def refresh(self, id=None):
+    def refresh(self, player_id=None):
         """ Retrieve and update the Player information used by this class.  Optionally, the ID already present on the
         instance may be overridden.
 
-        :param id: Player ID to use or None to use the currently set ID
+        :param player_id: Player ID to use or None to use the currently set ID
         :return: None
         """
-        self._player = self._api.player.get_player_info(id if id else self.id)
+        self._player = self._api.player.get_player_info(player_id if player_id else self.id)
 
-    def play_input(self, input: InputSource, source_player: Optional[PytheosPlayer]=None):
+    def play_input(self, input_source: InputSource, source_player: Optional[PytheosPlayer]=None):
         """ Instructs the player to play the specified input source.  Optionally, this input source can live on another
         Player on the network, which can be specified with the source_player parameter.
 
-        :param input: Input source to play
+        :param input_source: Input source to play
         :param source_player: Optional source Player ID
         :return: None
         """
-        self._api.browse.play_input(self.id, input_name=input, source_player_id=source_player.id)
+        self._api.browse.play_input(self.id, input_name=input_source, source_player_id=source_player.id)
 
     def play_favorite(self, favorite: int):
         """ Instructs the player to play the specified favorite or preset ID.

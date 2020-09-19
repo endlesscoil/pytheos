@@ -65,7 +65,7 @@ class CommandFailedError(PytheosError):
                 try:
                     self.system_error_code = HEOSSystemErrorCode(system_error_code)
                 except ValueError:
-                    self.system_error_code = system_error_code # Unknown error code
+                    self.system_error_code = system_error_code  # Unknown error code
 
 
 class SignInFailedError(CommandFailedError):

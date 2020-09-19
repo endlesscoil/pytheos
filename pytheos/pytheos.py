@@ -26,6 +26,17 @@ class Pytheos:
     """ Pytheos interface """
     DEFAULT_PORT = 1255
 
+    @staticmethod
+    def check_channel_availability(channel: Connection):
+        """ Checks to make sure that the provided channel is available.
+
+        :param channel: Channel connection
+        :raises: ChannelUnavailableError
+        :return: None
+        """
+        if not channel or not channel.connected:
+            raise ChannelUnavailableError()
+
     @property
     def log_level(self):
         return logger.level
@@ -91,6 +102,7 @@ class Pytheos:
 
         self._command_channel = Connection()
         self._event_channel = Connection()
+        self._event_queue = queue.Queue()
         self._event_thread: Optional[EventReceiverThread] = None
         self._event_handler_thread: Optional[EventHandlerThread] = None
         self._connected = False
@@ -138,7 +150,6 @@ class Pytheos:
             self._set_register_for_change_events(True)
 
             # FIXME: Figure out exactly how I'm consuming these.
-            self._event_queue = queue.Queue()
             self._event_thread = EventReceiverThread(self._event_channel, self._event_queue)
             self._event_thread.start()
             self._event_handler_thread = EventHandlerThread(self, self._event_queue)
@@ -274,16 +285,6 @@ class Pytheos:
 
         return self._sources
 
-    def _check_channel_availability(self, channel: Connection):
-        """ Checks to make sure that the provided channel is available.
-
-        :param channel: Channel connection
-        :raises: ChannelUnavailableError
-        :return: None
-        """
-        if not channel or not channel.connected:
-            raise ChannelUnavailableError()
-
     def _event_handler(self, event: HEOSEvent):
         """ Internal event handler
 
@@ -362,11 +363,10 @@ def connect(host: Union[Pytheos, str], port: int=Pytheos.DEFAULT_PORT) -> Pytheo
     """ Connect to the provided host and return a context manager for use with the connection.
 
     :param host: Host to connect to
+    :param port: Port to connect to
     :raises: ValueError
     :return: The Pytheos instance
     """
-    conn = None
-
     if isinstance(host, Pytheos):
         conn = host
     elif isinstance(host, str):

@@ -20,6 +20,7 @@ def _on_now_playing_changed(event: HEOSEvent):
     """
     print(f'Now Playing Changed Event: {event}')
 
+
 def _on_player_state_changed(event: HEOSEvent):
     """ Handles event/player_state_changed events from HEOS.
 
@@ -27,6 +28,7 @@ def _on_player_state_changed(event: HEOSEvent):
     :return: None
     """
     print(f'Player State Changed Event: {event}')
+
 
 def main():
     """ Main entry point """

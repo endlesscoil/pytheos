@@ -55,7 +55,7 @@ class BrowseAPI(API):
             kwargs['scid'] = create_criteria
 
         if options is not None:
-            kwargs['id'] = options # NOTE: This is correct.. the options are called 'id' in the spec for some reason.
+            kwargs['id'] = options  # NOTE: This is correct.. the options are called 'id' in the spec for some reason.
 
         if item_range is not None:
             kwargs['item_range'] = ','.join(item_range)
@@ -157,10 +157,7 @@ class BrowseAPI(API):
         :param name: Station name returned by browse
         :return: None
         """
-        self._api.call('browse', 'play_stream',
-                           pid=player_id, sid=source_id,
-                           cid=container_id, mid=media_id,
-                           name=name)
+        self._api.call('browse', 'play_stream', pid=player_id, sid=source_id, cid=container_id, mid=media_id, name=name)
 
     def play_preset(self, player_id: int, preset: int):
         """ Plays one of the configured presets/favorites.

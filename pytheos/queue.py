@@ -3,7 +3,7 @@ from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 
 from pytheos.api.browse.types import AddToQueueType
-from pytheos.api.player.types import MediaItem, PlayState
+from pytheos.api.player.types import PlayState
 from pytheos.source import PytheosMedia
 
 if TYPE_CHECKING:
@@ -140,18 +140,19 @@ class PytheosQueue(MutableSequence):
         if self._queue and index + 1 < len(self._queue):
             self._pytheos.api.player.remove_from_queue(self._player.player_id, list(range(index + 1, len(self._queue))))
 
-        cid, mid = self._get_queue_insert_ids(obj)
-        self._pytheos.api.browse.add_to_queue(self._player.player_id, obj._parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+        cid, mid = PytheosQueue._get_queue_insert_ids(obj)
+        self._pytheos.api.browse.add_to_queue(self._player.player_id, obj.parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
         for qi in self._queue[index:]:
-            cid, mid = self._get_queue_insert_ids(qi)
-            self._pytheos.api.browse.add_to_queue(self._player.player_id, qi._parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+            cid, mid = PytheosQueue._get_queue_insert_ids(qi)
+            self._pytheos.api.browse.add_to_queue(self._player.player_id, qi.parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
         self._refresh_queue(True)
 
-    def _get_queue_insert_ids(self, object):
-        cid = object.id if object.is_container_type else object._parent.id
-        mid = None if object.is_container_type else object.id
+    @staticmethod
+    def _get_queue_insert_ids(item):
+        cid = item.id if item.is_container_type else item.parent.id
+        mid = None if item.is_container_type else item.id
 
         return cid, mid
 

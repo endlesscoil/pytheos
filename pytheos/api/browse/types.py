@@ -78,6 +78,7 @@ class InputSource(Enum):
     def __str__(self):
         return str(self.value)
 
+
 class AddToQueueType(Enum):
     PlayNow = 1
     PlayNext = 2
@@ -86,6 +87,7 @@ class AddToQueueType(Enum):
 
     def __str__(self):
         return str(self.value)
+
 
 class ServiceOption(Enum):
     AddTrackToLibrary = 1
@@ -106,6 +108,7 @@ class ServiceOption(Enum):
 
     def __str__(self):
         return str(self.value)
+
 
 @dataclass
 class Source:
@@ -129,6 +132,7 @@ class Source:
             self.container = bool(from_dict.get('container'))
             self.container_id = from_dict.get('cid')
 
+
 @dataclass
 class MusicSource(Source):
     available: bool = False
@@ -144,6 +148,7 @@ class MusicSource(Source):
         if from_dict:
             self.available = from_dict.get('available')
             self.service_username = from_dict.get('service_username')
+
 
 @dataclass
 class SourceMedia(Source):
@@ -168,13 +173,14 @@ class SourceMedia(Source):
             self.container_id = from_dict.get('cid')
             self.media_id = from_dict.get('mid')
 
+
 @dataclass
 class SearchCriteria:
     name: str = ""
     search_criteria_id: str = ""
     wildcard: bool = False
     playable: bool = False
-    container_id: str = "" # Prefix to add to search string to play directly from results.  Only valid if playable=True.
+    container_id: str = ""  # Prefix to add to search string to play directly from results.  Only valid if playable=True.
 
     def __init__(self, from_dict: Optional[dict]=None):
         if from_dict:
@@ -183,6 +189,7 @@ class SearchCriteria:
             self.wildcard = bool(from_dict.get('wildcard', False))
             self.playable = bool(from_dict.get('playable', False))
             self.container_id = from_dict.get('cid')
+
 
 @dataclass
 class AlbumMetadata:
@@ -194,6 +201,7 @@ class AlbumMetadata:
         if from_dict:
             self.album_id = from_dict.get('album_id')
             self.images = [AlbumImage(image_data) for image_data in from_dict.get('images', [])]
+
 
 @dataclass
 class AlbumImage:

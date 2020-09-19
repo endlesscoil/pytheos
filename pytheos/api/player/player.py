@@ -113,7 +113,7 @@ class PlayerAPI(API):
             raise ValueError('Number of items to retrieve must be between 1 and 100')
 
         results = self._api.call('player', 'get_queue',
-                                     pid=player_id, range=f'{range_start},{range_start + number_to_retrieve - 1}')
+                                 pid=player_id, range=f'{range_start},{range_start + number_to_retrieve - 1}')
         return [MediaItem(item) for item in results.payload]
 
     def get_quickselects(self, player_id: int, quick_select_id: Optional[int]=None) -> list:
@@ -152,15 +152,17 @@ class PlayerAPI(API):
         :raises ValueError:
         :return: None
         """
-        qids = []
+        quickselect_ids = []
         for qid in queue_ids:
-            if qid < 1: raise ValueError('Invalid Queue ID - must be between 1 and the size of the queue')
-            qids.append(str(qid))
+            if qid < 1:
+                raise ValueError('Invalid Queue ID - must be between 1 and the size of the queue')
+
+            quickselect_ids.append(str(qid))
 
         if destination_queue_id < 1:
             raise ValueError('Invalid Queue ID - must be between 1 and the size of the queue')
 
-        self._api.call('player', 'move_queue_item', pid=player_id, sqid=','.join(qids), dqid=destination_queue_id)
+        self._api.call('player', 'move_queue_item', pid=player_id, sqid=','.join(quickselect_ids), dqid=destination_queue_id)
 
     def play_next(self, player_id: int) -> None:
         """ Plays the next item in the play queue
@@ -240,18 +242,18 @@ class PlayerAPI(API):
         """
         self._api.call('player', 'set_play_mode', pid=player_id, repeat=play_mode.repeat, shuffle=play_mode.shuffle)
 
-    def set_quickselect(self, player_id: int, id: int) -> None:
+    def set_quickselect(self, player_id: int, quickselect_id: int) -> None:
         """ Selects the specified Quick Select
 
         :param player_id: Player ID
-        :param level: QuickSelect ID
+        :param quickselect_id: QuickSelect ID
         :raises: ValueError
         :return: None
         """
-        if not 0 < id <= 6:
+        if not 0 < quickselect_id <= 6:
             raise ValueError('Level must be between 1 and 6')
 
-        self._api.call('player', 'set_quickselect', pid=player_id, id=id)
+        self._api.call('player', 'set_quickselect', pid=player_id, id=quickselect_id)
 
     def set_play_state(self, player_id: int, state: PlayState) -> None:
         """ Set the current playing state for the player

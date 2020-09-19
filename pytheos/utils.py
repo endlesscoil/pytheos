@@ -22,7 +22,7 @@ def extract_host(url: str) -> Optional[str]:
     :param url: URL string
     :return: Matching string or None if not found
     """
-    match = re.match(r"https?://([^:/]+)[:/]?", url) # Should match any valid url host.
+    match = re.match(r"https?://([^:/]+)[:/]?", url)    # Should match any valid url host.
     return match.group(1) if match else None
 
 
@@ -48,34 +48,34 @@ def build_command_string(group: str, command: str, **kwargs) -> str:
     return command_string + "\n"
 
 
-def _encode_characters(input) -> str:
+def _encode_characters(input_string) -> str:
     """ Encodes certain special characters as defined by the HEOS specification.
 
-    :param input: String to encode
+    :param input_string: String to encode
     :return: New string with encoded characters
     """
-    if not isinstance(input, str):
-        input = str(input)
+    if not isinstance(input_string, str):
+        input_string = str(input_string)
 
     results = ''
-    for c in input:
+    for c in input_string:
         replacement_char = CHARACTER_REPLACE_MAP.get(c)
         results += replacement_char if replacement_char else c
 
     return results
 
 
-def parse_var_string(input: str) -> dict:
+def parse_var_string(input_string: str) -> dict:
     """ Parses a URL parameter string (sorta) like "var1='val1'&var2='val2'" - also supports the special case
     where there is no value specified, such as "signed_in&un=username", for the player/signed_in command.
 
-    :param input: Input string to parse
+    :param input_string: Input string to parse
     :return: dict
     """
-    vars = {}
+    variables = {}
 
-    if input is not None:
-        var_strings = [var_string.split('=') for var_string in input.split('&')]
+    if input_string is not None:
+        var_strings = [var_string.split('=') for var_string in input_string.split('&')]
         for elements in var_strings:
             # Copy name to value for vars with no value specified - e.g. signed_in&un=username
             name = elements[0]
@@ -83,18 +83,18 @@ def parse_var_string(input: str) -> dict:
             if len(elements) > 1:
                 value = elements[1]
 
-            vars[name] = _decode_characters(value.strip("'"))
+            variables[name] = _decode_characters(value.strip("'"))
 
-    return vars
+    return variables
 
 
-def _decode_characters(input: str) -> str:
+def _decode_characters(input_string: str) -> str:
     """ Decodes certain special characters as defined by the HEOS specification.
 
-    :param input: String to decode
+    :param input_string: String to decode
     :return: New string with decoded characters
     """
-    results = input
+    results = input_string
     for replacement_str, original_str in CHARACTER_REPLACE_MAP.items():
         results = results.replace(original_str, replacement_str)
 

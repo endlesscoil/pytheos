@@ -118,6 +118,18 @@ class HEOSResult(object):
     header: Optional[HEOSHeader]
     payload: Optional[HEOSPayload]
 
+    @staticmethod
+    def create_payload(payload_data) -> HEOSPayload:
+        """ Factory for creating the proper payload type based on the data object passed """
+        if isinstance(payload_data, dict):
+            payload = HEOSDictPayload(payload_data)
+        elif isinstance(payload_data, list):
+            payload = HEOSListPayload(payload_data)
+        else:
+            payload = HEOSPayload(payload_data)
+
+        return payload
+
     @property
     def succeeded(self) -> bool:
         return self.header.result and self.header.result.lower() == 'success'
@@ -131,21 +143,10 @@ class HEOSResult(object):
                 raise ValueError('No "heos" block found in response.')
 
             self.header = HEOSHeader(heos)
-            self.payload = self._create_payload(from_dict.get('payload'))
+            self.payload = HEOSResult.create_payload(from_dict.get('payload'))
 
     def __repr__(self):
         return f'<HEOSResult(command={self.header!r})>'
-
-    def _create_payload(self, payload_data) -> HEOSPayload:
-        """ Factory for creating the proper payload type based on the data object passed """
-        if isinstance(payload_data, dict):
-            payload = HEOSDictPayload(payload_data)
-        elif isinstance(payload_data, list):
-            payload = HEOSListPayload(payload_data)
-        else:
-            payload = HEOSPayload(payload_data)
-
-        return payload
 
 
 class HEOSEvent(object):

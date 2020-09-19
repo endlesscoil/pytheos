@@ -67,15 +67,15 @@ class Connection:
                 self._conn.close()
                 self._conn = None
 
-    def write(self, input: bytes):
+    def write(self, input_data: bytes):
         """ Writes the provided data to the connection
 
-        :param input: Data to write
+        :param input_data: Data to write
         :return: None
         """
         if self._conn:
             with self._lock:
-                self._conn.write(input)
+                self._conn.write(input_data)
 
     def read_until(self, target: bytes, timeout: Optional[int]=None) -> bytes:
         """ Reads from the connection until the target string is found or the optional timeout is hit

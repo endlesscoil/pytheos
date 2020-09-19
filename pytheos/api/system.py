@@ -56,7 +56,7 @@ class SystemAPI(API):
         self._api.call('system', 'register_for_change_events', enable='on' if enable else 'off')
 
     def sign_in(self, username: str, password: str) -> None:
-        """ Commands the system to signin to HEOS
+        """ Commands the system to sign-in to HEOS
 
         :param username: Username
         :param password: Password

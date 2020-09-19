@@ -25,7 +25,6 @@ Example:
     - Other Track
     - ...
 """
-import logging
 import os
 import sys
 from typing import Union
@@ -39,10 +38,11 @@ from pytheos.api.browse.types import MusicSource, SourceMedia
 
 class TreeEntry(dict):
     """ Container class for our tree """
-    def __init__(self, object: Union[MusicSource, SourceMedia, None], **kwargs: dict):
+    def __init__(self, obj: Union[MusicSource, SourceMedia, None], **kwargs: dict):
         super().__init__(**kwargs)
 
-        self.object = object
+        self.object = obj
+
 
 def browse_path(svc: Pytheos, path: str) -> TreeEntry:
     """ Traverses the provided path starting at the list of Music Sources.  The initial list can be retrieved
@@ -69,9 +69,10 @@ def browse_path(svc: Pytheos, path: str) -> TreeEntry:
         # Retrieve the contents of our new current node
         source_id, results = _retrieve_contents(svc, source_id, current_node.object)
         for item in results:
-            current_node[item.name] = TreeEntry(object=item)
+            current_node[item.name] = TreeEntry(obj=item)
 
     return current_node
+
 
 def _init_tree_with_sources(svc: Pytheos) -> TreeEntry:
     """ Initialize our tree with the list of Music Sources from HEOS.
@@ -79,12 +80,13 @@ def _init_tree_with_sources(svc: Pytheos) -> TreeEntry:
     :param svc: Pytheos object
     :return: Root TreeEntry object
     """
-    tree = TreeEntry(object=None)
+    tree = TreeEntry(obj=None)
 
     for source in svc.api.browse.get_music_sources():
-        tree.setdefault(source.name, TreeEntry(object=source))
+        tree.setdefault(source.name, TreeEntry(obj=source))
 
     return tree
+
 
 def _retrieve_contents(svc: Pytheos, parent_id: str, source: Union[MusicSource, SourceMedia]) -> tuple:
     """ Retrieve the contents of the provided source node.
@@ -94,7 +96,6 @@ def _retrieve_contents(svc: Pytheos, parent_id: str, source: Union[MusicSource, 
     :param source: Source node
     :return: tuple (new source id, result list)
     """
-    results = []
     new_source_id = parent_id
 
     if source.container:
@@ -105,6 +106,7 @@ def _retrieve_contents(svc: Pytheos, parent_id: str, source: Union[MusicSource, 
         results = svc.api.browse.browse_source(new_source_id)
 
     return new_source_id, results
+
 
 def main():
     """ Main entry point """
