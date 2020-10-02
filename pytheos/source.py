@@ -187,9 +187,17 @@ class PytheosMedia:
 
 
 def _node_factory(item, parent, pytheos):
+    """ Returns a leaf for our tree with a type appropriate for the response.
+
+    :param item:
+    :param parent:
+    :param pytheos:
+    :return:
+    """
     if item.container:
         return PytheosContainer(pytheos, item, parent, source_id=parent.source_id)
-    elif item.media_id is None:
+
+    if item.media_id is None:
         return PytheosSource(pytheos, item, parent)
 
     return PytheosMedia(pytheos, item, parent)

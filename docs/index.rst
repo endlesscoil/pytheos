@@ -10,10 +10,11 @@ Welcome to Pytheos' documentation!
 .. automodule:: pytheos.api
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    pytheos
+   pytheos_highlevel
    pytheos_api
 
 Indices and tables

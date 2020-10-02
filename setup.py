@@ -16,7 +16,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/endlesscoil/pytheos',
     author='Scott Petersen',
-    author_email='scott@digression.org',
+    author_email='scott@spetersen.dev',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

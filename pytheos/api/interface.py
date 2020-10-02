@@ -42,7 +42,7 @@ class APIInterface:
         """ Formats a HEOS API request, submits it, and reads the response.
 
         :param group: Group name (e.g. system, player, etc)
-        :param command: Command name (e.g. heart_beat_
+        :param command: Command name (e.g. heart_beat)
         :param kwargs: Any parameters that should be sent along with the command
         :raises: AssertionError, CommandFailedError
         :return: HEOSResult

@@ -1,6 +1,14 @@
 pytheos.api Package
 ====================
 
+:mod:`interface` Module
+--------------------------
+
+.. automodule:: pytheos.api.interface
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`player` Module
 --------------------------
 
@@ -29,6 +37,14 @@ pytheos.api Package
 --------------------------
 
 .. automodule:: pytheos.api.system
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`types` Module
+--------------------------
+
+.. automodule:: pytheos.api.types
     :members:
     :undoc-members:
     :show-inheritance:

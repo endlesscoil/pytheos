@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """ CLI interface for working with the Pytheos devices """
 
-from __future__ import annotations
-
 from pytheos.discovery import discover
 
 

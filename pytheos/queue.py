@@ -14,6 +14,13 @@ if TYPE_CHECKING:
 class PytheosQueue(MutableSequence):
     """ High-level Queue Representation """
 
+    @staticmethod
+    def _get_queue_insert_ids(item):
+        cid = item.id if item.is_container_type else item.parent.id
+        mid = None if item.is_container_type else item.id
+
+        return cid, mid
+
     def __init__(self, pytheos: 'Pytheos', player: 'Player'):
         super().__init__()
 
@@ -148,13 +155,6 @@ class PytheosQueue(MutableSequence):
             self._pytheos.api.browse.add_to_queue(self._player.player_id, qi.parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
         self._refresh_queue(True)
-
-    @staticmethod
-    def _get_queue_insert_ids(item):
-        cid = item.id if item.is_container_type else item.parent.id
-        mid = None if item.is_container_type else item.id
-
-        return cid, mid
 
     def _refresh_queue(self, force: bool=False):
         """ Refreshes the queue if it is uninitialized, this call is forced, or if caching is disabled.
