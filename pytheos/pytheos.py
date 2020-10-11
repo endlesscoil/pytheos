@@ -18,7 +18,7 @@ from .player import PytheosPlayer
 from .source import PytheosSource
 from .types import HEOSEvent, SSDPResponse, AccountStatus
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 logger = logging.getLogger('pytheos')
 
 
@@ -152,7 +152,7 @@ class Pytheos:
             # FIXME: Figure out exactly how I'm consuming these.
             self._event_thread = EventReceiverThread(self._event_channel, self._event_queue)
             self._event_thread.start()
-            self._event_handler_thread = EventHandlerThread(self, self._event_queue)
+            self._event_handler_thread = EventHandlerThread(self, self._event_handler, self._event_queue)
             self._event_handler_thread.start()
             #/FIXME
 
