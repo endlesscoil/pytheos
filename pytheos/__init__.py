@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-from pytheos.logger import logger
-
 from .pytheos import Pytheos, connect
 from .discovery import discover
+from .logger import Logger
 
 
 def set_log_level(level: int):
-    logger.setLevel(level)
-    for handler in logger.handlers:
+    Logger.setLevel(level)
+    for handler in Logger.handlers:
         handler.setLevel(level)
 
 

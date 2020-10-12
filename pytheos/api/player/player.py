@@ -55,7 +55,7 @@ class PlayerAPI(API):
 
         return MediaItem(results.payload)
 
-    def get_players(self) -> list:
+    def get_players(self) -> List[Player]:
         """ Retrieves a list of players that are available
 
         :return: list
