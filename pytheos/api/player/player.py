@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from ..api import API
 from .types import Player, MediaItem, PlayMode, RepeatMode, ShuffleMode, QuickSelect, PlayState
