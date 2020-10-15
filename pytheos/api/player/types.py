@@ -56,6 +56,7 @@ class PlayState(Enum):
     Stopped = 'stop'
     Playing = 'play'
     Paused = 'pause'
+    Unknown = 'unknown'
 
     def __str__(self):
         return self.value

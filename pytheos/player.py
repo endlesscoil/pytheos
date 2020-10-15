@@ -63,22 +63,17 @@ class PytheosPlayer:
 
     @property
     def mute(self) -> bool:
-        if self._mute is None:
-            self._mute = self._api.player.get_mute(self.id)
-
-        return self._mute
+        return self._api.player.get_mute(self.id)
 
     @mute.setter
     def mute(self, value: bool):
         self._api.player.set_mute(self.id, value)
-        self._mute = value
 
     @property
     def repeat(self) -> RepeatMode:
-        if self._repeat is None:
-            self._repeat, self._shuffle = self._get_play_mode()
+        repeat, shuffle = self._get_play_mode()
 
-        return self._repeat
+        return repeat
 
     @repeat.setter
     def repeat(self, value: RepeatMode):
@@ -87,10 +82,9 @@ class PytheosPlayer:
 
     @property
     def shuffle(self) -> ShuffleMode:
-        if self._shuffle is None:
-            self._repeat, self._shuffle = self._get_play_mode()
+        repeat, shuffle = self._get_play_mode()
 
-        return self._shuffle
+        return shuffle
 
     @shuffle.setter
     def shuffle(self, value: ShuffleMode):
@@ -123,10 +117,7 @@ class PytheosPlayer:
 
     @property
     def volume(self) -> int:
-        if self._volume is None:
-            self._volume = self._api.player.get_volume(self.id)
-
-        return self._volume
+        return self._api.player.get_volume(self.id)
 
     @volume.setter
     def volume(self, value: int):
@@ -143,17 +134,11 @@ class PytheosPlayer:
 
     @property
     def play_state(self) -> PlayState:
-        if self._play_state is None:
-            self._play_state = self._api.player.get_play_state(self.id)
-
-        return self._play_state
+        return self._api.player.get_play_state(self.id)
 
     @property
     def quick_selects(self) -> dict:
-        if self._quick_selects is None:
-            self._quick_selects = {qs.id: qs for qs in self._api.player.get_quickselects(self.id)}
-
-        return self._quick_selects
+        return {qs.id: qs for qs in self._api.player.get_quickselects(self.id)}
 
     @property
     def queue(self):
@@ -171,6 +156,7 @@ class PytheosPlayer:
         self._quick_selects: Optional[dict] = None
         self._play_state: Optional[PlayState] = None
         self._queue = PytheosQueue(pytheos, player)
+        self._now_playing: Optional[MediaItem] = None
 
     def refresh(self, player_id=None):
         """ Retrieve and update the Player information used by this class.  Optionally, the ID already present on the
