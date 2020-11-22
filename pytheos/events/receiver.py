@@ -6,7 +6,6 @@ import queue
 import threading
 import time
 
-from pytheos.api.interface import APIInterface
 from pytheos.networking.connection import Connection
 from pytheos.types import HEOSEvent
 
@@ -21,7 +20,7 @@ class EventReceiverThread(threading.Thread):
 
         self._connection = conn
         self._out_queue = out_queue
-        self._api = APIInterface(conn)
+        self._api = conn
         self.running = False
 
     def run(self) -> None:

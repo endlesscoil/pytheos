@@ -1,5 +1,4 @@
-from . import interface
 from . import system
 
 
-__all__ = ['interface', 'system']
+__all__ = ['system']

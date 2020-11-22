@@ -8,7 +8,6 @@ import queue
 from typing import Callable, Optional, Union
 
 from . import utils
-from .api.interface import APIInterface
 from pytheos.networking.connection import Connection
 from .errors import ChannelUnavailableError
 from .events.handler import EventHandlerThread
@@ -115,7 +114,7 @@ class Pytheos:
         self._groups: Optional[dict] = None
         self._sources: Optional[dict] = None
 
-        self.api: APIInterface = APIInterface(self._command_channel)
+        self.api: Connection = self._command_channel
 
         self._init_internal_event_handlers()
 
@@ -162,7 +161,7 @@ class Pytheos:
         return self
 
     def _set_register_for_change_events(self, value: bool):
-        APIInterface(self._event_channel).system.register_for_change_events(value)
+        self._event_channel.system.register_for_change_events(value)
 
     def close(self):
         """ Close the connection to our HEOS device
