@@ -6,12 +6,12 @@ import unittest.mock
 from unittest.mock import patch
 
 import pytheos
-from pytheos.api.browse.browse import BrowseAPI
-from pytheos.api.browse.types import MusicSource
-from pytheos.api.group.group import GroupAPI
-from pytheos.api.group.types import Group
-from pytheos.api.player.player import PlayerAPI
-from pytheos.api.player.types import Player
+from pytheos.api.browse import BrowseAPI
+from pytheos.models.source import MusicSource
+from pytheos.api.group import GroupAPI
+from pytheos.models.group import Group
+from pytheos.api.player import PlayerAPI
+from pytheos.models.player import Player
 from pytheos.errors import SignInFailedError
 from pytheos.group import PytheosGroup
 from pytheos.player import PytheosPlayer

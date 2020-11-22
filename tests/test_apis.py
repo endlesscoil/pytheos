@@ -5,17 +5,18 @@ import unittest
 from typing import Union, List, Dict
 from unittest.mock import patch
 
-from pytheos.api.types import Mute
 from pytheos.types import AccountStatus
 
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, InputSource, AddToQueueType, \
+from pytheos.models.browse import SearchCriteria, AddToQueueType, \
     AlbumMetadata, ServiceOption
-from pytheos.api.group.types import Group, GroupRole, GroupPlayer
-from pytheos.api.player.types import Player, MediaItem, PlayMode, QuickSelect, ShuffleMode, RepeatMode, PlayState
+from pytheos.models.source import MusicSource, InputSource
+from pytheos.models.media import SourceMedia, MediaItem
+from pytheos.models.group import Group, GroupRole, GroupPlayer
+from pytheos.models.player import Player, PlayMode, QuickSelect, ShuffleMode, RepeatMode, PlayState, Mute
 from pytheos.errors import CommandFailedError, SignInFailedError
 
 import pytheos
-import pytheos.connection
+import pytheos.networking.connection
 
 
 TEST_PLAYER_ID = 12345678

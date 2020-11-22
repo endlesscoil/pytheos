@@ -7,9 +7,9 @@ import logging
 import socket
 from typing import Optional, List
 
-from . import utils
-from .pytheos import Pytheos
-from .types import SSDPResponse
+from pytheos import utils
+from pytheos.pytheos import Pytheos
+from pytheos.types import SSDPResponse
 
 logger = logging.getLogger(__name__)
 

@@ -39,9 +39,9 @@ python setup.py develop
 HEOS responds to multicast packets on your local network and you can use the pytheos.discovery module 
 to broadcast and detect responses from HEOS devices on your network.
 ```python
-import pytheos.discovery
+import pytheos.networking.discovery
 
-services = pytheos.discovery.discover()
+services = pytheos.networking.discovery.discover()
 
 if services:
     print("Discovered these HEOS services:")

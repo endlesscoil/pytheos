@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-from pytheos.discovery import SSDPBroadcastMessage
+from pytheos.networking.discovery import SSDPBroadcastMessage
 
 import unittest
 

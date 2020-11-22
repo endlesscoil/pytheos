@@ -33,7 +33,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
 from pytheos import Pytheos
-from pytheos.api.browse.types import MusicSource, SourceMedia
+from pytheos.models.source import MusicSource
+from pytheos.models.media import SourceMedia
 
 
 class TreeEntry(dict):

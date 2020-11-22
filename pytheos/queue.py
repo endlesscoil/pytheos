@@ -2,8 +2,8 @@
 from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 
-from pytheos.api.browse.types import AddToQueueType
-from pytheos.api.player.types import PlayState
+from pytheos.models.browse import AddToQueueType
+from pytheos.models.player import PlayState
 from pytheos.source import PytheosMedia
 
 if TYPE_CHECKING:

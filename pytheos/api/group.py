@@ -4,8 +4,8 @@ from __future__ import annotations
 from typing import Optional
 
 from pytheos.api.api import API
-from pytheos.api.group.types import Group
-from pytheos.api.types import Mute
+from pytheos.models.group import Group
+from pytheos.models.player import Mute
 
 
 class GroupAPI(API):

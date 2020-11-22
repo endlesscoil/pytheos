@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from pytheos.api.group.types import Group
+from pytheos.models.group import Group
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -6,8 +6,10 @@ from typing import Optional
 import logging
 
 from pytheos.api.api import API
-from pytheos.api.browse.types import MusicSource, SourceMedia, SearchCriteria, AddToQueueType, AlbumMetadata, \
+from pytheos.models.browse import SearchCriteria, AddToQueueType, AlbumMetadata, \
     ServiceOption
+from pytheos.models.source import MusicSource
+from pytheos.models.media import SourceMedia
 from pytheos.types import HEOSResult
 
 logger = logging.getLogger(__name__)

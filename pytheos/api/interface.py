@@ -9,9 +9,9 @@ import logging
 from typing import Optional, Union
 
 from pytheos import utils
-from pytheos.api.browse.browse import BrowseAPI
-from pytheos.api.group.group import GroupAPI
-from pytheos.api.player.player import PlayerAPI
+from pytheos.api.browse import BrowseAPI
+from pytheos.api.group import GroupAPI
+from pytheos.api.player import PlayerAPI
 from pytheos.api.system import SystemAPI
 from pytheos.errors import CommandFailedError
 from pytheos.types import HEOSResult

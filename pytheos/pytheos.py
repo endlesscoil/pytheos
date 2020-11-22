@@ -9,7 +9,7 @@ from typing import Callable, Optional, Union
 
 from . import utils
 from .api.interface import APIInterface
-from .connection import Connection
+from pytheos.networking.connection import Connection
 from .errors import ChannelUnavailableError
 from .events.handler import EventHandlerThread
 from .events.receiver import EventReceiverThread

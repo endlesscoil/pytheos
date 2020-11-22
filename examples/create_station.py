@@ -9,7 +9,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
-from pytheos.api.browse.types import ServiceOption
+from pytheos.models.browse import ServiceOption
 
 SOURCE_ID = 1   # Pandora
 SEARCH_NAME = 'a band'

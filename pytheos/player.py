@@ -5,9 +5,9 @@ from __future__ import annotations
 
 from pytheos.queue import PytheosQueue
 from pytheos.group import PytheosGroup
-from pytheos.api.browse.types import InputSource
-from pytheos.api.player.types import Player, RepeatMode, ShuffleMode, PlayMode, PlayState, MediaItem, Network, Lineout, \
-    Control
+from pytheos.models.source import InputSource
+from pytheos.models.player import Player, RepeatMode, ShuffleMode, PlayMode, PlayState, Network, Lineout, Control
+from pytheos.models.media import MediaItem
 
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:

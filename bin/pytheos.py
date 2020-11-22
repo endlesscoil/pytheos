@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """ CLI interface for working with the Pytheos devices """
 
-from pytheos.discovery import discover
+from pytheos.networking.discovery import discover
 
 
 def main():
