@@ -5,7 +5,6 @@ This example demonstrates how to subscribe to events from the HEOS device.
 import os
 import sys
 import time
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
@@ -37,9 +36,12 @@ def main():
         print("No HEOS services detected!")
         return
 
-    with services[0] as svc:
-        svc.subscribe('event/player_state_changed', _on_player_state_changed)
-        svc.subscribe('event/player_now_playing_changed', _on_now_playing_changed)
+    print("Connecting to first device found...")
+
+    with pytheos.connect(services[0]) as p:
+        print(f"Connected to {p.server}!")
+        p.subscribe('event/player_state_changed', _on_player_state_changed)
+        p.subscribe('event/player_now_playing_changed', _on_now_playing_changed)
 
         print("Okay, go play something on your stereo - Ctrl+C to stop!")
         try:

@@ -116,12 +116,15 @@ def main():
         print("No HEOS services detected!")
         return
 
-    with services[0] as svc:
+    print("Connecting to first device found...")
+
+    with pytheos.connect(services[0]) as p:
+        print(f"Connected to {p.server}!")
         # Use all command line parameters to construct our path or default to '/' if not specified.
         path = ' '.join(sys.argv[1:]) if len(sys.argv) > 1 else '/'
 
         try:
-            listing = browse_path(svc, path)
+            listing = browse_path(p, path)
 
             print("Listing:")
             for name in listing:

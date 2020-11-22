@@ -358,7 +358,7 @@ class Pytheos:
         raise NotImplementedError()
 
 
-def connect(host: Union[Pytheos, str], port: int=Pytheos.DEFAULT_PORT) -> Pytheos:
+def connect(host: Union[SSDPResponse, str], port: int=Pytheos.DEFAULT_PORT) -> Pytheos:
     """ Connect to the provided host and return a context manager for use with the connection.
 
     :param host: Host to connect to
@@ -366,11 +366,8 @@ def connect(host: Union[Pytheos, str], port: int=Pytheos.DEFAULT_PORT) -> Pytheo
     :raises: ValueError
     :return: The Pytheos instance
     """
-    if isinstance(host, Pytheos):
-        conn = host
-    elif isinstance(host, str):
-        conn = Pytheos(host, port)
-    else:
-        raise ValueError(f'Unrecognized host format: {host}')
+    if isinstance(host, SSDPResponse):
+        host = utils.extract_host(host.location)
 
+    conn = Pytheos(host, port)
     return conn.connect()

@@ -19,8 +19,8 @@ def main():
     services = pytheos.discover()
 
     if services:
-        with services[0] as svc:
-            results = svc.api.browse.set_service_option(SOURCE_ID, ServiceOption.CreateNewStation, name=SEARCH_NAME)
+        with pytheos.connect(services[0]) as p:
+            results = p.api.browse.set_service_option(SOURCE_ID, ServiceOption.CreateNewStation, name=SEARCH_NAME)
 
             num_results = int(results.header.vars.get('returned', 0))
             if num_results > 0:
