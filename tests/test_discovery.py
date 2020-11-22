@@ -5,7 +5,6 @@ from pytheos.networking.discovery import SSDPBroadcastMessage
 
 import unittest
 
-
 DISCOVERY_RESPONSE = "\r\n".join((
     'HTTP/1.1 200 OK',
     'CACHE-CONTROL: max-age=180',
@@ -53,5 +52,5 @@ class TestDiscovery(unittest.TestCase):
     #     #         self.assertIsInstance(discovered[0], pytheos.Pytheos)
 
 
-if __name__== '__main__':
+if __name__ == '__main__':
     unittest.main()

@@ -51,8 +51,8 @@ class SourceController(Sequence):
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', source: Union['SourceController', MusicSource], parent: Union[
-        'SourceController', 'PytheosContainer']=None):
+    def __init__(self, pytheos: 'Pytheos', source: Union['SourceController', MusicSource],
+                 parent: Union['SourceController', 'PytheosContainer']=None):
         super().__init__()
 
         self._pytheos = pytheos
@@ -119,7 +119,8 @@ class PytheosContainer(Sequence):
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', container: MusicSource, parent: Union[SourceController, 'PytheosContainer'], source_id=None):
+    def __init__(self, pytheos: 'Pytheos', container: MusicSource, parent: Union[SourceController, 'PytheosContainer'],
+                 source_id=None):
         super().__init__()
 
         self._pytheos = pytheos
@@ -176,7 +177,8 @@ class PytheosMedia:
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', media: SourceMedia, parent: Optional[Union[SourceController, PytheosContainer]]):
+    def __init__(self, pytheos: 'Pytheos', media: SourceMedia,
+                 parent: Optional[Union[SourceController, PytheosContainer]]):
         self._pytheos = pytheos
         self._parent = parent
         self._media = media

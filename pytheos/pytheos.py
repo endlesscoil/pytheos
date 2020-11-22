@@ -91,7 +91,6 @@ class Pytheos:
 
         :param server: Server hostname or IP
         :param port: Port number
-        :param from_response: Optional SSDP response to extract location data from
         """
         if isinstance(server, SSDPResponse):
             server = utils.extract_host(server.location)
