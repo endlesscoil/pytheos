@@ -9,7 +9,7 @@ from typing import Optional, List
 
 from pytheos import utils
 from pytheos.pytheos import Pytheos
-from pytheos.types import SSDPResponse
+from pytheos.networking.types import SSDPResponse
 
 logger = logging.getLogger(__name__)
 

@@ -12,11 +12,11 @@ from pytheos.api.group import GroupAPI
 from pytheos.models.group import Group
 from pytheos.api.player import PlayerAPI
 from pytheos.models.player import Player
-from pytheos.errors import SignInFailedError
-from pytheos.group import PytheosGroup
-from pytheos.player import PytheosPlayer
-from pytheos.source import PytheosSource
-from pytheos.types import AccountStatus
+from pytheos.networking.errors import SignInFailedError
+from pytheos.controllers.group import GroupController
+from pytheos.controllers.player import PlayerController
+from pytheos.controllers.source import SourceController
+from pytheos.models.system import AccountStatus
 from pytheos.api.system import SystemAPI
 
 
@@ -71,13 +71,13 @@ class TestPytheos(unittest.TestCase):
         with patch.object(PlayerAPI, 'get_players', return_value=[Player({'pid': 1}), Player({'pid': 2})]):
             players = self._pytheos.get_players()
             self.assertGreater(len(players), 0)
-            self.assertIsInstance(players[list(players.keys())[0]], PytheosPlayer)
+            self.assertIsInstance(players[list(players.keys())[0]], PlayerController)
 
     def test_get_groups(self):
         with patch.object(GroupAPI, 'get_groups', return_value=[Group({'gid': 1}), Group({'gid': 2})]):
             groups = self._pytheos.get_groups()
             self.assertGreater(len(groups), 0)
-            self.assertIsInstance(groups[list(groups.keys())[0]], PytheosGroup)
+            self.assertIsInstance(groups[list(groups.keys())[0]], GroupController)
 
     def test_get_sources(self):
         with patch.object(BrowseAPI, 'get_music_sources', return_value=[
@@ -86,7 +86,7 @@ class TestPytheos(unittest.TestCase):
         ]):
             sources = self._pytheos.get_sources()
             self.assertGreater(len(sources), 0)
-            self.assertIsInstance(sources[list(sources.keys())[0]], PytheosSource)
+            self.assertIsInstance(sources[list(sources.keys())[0]], SourceController)
 
 
 if __name__ == '__main__':

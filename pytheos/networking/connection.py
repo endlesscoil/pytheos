@@ -15,8 +15,8 @@ from pytheos.api.browse import BrowseAPI
 from pytheos.api.group import GroupAPI
 from pytheos.api.player import PlayerAPI
 from pytheos.api.system import SystemAPI
-from pytheos.errors import CommandFailedError
-from pytheos.types import HEOSResult
+from pytheos.networking.errors import CommandFailedError
+from pytheos.networking.types import HEOSResult
 
 logger = logging.getLogger(__name__)
 
@@ -215,3 +215,5 @@ class Connection:
         :return: None
         """
         self.system.heart_beat()
+
+

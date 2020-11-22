@@ -4,10 +4,10 @@ from pytheos.models.group import Group
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pytheos import Pytheos
-    from pytheos.player import PytheosPlayer
+    from pytheos.controllers.player import PlayerController
 
 
-class PytheosGroup:
+class GroupController:
     """ High-level Group Representation """
 
     @property
@@ -15,11 +15,11 @@ class PytheosGroup:
         return self._group.group_id
 
     @property
-    def leader(self) -> 'PytheosPlayer':
+    def leader(self) -> 'PlayerController':
         return self._leader
 
     @leader.setter
-    def leader(self, value: 'PytheosPlayer'):
+    def leader(self, value: 'PlayerController'):
         self.refresh(True)
         self._leader = value
         self._set_group()
@@ -57,7 +57,7 @@ class PytheosGroup:
         self._group: Group = group
 
         group_count = len(group.players)
-        self._leader: 'PytheosPlayer' = group.players[0] if group_count > 0 else None
+        self._leader: 'PlayerController' = group.players[0] if group_count > 0 else None
         self._members = group.players[1:] if group_count > 1 else []
 
     def refresh(self, force=False):
@@ -69,7 +69,7 @@ class PytheosGroup:
         if not self._leader or force:
             self._group = self._pytheos.api.group.get_group_info(self._group.group_id)
 
-    def add_member(self, player: 'PytheosPlayer'):
+    def add_member(self, player: 'PlayerController'):
         """ Adds a new member to the group.
 
         :param player: Player
@@ -83,7 +83,7 @@ class PytheosGroup:
         self._members.append(player)
         self._set_group()
 
-    def remove_member(self, player: 'PytheosPlayer'):
+    def remove_member(self, player: 'PlayerController'):
         """ Remove a member from a group.
 
         :param player: Player

@@ -5,18 +5,20 @@ from __future__ import annotations
 
 from typing import Optional, Union, List
 
-from pytheos.api.api import API
 from pytheos.models.player import Player, PlayMode, RepeatMode, ShuffleMode, QuickSelect, PlayState, Mute
 from pytheos.models.media import MediaItem
-from pytheos.errors import InvalidResponse
+from pytheos.networking.errors import InvalidResponse
 
 
-class PlayerAPI(API):
+class PlayerAPI:
     """ API interface for the 'player' command group """
 
     VOLUME_MIN = 0
     VOLUME_MAX = 100
     VOLUME_DEFAULT_STEP = 5
+
+    def __init__(self, conn):
+        self._api = conn
 
     def check_update(self, player_id: int) -> bool:
         """ Checks whether or not there is an update available for the player

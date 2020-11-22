@@ -9,7 +9,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
-from pytheos.types import HEOSEvent
+from pytheos.networking.types import HEOSEvent
 
 
 def _on_now_playing_changed(event: HEOSEvent):

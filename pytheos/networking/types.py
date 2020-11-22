@@ -1,42 +1,9 @@
-#!/usr/bin/env python
-""" Types used by the Pytheos package """
-
-from __future__ import annotations
-
 import http.client
 import json
 import socket
-import logging
-from enum import Enum
-from typing import Optional, Any
+from typing import Optional, Union
 
 from pytheos import utils
-
-logger = logging.getLogger(__name__)
-
-
-class AccountStatus(Enum):
-    SignedOut = 'signed_out'
-    SignedIn = 'signed_in'
-
-    def __str__(self):
-        return str(self.value)
-
-
-class SSDPResponse(http.client.HTTPResponse):
-    """ Specialized http.client Response object to facilitate parsing SSDP responses """
-
-    def __init__(self, sock: socket.socket):
-        super().__init__(sock)
-
-        self.begin()
-        self.location = self.getheader("location")
-        self.usn = self.getheader("usn")
-        self.st = self.getheader("st")
-        self.cache = self.getheader("cache-control").split("=")[1]
-
-    def __repr__(self):
-        return f"<SSDPResponse(location={self.location})>"
 
 
 class HEOSHeader:
@@ -64,7 +31,7 @@ class HEOSPayload(object):
 
     data: Optional[dict] = None
 
-    def __init__(self, source: Any[dict, list]=None):
+    def __init__(self, source: Union[dict, list]=None):
         self.data = source
         self.vars = {}
 
@@ -175,3 +142,19 @@ class HEOSEvent(object):
 
     def __repr__(self):
         return f'<HEOSEvent(command="{self.command}", message="{self.message}")>'
+
+
+class SSDPResponse(http.client.HTTPResponse):
+    """ Specialized http.client Response object to facilitate parsing SSDP responses """
+
+    def __init__(self, sock: socket.socket):
+        super().__init__(sock)
+
+        self.begin()
+        self.location = self.getheader("location")
+        self.usn = self.getheader("usn")
+        self.st = self.getheader("st")
+        self.cache = self.getheader("cache-control").split("=")[1]
+
+    def __repr__(self):
+        return f"<SSDPResponse(location={self.location})>"

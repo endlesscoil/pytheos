@@ -5,19 +5,21 @@ from collections import OrderedDict
 from typing import Optional
 import logging
 
-from pytheos.api.api import API
 from pytheos.models.browse import SearchCriteria, AddToQueueType, AlbumMetadata, \
     ServiceOption
 from pytheos.models.source import MusicSource
 from pytheos.models.media import SourceMedia
-from pytheos.types import HEOSResult
+from pytheos.networking.types import HEOSResult
 
 logger = logging.getLogger(__name__)
 
 
-class BrowseAPI(API):
+class BrowseAPI:
     MAX_QUERY_RESULTS = 50
     MAX_SEARCH_LENGTH = 128
+
+    def __init__(self, conn):
+        self._api = conn
 
     def add_to_queue(self, player_id: str, source_id: str, container_id: str, media_id: Optional[str]=None, add_type: AddToQueueType=AddToQueueType.PlayNow):
         """ Adds the specified container or track to the playback queue.  If media_id is provided it will add the track

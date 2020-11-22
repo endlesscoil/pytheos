@@ -7,7 +7,7 @@ import threading
 import time
 
 from pytheos.networking.connection import Connection
-from pytheos.types import HEOSEvent
+from pytheos.networking.types import HEOSEvent
 
 logger = logging.getLogger(__name__)
 

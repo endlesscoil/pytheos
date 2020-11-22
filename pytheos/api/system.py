@@ -3,13 +3,15 @@
 
 from __future__ import annotations
 
-from .api import API
-from ..errors import CommandFailedError, SignInFailedError
-from ..types import AccountStatus
+from ..networking.errors import CommandFailedError, SignInFailedError
+from ..models.system import AccountStatus
 
 
-class SystemAPI(API):
+class SystemAPI:
     """ API interface for the 'system' command group """
+
+    def __init__(self, conn):
+        self._api = conn
 
     def check_account(self) -> tuple:
         """ Determines whether or not the system is currently signed in

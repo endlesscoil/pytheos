@@ -81,7 +81,7 @@ of commands and state changes in the HEOS device itself and allow monitoring and
 import time
 
 import pytheos
-from pytheos.types import HEOSEvent
+from pytheos.networking.types import HEOSEvent
 
 def _on_now_playing_changed(event: HEOSEvent):
     print(f'Now Playing Changed Event: {event}')

@@ -3,18 +3,20 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pytheos.api.api import API
 from pytheos.models.group import Group
 from pytheos.models.player import Mute
 
 
-class GroupAPI(API):
+class GroupAPI:
     """ API interface for the 'group' command group """
 
     VOLUME_MIN = 0
     VOLUME_MAX = 100
     VOLUME_STEP_MIN = 1
     VOLUME_STEP_MAX = 10
+
+    def __init__(self, conn):
+        self._api = conn
 
     def get_groups(self) -> list:
         """ Retrieves a list of all groups.

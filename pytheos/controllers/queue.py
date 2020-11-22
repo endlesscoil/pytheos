@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING
 
 from pytheos.models.browse import AddToQueueType
 from pytheos.models.player import PlayState
-from pytheos.source import PytheosMedia
+from pytheos.controllers.source import PytheosMedia
 
 if TYPE_CHECKING:
     from pytheos import Pytheos
     from pytheos.api.player import Player
 
 
-class PytheosQueue(MutableSequence):
+class QueueController(MutableSequence):
     """ High-level Queue Representation """
 
     @staticmethod
@@ -147,11 +147,11 @@ class PytheosQueue(MutableSequence):
         if self._queue and index + 1 < len(self._queue):
             self._pytheos.api.player.remove_from_queue(self._player.player_id, list(range(index + 1, len(self._queue))))
 
-        cid, mid = PytheosQueue._get_queue_insert_ids(obj)
+        cid, mid = QueueController._get_queue_insert_ids(obj)
         self._pytheos.api.browse.add_to_queue(self._player.player_id, obj.parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
         for qi in self._queue[index:]:
-            cid, mid = PytheosQueue._get_queue_insert_ids(qi)
+            cid, mid = QueueController._get_queue_insert_ids(qi)
             self._pytheos.api.browse.add_to_queue(self._player.player_id, qi.parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
 
         self._refresh_queue(True)
