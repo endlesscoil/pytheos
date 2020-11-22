@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from pytheos.models.group import Group
+from ..models import Group
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pytheos import Pytheos
-    from pytheos.controllers.player import PlayerController
+    from pytheos.controllers import PlayerController
 
 
 class GroupController:

@@ -7,8 +7,8 @@ import logging
 import socket
 from typing import Optional, List
 
-from pytheos import utils
-from pytheos.networking.types import SSDPResponse
+from .. import utils
+from ..networking.types import SSDPResponse
 
 logger = logging.getLogger(__name__)
 

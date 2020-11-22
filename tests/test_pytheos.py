@@ -13,9 +13,7 @@ from pytheos.models.group import Group
 from pytheos.api.player import PlayerAPI
 from pytheos.models.player import Player
 from pytheos.networking.errors import SignInFailedError
-from pytheos.controllers.group import GroupController
-from pytheos.controllers.player import PlayerController
-from pytheos.controllers.source import SourceController
+from pytheos.controllers import GroupController, PlayerController, SourceController
 from pytheos.models.system import AccountStatus
 from pytheos.api.system import SystemAPI
 

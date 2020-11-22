@@ -5,11 +5,11 @@ from collections import OrderedDict
 from typing import Optional
 import logging
 
-from pytheos.models.browse import SearchCriteria, AddToQueueType, AlbumMetadata, \
+from ..models.browse import SearchCriteria, AddToQueueType, AlbumMetadata, \
     ServiceOption
-from pytheos.models.source import MusicSource
-from pytheos.models.media import SourceMedia
-from pytheos.networking.types import HEOSResult
+from ..models.source import MusicSource
+from ..models.media import SourceMedia
+from ..networking.types import HEOSResult
 
 logger = logging.getLogger(__name__)
 

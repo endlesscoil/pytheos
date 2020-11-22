@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from .pytheos import Pytheos, connect
-from pytheos.networking.discovery import discover
+from .networking import discover
 from .logger import Logger
 
 

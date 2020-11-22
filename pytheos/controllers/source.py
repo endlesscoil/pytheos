@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 from collections import Sequence
 
-from pytheos.models.source import MusicSource
-from pytheos.models.media import SourceMedia
+from ..models import MusicSource, SourceMedia
 
 from typing import TYPE_CHECKING, Union, Optional
 

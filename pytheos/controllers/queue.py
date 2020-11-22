@@ -2,9 +2,9 @@
 from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 
-from pytheos.models.browse import AddToQueueType
-from pytheos.models.player import PlayState
-from pytheos.controllers.source import PytheosMedia
+from ..models.browse import AddToQueueType
+from ..models.player import PlayState
+from ..controllers.source import PytheosMedia # FIXME - I think PytheosMedia belongs elsewhere.
 
 if TYPE_CHECKING:
     from pytheos import Pytheos

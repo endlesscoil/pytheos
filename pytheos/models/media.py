@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from pytheos.models.source import Source, SourceType
+from ..models.source import Source, SourceType
 
 
 @dataclass

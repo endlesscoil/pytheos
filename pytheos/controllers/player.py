@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
-from pytheos.controllers.queue import QueueController
-from pytheos.controllers.group import GroupController
-from pytheos.models.source import InputSource
-from pytheos.models.player import Player, RepeatMode, ShuffleMode, PlayMode, PlayState, Network, Lineout, Control
-from pytheos.models.media import MediaItem
+from ..controllers.queue import QueueController
+from ..controllers.group import GroupController
+from ..models import Player, MediaItem
+from ..models.source import InputSource
+from ..models.player import RepeatMode, ShuffleMode, PlayMode, PlayState, Network, Lineout, Control
 
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:

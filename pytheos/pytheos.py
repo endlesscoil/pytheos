@@ -7,16 +7,11 @@ import logging
 import queue
 from typing import Callable, Optional, Union
 
-from pytheos import utils
-from pytheos.networking.connection import Connection
-from pytheos.networking.types import SSDPResponse, HEOSEvent
-from pytheos.networking.errors import ChannelUnavailableError
-from pytheos.events.handler import EventHandlerThread
-from pytheos.events.receiver import EventReceiverThread
-from pytheos.controllers.group import GroupController
-from pytheos.controllers.player import PlayerController
-from pytheos.controllers.source import SourceController
-from pytheos.models.system import AccountStatus
+from . import utils
+from .networking import Connection, SSDPResponse, HEOSEvent, ChannelUnavailableError
+from .events import EventHandlerThread, EventReceiverThread
+from .controllers import GroupController, PlayerController, SourceController
+from .models.system import AccountStatus
 
 logger = logging.getLogger('pytheos')
 

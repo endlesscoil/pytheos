@@ -5,9 +5,9 @@ from __future__ import annotations
 
 from typing import Optional, Union, List
 
-from pytheos.models.player import Player, PlayMode, RepeatMode, ShuffleMode, QuickSelect, PlayState, Mute
-from pytheos.models.media import MediaItem
-from pytheos.networking.errors import InvalidResponse
+from ..models.player import Player, PlayMode, RepeatMode, ShuffleMode, QuickSelect, PlayState, Mute
+from ..models.media import MediaItem
+from ..networking.errors import InvalidResponse
 
 
 class PlayerAPI:

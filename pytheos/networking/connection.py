@@ -10,13 +10,10 @@ import threading
 import time
 from typing import Optional, Union
 
-from pytheos import utils
-from pytheos.api.browse import BrowseAPI
-from pytheos.api.group import GroupAPI
-from pytheos.api.player import PlayerAPI
-from pytheos.api.system import SystemAPI
-from pytheos.networking.errors import CommandFailedError
-from pytheos.networking.types import HEOSResult
+from .. import utils
+from ..api import BrowseAPI, GroupAPI, PlayerAPI, SystemAPI
+from ..networking.errors import CommandFailedError
+from ..networking.types import HEOSResult
 
 logger = logging.getLogger(__name__)
 

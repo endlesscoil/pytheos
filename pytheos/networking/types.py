@@ -3,7 +3,7 @@ import json
 import socket
 from typing import Optional, Union
 
-from pytheos import utils
+from .. import utils
 
 
 class HEOSHeader:

@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import Optional
 
-from pytheos.errors import PytheosError
-from pytheos.networking.types import HEOSResult
+from ..errors import PytheosError
+from ..networking.types import HEOSResult
 
 
 class HEOSErrorCode(Enum):
