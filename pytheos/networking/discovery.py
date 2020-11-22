@@ -8,13 +8,12 @@ import socket
 from typing import Optional, List
 
 from pytheos import utils
-from pytheos.pytheos import Pytheos
 from pytheos.networking.types import SSDPResponse
 
 logger = logging.getLogger(__name__)
 
 
-def discover(timeout: Optional[int]=None, retries: Optional[int]=None, mx: Optional[int]=None) -> List[Pytheos]:
+def discover(timeout: Optional[int]=None, retries: Optional[int]=None, mx: Optional[int]=None) -> List[SSDPResponse]:
     """ Convenience function for initiating the discovery process.
 
     :param timeout: Optional override for the default timeout
@@ -90,7 +89,7 @@ class Discovery:
 
         self._socket = None
 
-    def discover(self, timeout: int=None, retries: int=None, mx: int=None) -> List[Pytheos]:
+    def discover(self, timeout: int=None, retries: int=None, mx: int=None) -> List[SSDPResponse]:
         """ Performs SSDP broadcasts to identify any HEOS devices on the network
 
         :param timeout: Timeout (seconds)
@@ -104,7 +103,7 @@ class Discovery:
 
         return self._perform_discovery(retries, mx)
 
-    def _perform_discovery(self, retries: Optional[int]=None, mx: Optional[int]=None) -> List[Pytheos]:
+    def _perform_discovery(self, retries: Optional[int]=None, mx: Optional[int]=None) -> List[SSDPResponse]:
         """ Performs the discovery process.
 
         :param retries: Optional override for the number of retries
@@ -129,7 +128,7 @@ class Discovery:
 
         return discovered_devices
 
-    def _communicate(self, mx: int) -> List[Pytheos]:
+    def _communicate(self, mx: int) -> List[SSDPResponse]:
         """ Create our socket, construct the broadcast message, send it, and read the responses.
 
         :param mx: MX value to use
@@ -142,8 +141,9 @@ class Discovery:
 
         devices = []
         while True:
-            device = self._handle_response()
-            if not device:
+            try:
+                device = self._read_response()
+            except socket.timeout:
                 break
 
             devices.append(device)
@@ -151,22 +151,6 @@ class Discovery:
         self._close_socket()
 
         return devices
-
-    def _handle_response(self):
-        """ Reads a response to the SSDP broadcast.
-
-        :return: Pytheos device
-        """
-        device = None
-
-        try:
-            response = self._read_response()
-            device = Pytheos(from_response=response)
-
-        except socket.timeout:
-            pass
-
-        return device
 
     def _read_response(self):
         return SSDPResponse(self._socket)

@@ -7,16 +7,16 @@ import logging
 import queue
 from typing import Callable, Optional, Union
 
-from . import utils
+from pytheos import utils
 from pytheos.networking.connection import Connection
-from .networking.types import SSDPResponse, HEOSEvent
-from .networking.errors import ChannelUnavailableError
-from .events.handler import EventHandlerThread
-from .events.receiver import EventReceiverThread
+from pytheos.networking.types import SSDPResponse, HEOSEvent
+from pytheos.networking.errors import ChannelUnavailableError
+from pytheos.events.handler import EventHandlerThread
+from pytheos.events.receiver import EventReceiverThread
 from pytheos.controllers.group import GroupController
 from pytheos.controllers.player import PlayerController
 from pytheos.controllers.source import SourceController
-from .models.system import AccountStatus
+from pytheos.models.system import AccountStatus
 
 logger = logging.getLogger('pytheos')
 
@@ -86,15 +86,15 @@ class Pytheos:
         self._receive_events = value
         self._set_register_for_change_events(value)
 
-    def __init__(self, server: Optional[str]=None, port: Optional[int]=DEFAULT_PORT, from_response: SSDPResponse=None):
+    def __init__(self, server: Union[str, SSDPResponse]=None, port: Optional[int]=DEFAULT_PORT):
         """ Constructor
 
         :param server: Server hostname or IP
         :param port: Port number
         :param from_response: Optional SSDP response to extract location data from
         """
-        if from_response:
-            server = utils.extract_host(from_response.location)
+        if isinstance(server, SSDPResponse):
+            server = utils.extract_host(server.location)
 
         self.server: str = server
         self.port: int = port
