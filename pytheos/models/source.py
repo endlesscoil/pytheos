@@ -80,10 +80,16 @@ class SourceType(Enum):
 class Source:
     name: str = None
     type: SourceType = None
-    source_id: int = None
+    available: bool = False
+    playable: bool = False
     container: bool = False
+
+    source_id: int = None
     container_id: int = None
+    media_id: int = None
+
     image_url: str = None
+    service_username: str = None
 
     def __init__(self, from_dict: Optional[dict]=None):
         """ Constructor
@@ -93,24 +99,11 @@ class Source:
         if from_dict:
             self.name = from_dict.get('name')
             self.type = SourceType(from_dict.get('type'))
-            self.image_url = from_dict.get('image_url')
-            self.source_id = from_dict.get('sid')
-            self.container = bool(from_dict.get('container'))
-            self.container_id = from_dict.get('cid')
-
-
-@dataclass
-class MusicSource(Source):
-    available: bool = False
-    service_username: str = None
-
-    def __init__(self, from_dict: Optional[dict]=None):
-        """ Constructor
-
-        :param from_dict: Optional dictionary to use for initialization
-        """
-        super().__init__(from_dict)
-
-        if from_dict:
             self.available = from_dict.get('available')
+            self.playable = from_dict.get('playable')
+            self.container = bool(from_dict.get('container'))
+            self.source_id = from_dict.get('sid')
+            self.container_id = from_dict.get('cid')
+            self.media_id = from_dict.get('mid')
+            self.image_url = from_dict.get('image_url')
             self.service_username = from_dict.get('service_username')

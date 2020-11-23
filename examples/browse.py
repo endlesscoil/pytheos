@@ -27,18 +27,18 @@ Example:
 """
 import os
 import sys
-from typing import Union
+from typing import Optional
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
 from pytheos import Pytheos
-from pytheos.models import MusicSource, SourceMedia
+from pytheos.models import Source
 
 
 class TreeEntry(dict):
     """ Container class for our tree """
-    def __init__(self, obj: Union[MusicSource, SourceMedia, None], **kwargs: dict):
+    def __init__(self, obj: Optional[Source]=None, **kwargs: dict):
         super().__init__(**kwargs)
 
         self.object = obj
@@ -88,7 +88,7 @@ def _init_tree_with_sources(svc: Pytheos) -> TreeEntry:
     return tree
 
 
-def _retrieve_contents(svc: Pytheos, parent_id: str, source: Union[MusicSource, SourceMedia]) -> tuple:
+def _retrieve_contents(svc: Pytheos, parent_id: str, source: Source) -> tuple:
     """ Retrieve the contents of the provided source node.
 
     :param svc: Pytheos object

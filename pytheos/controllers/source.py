@@ -2,7 +2,7 @@
 from collections.abc import Sequence
 
 from .containers import create_media_leaf, MediaContainer
-from ..models import MusicSource
+from ..models import Source
 
 from typing import TYPE_CHECKING, Union
 
@@ -51,8 +51,7 @@ class Source(Sequence):
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', source: Union['Source', MusicSource],
-                 parent: Union['Source', 'MediaContainer']=None):
+    def __init__(self, pytheos: 'Pytheos', source: Source, parent: Union['Source', 'MediaContainer']=None):
         super().__init__()
 
         self._pytheos = pytheos

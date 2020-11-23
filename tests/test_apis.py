@@ -9,8 +9,8 @@ from pytheos.models.system import AccountStatus
 
 from pytheos.models.browse import SearchCriteria, AddToQueueType, \
     AlbumMetadata, ServiceOption
-from pytheos.models.source import MusicSource, InputSource
-from pytheos.models.media import SourceMedia, MediaItem
+from pytheos.models.source import Source, InputSource
+from pytheos.models.media import MediaItem
 from pytheos.models.group import Group, GroupRole, GroupPlayer
 from pytheos.models.player import Player, PlayMode, QuickSelect, ShuffleMode, RepeatMode, PlayState, Mute
 from pytheos.networking.errors import CommandFailedError, SignInFailedError
@@ -666,7 +666,7 @@ class TestAPIs(unittest.TestCase):
             music_sources = self._pytheos.api.browse.get_music_sources()
             self._pytheos.api.send_command.assert_called_with('browse', 'get_music_sources')
             self.assertGreater(len(music_sources), 0)
-            self.assertIsInstance(music_sources[0], MusicSource)
+            self.assertIsInstance(music_sources[0], Source)
 
     def test_browse_get_source_info(self):
         response = TestAPIs.get_basic_response('browse', 'get_music_sources', 'success')
@@ -680,7 +680,7 @@ class TestAPIs(unittest.TestCase):
         }
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            self.assertIsInstance(self._pytheos.api.browse.get_source_info(1), MusicSource)
+            self.assertIsInstance(self._pytheos.api.browse.get_source_info(1), Source)
             self._pytheos.api.send_command.assert_called_with('browse', 'get_source_info', sid=1)
 
     def test_browse_browse_source(self):
@@ -710,7 +710,7 @@ class TestAPIs(unittest.TestCase):
             results = self._pytheos.api.browse.browse_source(1)
             self._pytheos.api.send_command.assert_called_with('browse', 'browse', sid=1)
             self.assertGreater(len(results), 0)
-            self.assertIsInstance(results[0], SourceMedia)
+            self.assertIsInstance(results[0], Source)
 
     def test_browse_browse_source_container(self):
         source_id = 1340337940
@@ -732,7 +732,7 @@ class TestAPIs(unittest.TestCase):
             results = self._pytheos.api.browse.browse_source_container(source_id, container_id)
             self._pytheos.api.send_command.assert_called_with('browse', 'browse', sid=source_id, cid=container_id)
             self.assertGreater(len(results), 0)
-            self.assertIsInstance(results[0], SourceMedia)
+            self.assertIsInstance(results[0], Source)
 
     def test_browse_get_search_criteria(self):
         sid = 1340337940
@@ -801,7 +801,7 @@ class TestAPIs(unittest.TestCase):
             results = self._pytheos.api.browse.search(sid, 'someband', 1)
             self._pytheos.api.send_command.assert_called_with('browse', 'search', sid=sid, search='someband', scid=1)
             self.assertGreater(len(results), 0)
-            self.assertIsInstance(results[0], SourceMedia)
+            self.assertIsInstance(results[0], Source)
 
     def test_browse_play_station(self):
         pid = 12345678

@@ -5,10 +5,8 @@ from collections import OrderedDict
 from typing import Optional
 import logging
 
-from ..models.browse import SearchCriteria, AddToQueueType, AlbumMetadata, \
-    ServiceOption
-from ..models.source import MusicSource
-from ..models.media import SourceMedia
+from ..models import Source
+from ..models.browse import SearchCriteria, AddToQueueType, AlbumMetadata, ServiceOption
 from ..networking.types import HEOSResult
 
 logger = logging.getLogger(__name__)
@@ -66,7 +64,7 @@ class BrowseAPI:
 
         # FIXME: This needs a whole bunch of work.  There are three different formats to this command.
         results = self._api.call('browse', 'browse', **kwargs)
-        return [SourceMedia(media) for media in results.payload.data]
+        return [Source(media) for media in results.payload.data]
 
     def browse_source_container(self,
                                 source_id: Optional[int]=None,
@@ -121,7 +119,7 @@ class BrowseAPI:
             kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
         results = self._api.call('browse', 'browse', **kwargs)
-        return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
+        return int(results.header.vars.get('count', 0)), [Source(media) for media in results.payload]
 
     def get_music_sources(self) -> list:
         """ Retrieve a list of music sources.
@@ -129,7 +127,7 @@ class BrowseAPI:
         :return: list
         """
         results = self._api.call('browse', 'get_music_sources')
-        return [MusicSource(source) for source in results.payload]
+        return [Source(source) for source in results.payload]
 
     def get_search_criteria(self, source_id: int) -> list:
         """ Retrieves the search criteria settings for the specified music source.
@@ -141,7 +139,7 @@ class BrowseAPI:
 
         return [SearchCriteria(item) for item in results.payload]
 
-    def get_source_info(self, source_id: int) -> Optional[MusicSource]:
+    def get_source_info(self, source_id: int) -> Optional[Source]:
         """ Retrieve information on the specified Source ID
 
         :param source_id: Source ID
@@ -149,7 +147,7 @@ class BrowseAPI:
         """
         results = self._api.call('browse', 'get_source_info', sid=source_id)
 
-        return MusicSource(results.payload.data)
+        return Source(results.payload.data)
 
     def play_station(self, player_id: int, source_id: int, container_id: str, media_id: str, name: str):
         """ Starts playing the specified music station.  Media ID must be from media of the 'station' type.
@@ -264,7 +262,7 @@ class BrowseAPI:
             kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
         results = self._api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
-        return int(results.header.vars.get('count', 0)), [SourceMedia(media) for media in results.payload]
+        return int(results.header.vars.get('count', 0)), [Source(media) for media in results.payload]
 
     def set_service_option(self, source_id: int, option: ServiceOption, **kwargs) -> HEOSResult:
         """

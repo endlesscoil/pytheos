@@ -1,32 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from ..models.source import Source, SourceType
-
-
-@dataclass
-class SourceMedia(Source):
-    playable: bool = False
-    media_id: int = None
-    queue_id: int = None
-
-    def __init__(self, from_dict: Optional[dict]=None):
-        """ Constructor
-
-        :param from_dict: Optional dictionary to use for initialization
-        """
-        super().__init__(from_dict)
-
-        if from_dict:
-            self.container = bool(from_dict.get('container'))
-            self.playable = from_dict.get('playable')
-            self.type = SourceType(from_dict.get('type'))
-            self.name = from_dict.get('name')
-            self.image_url = from_dict.get('image_url')
-            self.source_id = from_dict.get('sid')
-            self.container_id = from_dict.get('cid')
-            self.media_id = from_dict.get('mid')
-
 
 @dataclass
 class MediaItem:

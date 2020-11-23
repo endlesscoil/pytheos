@@ -8,7 +8,8 @@ import queue
 from typing import Callable, Optional, Union
 
 from . import utils
-from .networking import Connection, SSDPResponse, HEOSEvent, ChannelUnavailableError
+from .networking import Connection, SSDPResponse, ChannelUnavailableError
+from .events.types import HEOSEvent
 from .events import EventHandlerThread, EventReceiverThread
 from .controllers import Group, Player, Source
 from .models.system import AccountStatus

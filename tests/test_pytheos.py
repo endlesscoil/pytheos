@@ -6,7 +6,7 @@ import unittest.mock
 from unittest.mock import patch
 
 import pytheos
-from pytheos.models.source import MusicSource
+from pytheos.models.source import Source as SourceModel
 from pytheos.models.player import Player as PlayerModel
 from pytheos.models.group import Group as GroupModel
 from pytheos.models.system import AccountStatus
@@ -79,8 +79,8 @@ class TestPytheos(unittest.TestCase):
 
     def test_get_sources(self):
         with patch.object(BrowseAPI, 'get_music_sources', return_value=[
-            MusicSource({'sid': 1, 'type': 'music_service'}),
-            MusicSource({'sid': 2, 'type': 'music_service'})
+            SourceModel({'sid': 1, 'type': 'music_service'}),
+            SourceModel({'sid': 2, 'type': 'music_service'})
         ]):
             sources = self._pytheos.get_sources()
             self.assertGreater(len(sources), 0)
