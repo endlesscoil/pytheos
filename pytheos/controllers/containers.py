@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
+from .. import models
+
 from typing import TYPE_CHECKING, Sequence, Union, Optional
-
-from pytheos.models import Source
-from pytheos.models import MediaItem as MediaItemModel
-
 if TYPE_CHECKING:
     from pytheos import Pytheos
 
@@ -25,11 +25,6 @@ def create_media_leaf(item, parent, pytheos_obj):
         return MediaItem(pytheos_obj, item, parent)
 
     return item
-
-    # if item.media_id is None:
-    #     return Source(pytheos_obj, item, parent)
-
-
 
 
 class MediaContainer(Sequence):
@@ -61,7 +56,7 @@ class MediaContainer(Sequence):
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', container: Source, parent: Union['SourceContainer', 'MediaContainer'],
+    def __init__(self, pytheos: 'Pytheos', container: models.Source, parent: Union['models.Source', 'MediaContainer'],
                  source_id=None):
         super().__init__()
 
@@ -109,7 +104,7 @@ class MediaItem:
 
     @property
     def is_container_type(self):
-        return self._media.type.is_container
+        return self._media.is_container # FIXME - what should this be now with all the rearranging?
 
     @property
     def queue_id(self):
@@ -119,8 +114,8 @@ class MediaItem:
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', media: MediaItemModel,
-                 parent: Optional[Union['Source', 'MediaContainer']]):
+    def __init__(self, pytheos: 'Pytheos', media: models.MediaItem,
+                 parent: Optional[Union['models.Source', 'MediaContainer']]):
         self._pytheos = pytheos
         self._parent = parent
         self._media = media

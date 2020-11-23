@@ -6,8 +6,8 @@ import queue
 import threading
 import time
 
-from ..networking import Connection
-from .types import HEOSEvent
+from ..networking.connection import Connection
+from ..models.heos import HEOSEvent
 
 logger = logging.getLogger(__name__)
 

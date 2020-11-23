@@ -4,6 +4,7 @@ from .group import Group, GroupPlayer
 from .media import MediaItem
 from .player import Player, QuickSelect, PlayMode
 from .source import Source
+from . import heos
 
 __all__ = [
     'SearchCriteria', 'AlbumMetadata', 'AlbumImage',

@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from ..models import Group
-from ..models.player import Mute
+from .. import models
 
 
 class GroupAPI:
@@ -24,16 +23,16 @@ class GroupAPI:
         :return: list
         """
         results = self._api.call('group', 'get_groups')
-        return [Group(grp) for grp in results.payload]
+        return [models.Group(grp) for grp in results.payload]
 
-    def get_group_info(self, group_id: int) -> Group:
+    def get_group_info(self, group_id: int) -> models.Group:
         """ Retrieves the group information for the specified group.
 
         :param group_id: Group ID
         :return: Group
         """
         results = self._api.call('group', 'get_group_info', gid=group_id)
-        return Group(results.payload)
+        return models.Group(results.payload)
 
     def get_mute(self, group_id: int) -> bool:
         """ Returns whether or not the group is currently muted
@@ -53,7 +52,7 @@ class GroupAPI:
         results = self._api.call('group', 'get_volume', gid=group_id)
         return int(results.header.vars.get('level'))
 
-    def set_group(self, leader_id: int, member_ids=None) -> Optional[Group]:
+    def set_group(self, leader_id: int, member_ids=None) -> Optional[models.Group]:
         """ Sets up a group leader and associated member players.
 
         :param leader_id: Leader ID
@@ -67,7 +66,7 @@ class GroupAPI:
         results = self._api.call('group', 'set_group', pid=','.join([str(pid) for pid in player_ids]))
 
         if results.header.vars.get('gid') is not None:
-            return Group(results.header.vars)
+            return models.Group(results.header.vars)
 
         return None
 
@@ -78,7 +77,7 @@ class GroupAPI:
         :param enable: True or False
         :return: None
         """
-        self._api.call('group', 'set_mute', gid=group_id, state=Mute.On if enable else Mute.Off)
+        self._api.call('group', 'set_mute', gid=group_id, state=models.player.Mute.On if enable else models.player.Mute.Off)
 
     def set_volume(self, group_id: int, level: int) -> None:
         """ Sets the volume level on the group

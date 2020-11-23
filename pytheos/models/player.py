@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """ Provides type declarations related to the PlayerAPI group """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 from collections.abc import Sequence
 
 from .containers import create_media_leaf, MediaContainer
-from ..models import Source
+from .. import models
 
 from typing import TYPE_CHECKING, Union
-
 if TYPE_CHECKING:
     from pytheos import Pytheos
 
@@ -51,7 +52,7 @@ class Source(Sequence):
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', source: Source, parent: Union['Source', 'MediaContainer']=None):
+    def __init__(self, pytheos: 'Pytheos', source: models.Source, parent: Union['Source', 'MediaContainer']=None):
         super().__init__()
 
         self._pytheos = pytheos

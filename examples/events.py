@@ -8,7 +8,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
-from pytheos.events import HEOSEvent
+from pytheos.models.heos import HEOSEvent
 
 
 def _on_now_playing_changed(event: HEOSEvent):

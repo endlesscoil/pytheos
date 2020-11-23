@@ -1,8 +1,11 @@
+#!/usr/bin/env python
+from __future__ import annotations
+
 from enum import Enum
 from typing import Optional
 
 from ..errors import PytheosError
-from ..networking.types import HEOSResult
+from ..models.heos import HEOSResult
 
 
 class HEOSErrorCode(Enum):

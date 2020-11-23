@@ -1,12 +1,12 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 from collections.abc import MutableSequence
-from typing import TYPE_CHECKING
 
 from .containers import MediaItem
-from ..api.player import Player
-from ..models.browse import AddToQueueType
-from ..models.player import PlayState
+from .. import models
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pytheos import Pytheos
 
@@ -21,7 +21,7 @@ class Queue(MutableSequence):
 
         return cid, mid
 
-    def __init__(self, pytheos: 'Pytheos', player: 'Player'):
+    def __init__(self, pytheos: 'Pytheos', player: 'models.Player'):
         super().__init__()
 
         self._pytheos = pytheos
@@ -108,14 +108,14 @@ class Queue(MutableSequence):
 
         :return:
         """
-        self._pytheos.api.player.set_play_state(self._player.player_id, PlayState.Stopped)
+        self._pytheos.api.player.set_play_state(self._player.player_id, models.player.PlayState.Stopped)
 
     def resume(self):
         """ Resumes the current player.
 
         :return: None
         """
-        self._pytheos.api.player.set_play_state(self._player.player_id, PlayState.Playing)
+        self._pytheos.api.player.set_play_state(self._player.player_id, models.player.PlayState.Playing)
 
     def save(self, name: str):
         """ Saves the queue to the playlists with the specified name.
@@ -148,11 +148,11 @@ class Queue(MutableSequence):
             self._pytheos.api.player.remove_from_queue(self._player.player_id, list(range(index + 1, len(self._queue))))
 
         cid, mid = Queue._get_queue_insert_ids(obj)
-        self._pytheos.api.browse.add_to_queue(self._player.player_id, obj.parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+        self._pytheos.api.browse.add_to_queue(self._player.player_id, obj.parent.source_id, cid, media_id=mid, add_type=models.browse.AddToQueueType.AddToEnd)
 
         for qi in self._queue[index:]:
             cid, mid = Queue._get_queue_insert_ids(qi)
-            self._pytheos.api.browse.add_to_queue(self._player.player_id, qi.parent.source_id, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+            self._pytheos.api.browse.add_to_queue(self._player.player_id, qi.parent.source_id, cid, media_id=mid, add_type=models.browse.AddToQueueType.AddToEnd)
 
         self._refresh_queue(True)
 

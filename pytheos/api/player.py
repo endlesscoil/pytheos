@@ -5,8 +5,7 @@ from __future__ import annotations
 
 from typing import Optional, Union, List
 
-from ..models.player import Player, PlayMode, RepeatMode, ShuffleMode, QuickSelect, PlayState, Mute
-from ..models.media import MediaItem
+from .. import models
 from ..networking.errors import InvalidResponse
 
 
@@ -46,7 +45,7 @@ class PlayerAPI:
         results = self._api.call('player', 'get_mute', pid=player_id)
         return results.header.vars.get('state') == 'on'
 
-    def get_now_playing_media(self, player_id: int) -> MediaItem:
+    def get_now_playing_media(self, player_id: int) -> models.media.MediaItem:
         """ Returns details of the currently playing media
 
         :param player_id: PlayerID
@@ -55,26 +54,26 @@ class PlayerAPI:
         results = self._api.call('player', 'get_now_playing_media', pid=player_id)
         # TODO: options support
 
-        return MediaItem(results.payload)
+        return models.media.MediaItem(results.payload)
 
-    def get_players(self) -> List[Player]:
+    def get_players(self) -> List[models.Player]:
         """ Retrieves a list of players that are available
 
         :return: list
         """
         results = self._api.call('player', 'get_players')
-        return [Player(player_data) for player_data in results.payload]
+        return [models.Player(player_data) for player_data in results.payload]
 
-    def get_player_info(self, player_id: int) -> Player:
+    def get_player_info(self, player_id: int) -> models.Player:
         """ Retrieves the Player information for a given ID
 
         :param player_id: Player ID
         :return: Player
         """
         results = self._api.call('player', 'get_player_info', pid=player_id)
-        return Player(results.payload)
+        return models.Player(results.payload)
 
-    def get_play_mode(self, player_id: int) -> PlayMode:
+    def get_play_mode(self, player_id: int) -> models.player.PlayMode:
         """ Returns the current play mode flags - repeat & shuffle
 
         :param player_id: Player ID
@@ -82,12 +81,12 @@ class PlayerAPI:
         """
         results = self._api.call('player', 'get_play_mode', pid=player_id)
 
-        return PlayMode(
-            repeat=RepeatMode(results.header.vars.get('repeat')),
-            shuffle=ShuffleMode(results.header.vars.get('shuffle'))
+        return models.player.PlayMode(
+            repeat=models.player.RepeatMode(results.header.vars.get('repeat')),
+            shuffle=models.player.ShuffleMode(results.header.vars.get('shuffle'))
         )
 
-    def get_play_state(self, player_id: int) -> PlayState:
+    def get_play_state(self, player_id: int) -> models.player.PlayState:
         """ Retrieves the current playing state (e.g. play, pause, stop)
 
         :param player_id: Player ID
@@ -98,7 +97,7 @@ class PlayerAPI:
         if 'state' not in results.header.vars:
             raise InvalidResponse('Could not find "state" entry in response', results)
 
-        return PlayState(results.header.vars['state'])
+        return models.player.PlayState(results.header.vars['state'])
 
     def get_queue(self, player_id: int, range_start: int=0, number_to_retrieve: int=100) -> list:
         """ Retrieves the current play queue
@@ -116,7 +115,7 @@ class PlayerAPI:
 
         results = self._api.call('player', 'get_queue',
                                  pid=player_id, range=f'{range_start},{range_start + number_to_retrieve - 1}')
-        return [MediaItem(item) for item in results.payload]
+        return [models.media.MediaItem(item) for item in results.payload]
 
     def get_quickselects(self, player_id: int, quick_select_id: Optional[int]=None) -> list:
         """ Retrieves a list of quick select entries - LEGO AVR or HEOS BAR only
@@ -134,7 +133,7 @@ class PlayerAPI:
             kwargs['id'] = quick_select_id
 
         results = self._api.call('player', 'get_quickselects', **kwargs)
-        return [QuickSelect(id=item['id'], name=item['name']) for item in results.payload]
+        return [models.player.QuickSelect(id=item['id'], name=item['name']) for item in results.payload]
 
     def get_volume(self, player_id: int) -> int:
         """ Retrieves the current volume
@@ -233,9 +232,9 @@ class PlayerAPI:
         :param enable: True or False
         :return: None
         """
-        self._api.call('player', 'set_mute', pid=player_id, state=Mute.On if enable else Mute.Off)
+        self._api.call('player', 'set_mute', pid=player_id, state=models.player.Mute.On if enable else models.player.Mute.Off)
 
-    def set_play_mode(self, player_id: int, play_mode: PlayMode) -> None:
+    def set_play_mode(self, player_id: int, play_mode: models.player.PlayMode) -> None:
         """ Sets the play mode for the specified player - repeat & shuffle
 
         :param player_id: Player ID
@@ -257,7 +256,7 @@ class PlayerAPI:
 
         self._api.call('player', 'set_quickselect', pid=player_id, id=quickselect_id)
 
-    def set_play_state(self, player_id: int, state: PlayState) -> None:
+    def set_play_state(self, player_id: int, state: models.player.PlayState) -> None:
         """ Set the current playing state for the player
 
         :param player_id: Player ID
@@ -265,7 +264,7 @@ class PlayerAPI:
         :raises: ValueError
         :return: None
         """
-        self._api.call('player', 'set_play_state', pid=player_id, state=PlayState(state))
+        self._api.call('player', 'set_play_state', pid=player_id, state=models.player.PlayState(state))
 
     def set_volume(self, player_id: int, level: int) -> None:
         """ Sets the volume level on the player

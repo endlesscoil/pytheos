@@ -3,11 +3,7 @@
 
 from __future__ import annotations
 
-from ..controllers.queue import Queue
-from ..controllers.group import Group
-from ..models import Player, MediaItem
-from ..models.source import InputSource
-from ..models.player import RepeatMode, ShuffleMode, PlayMode, PlayState, Network, Lineout, Control
+from .. import models, controllers
 
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
@@ -26,7 +22,7 @@ class Player:
         return self._player.name
 
     @property
-    def group(self) -> Group:
+    def group(self) -> controllers.Group:
         return self._pytheos.get_group(self._player.group_id)
 
     @property
@@ -38,7 +34,7 @@ class Player:
         return self._player.version
 
     @property
-    def network(self) -> Network:
+    def network(self) -> models.player.Network:
         return self._player.network
 
     @property
@@ -46,11 +42,11 @@ class Player:
         return self._player.ip
 
     @property
-    def line_out(self) -> Lineout:
+    def line_out(self) -> models.player.Lineout:
         return self._player.lineout
 
     @property
-    def control(self) -> Control:
+    def control(self) -> models.player.Control:
         return self._player.control
 
     @property
@@ -70,50 +66,50 @@ class Player:
         self._pytheos.api.player.set_mute(self.id, value)
 
     @property
-    def repeat(self) -> RepeatMode:
+    def repeat(self) -> models.player.RepeatMode:
         repeat, shuffle = self._get_play_mode()
 
         return repeat
 
     @repeat.setter
-    def repeat(self, value: RepeatMode):
-        self._pytheos.api.player.set_play_mode(self.id, PlayMode(repeat=value, shuffle=self.shuffle))
+    def repeat(self, value: models.player.RepeatMode):
+        self._pytheos.api.player.set_play_mode(self.id, models.player.PlayMode(repeat=value, shuffle=self.shuffle))
         self._repeat = value
 
     @property
-    def shuffle(self) -> ShuffleMode:
+    def shuffle(self) -> models.player.ShuffleMode:
         repeat, shuffle = self._get_play_mode()
 
         return shuffle
 
     @shuffle.setter
-    def shuffle(self, value: ShuffleMode):
-        self._pytheos.api.player.set_play_mode(self.id, PlayMode(repeat=self.repeat, shuffle=value))
+    def shuffle(self, value: models.player.ShuffleMode):
+        self._pytheos.api.player.set_play_mode(self.id, models.player.PlayMode(repeat=self.repeat, shuffle=value))
         self._shuffle = value
 
     @property
     def playing(self) -> bool:
-        return self.play_state == PlayState.Playing
+        return self.play_state == models.player.PlayState.Playing
 
     @playing.setter
     def playing(self, value: bool):
-        self._pytheos.api.player.set_play_state(self.id, PlayState.Playing if value else PlayState.Stopped)
+        self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Playing if value else models.player.PlayState.Stopped)
 
     @property
     def paused(self) -> bool:
-        return self.play_state == PlayState.Paused
+        return self.play_state == models.player.PlayState.Paused
 
     @paused.setter
     def paused(self, value: bool):
-        self._pytheos.api.player.set_play_state(self.id, PlayState.Paused if value else PlayState.Playing)
+        self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Paused if value else models.player.PlayState.Playing)
 
     @property
     def stopped(self) -> bool:
-        return self.play_state == PlayState.Stopped
+        return self.play_state == models.player.PlayState.Stopped
 
     @stopped.setter
     def stopped(self, value: bool):
-        self._pytheos.api.player.set_play_state(self.id, PlayState.Stopped if value else PlayState.Playing)
+        self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Stopped if value else models.player.PlayState.Playing)
 
     @property
     def volume(self) -> int:
@@ -129,11 +125,11 @@ class Player:
         self._pytheos.api.player.set_volume(self.id, value)
 
     @property
-    def now_playing(self) -> MediaItem:     # FIXME: Maybe want to abstract MediaItem out
+    def now_playing(self) -> models.MediaItem:     # FIXME: Maybe want to abstract MediaItem out
         return self._pytheos.api.player.get_now_playing_media(self.id)
 
     @property
-    def play_state(self) -> PlayState:
+    def play_state(self) -> models.player.PlayState:
         return self._pytheos.api.player.get_play_state(self.id)
 
     @property
@@ -144,18 +140,18 @@ class Player:
     def queue(self):
         return self._queue
 
-    def __init__(self, pytheos: 'Pytheos', player: Player):
+    def __init__(self, pytheos: 'Pytheos', player: models.Player):
         self._player = player
         self._pytheos = pytheos
 
         self._mute: Optional[bool] = None
-        self._repeat: Optional[RepeatMode] = None
-        self._shuffle: Optional[ShuffleMode] = None
+        self._repeat: Optional[models.player.RepeatMode] = None
+        self._shuffle: Optional[models.player.ShuffleMode] = None
         self._volume: Optional[int] = None
         self._quick_selects: Optional[dict] = None
-        self._play_state: Optional[PlayState] = None
-        self._queue = Queue(pytheos, player)
-        self._now_playing: Optional[MediaItem] = None
+        self._play_state: Optional[models.player.PlayState] = None
+        self._queue = controllers.Queue(pytheos, player)
+        self._now_playing: Optional[models.MediaItem] = None
 
     def refresh(self, player_id=None):
         """ Retrieve and update the Player information used by this class.  Optionally, the ID already present on the
@@ -166,7 +162,7 @@ class Player:
         """
         self._player = self._pytheos.api.player.get_player_info(player_id if player_id else self.id)
 
-    def play_input(self, input_source: InputSource, source_player: Optional[Player]=None):
+    def play_input(self, input_source: models.source.InputSource, source_player: Optional[models.Player]=None):
         """ Instructs the player to play the specified input source.  Optionally, this input source can live on another
         Player on the network, which can be specified with the source_player parameter.
 
@@ -174,7 +170,8 @@ class Player:
         :param source_player: Optional source Player ID
         :return: None
         """
-        self._pytheos.api.browse.play_input(self.id, input_name=input_source, source_player_id=source_player.id)
+        source_player_id = source_player.player_id if source_player else None
+        self._pytheos.api.browse.play_input(self.id, input_name=input_source, source_player_id=source_player_id)
 
     def play_favorite(self, favorite: int):
         """ Instructs the player to play the specified favorite or preset ID.

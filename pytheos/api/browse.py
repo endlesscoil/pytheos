@@ -5,9 +5,7 @@ from collections import OrderedDict
 from typing import Optional
 import logging
 
-from ..models import Source
-from ..models.browse import SearchCriteria, AddToQueueType, AlbumMetadata, ServiceOption
-from ..networking.types import HEOSResult
+from .. import models
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +17,8 @@ class BrowseAPI:
     def __init__(self, conn):
         self._api = conn
 
-    def add_to_queue(self, player_id: str, source_id: str, container_id: str, media_id: Optional[str]=None, add_type: AddToQueueType=AddToQueueType.PlayNow):
+    def add_to_queue(self, player_id: str, source_id: str, container_id: str, media_id: Optional[str]=None,
+                     add_type: models.browse.AddToQueueType=models.browse.AddToQueueType.PlayNow):
         """ Adds the specified container or track to the playback queue.  If media_id is provided it will add the track
         specified by that ID, otherwise it will add the container specified by container_id.
 
@@ -64,7 +63,7 @@ class BrowseAPI:
 
         # FIXME: This needs a whole bunch of work.  There are three different formats to this command.
         results = self._api.call('browse', 'browse', **kwargs)
-        return [Source(media) for media in results.payload.data]
+        return [models.Source(media) for media in results.payload.data]
 
     def browse_source_container(self,
                                 source_id: Optional[int]=None,
@@ -119,7 +118,7 @@ class BrowseAPI:
             kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
         results = self._api.call('browse', 'browse', **kwargs)
-        return int(results.header.vars.get('count', 0)), [Source(media) for media in results.payload]
+        return int(results.header.vars.get('count', 0)), [models.Source(media) for media in results.payload]
 
     def get_music_sources(self) -> list:
         """ Retrieve a list of music sources.
@@ -127,7 +126,7 @@ class BrowseAPI:
         :return: list
         """
         results = self._api.call('browse', 'get_music_sources')
-        return [Source(source) for source in results.payload]
+        return [models.Source(source) for source in results.payload]
 
     def get_search_criteria(self, source_id: int) -> list:
         """ Retrieves the search criteria settings for the specified music source.
@@ -137,9 +136,9 @@ class BrowseAPI:
         """
         results = self._api.call('browse', 'get_search_criteria', sid=source_id)
 
-        return [SearchCriteria(item) for item in results.payload]
+        return [models.browse.SearchCriteria(item) for item in results.payload]
 
-    def get_source_info(self, source_id: int) -> Optional[Source]:
+    def get_source_info(self, source_id: int) -> Optional[models.Source]:
         """ Retrieve information on the specified Source ID
 
         :param source_id: Source ID
@@ -147,7 +146,7 @@ class BrowseAPI:
         """
         results = self._api.call('browse', 'get_source_info', sid=source_id)
 
-        return Source(results.payload.data)
+        return models.Source(results.payload.data)
 
     def play_station(self, player_id: int, source_id: int, container_id: str, media_id: str, name: str):
         """ Starts playing the specified music station.  Media ID must be from media of the 'station' type.
@@ -220,7 +219,7 @@ class BrowseAPI:
         """
         results = self._api.call('browse', 'retrieve_metadata', sid=source_id, cid=container_id)
 
-        return [AlbumMetadata(itm) for itm in results.payload]
+        return [models.browse.AlbumMetadata(itm) for itm in results.payload]
 
     def search(self, source_id: int, query: str, search_criteria_id: int) -> list:
         """ Search the source for a given string using the specified search criteria ID.
@@ -262,9 +261,9 @@ class BrowseAPI:
             kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
         results = self._api.call('browse', 'search', sid=source_id, search=query, scid=search_criteria_id, **kwargs)
-        return int(results.header.vars.get('count', 0)), [Source(media) for media in results.payload]
+        return int(results.header.vars.get('count', 0)), [models.Source(media) for media in results.payload]
 
-    def set_service_option(self, source_id: int, option: ServiceOption, **kwargs) -> HEOSResult:
+    def set_service_option(self, source_id: int, option: models.browse.ServiceOption, **kwargs) -> models.heos.HEOSResult:
         """
 
         :param source_id:

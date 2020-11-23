@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-from ..models import Group
+from __future__ import annotations
+
+from .. import models
 
 from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from pytheos import Pytheos
-    from pytheos.controllers import Player
+    from .. import controllers
 
 
 class Group:
@@ -16,11 +17,11 @@ class Group:
         return self._group.group_id
 
     @property
-    def leader(self) -> 'Player':
+    def leader(self) -> 'controllers.Player':
         return self._leader
 
     @leader.setter
-    def leader(self, value: 'Player'):
+    def leader(self, value: 'controllers.Player'):
         self.refresh(True)
         self._leader = value
         self._set_group()
@@ -53,12 +54,12 @@ class Group:
     def __contains__(self, player):
         return player.id == self._leader.id or any([p.id == player.id for p in self._members])
 
-    def __init__(self, pytheos: 'Pytheos', group: Group):
+    def __init__(self, pytheos: 'Pytheos', group: models.Group):
         self._pytheos: 'Pytheos' = pytheos
-        self._group: Group = group
+        self._group: models.Group = group
 
         group_count = len(group.players)
-        self._leader: 'Player' = group.players[0] if group_count > 0 else None
+        self._leader: 'controllers.Player' = group.players[0] if group_count > 0 else None
         self._members = group.players[1:] if group_count > 1 else []
 
     def refresh(self, force=False):
@@ -70,7 +71,7 @@ class Group:
         if not self._leader or force:
             self._group = self._pytheos.api.group.get_group_info(self._group.group_id)
 
-    def add_member(self, player: 'Player'):
+    def add_member(self, player: 'controllers.Player'):
         """ Adds a new member to the group.
 
         :param player: Player
@@ -84,7 +85,7 @@ class Group:
         self._members.append(player)
         self._set_group()
 
-    def remove_member(self, player: 'Player'):
+    def remove_member(self, player: 'controllers.Player'):
         """ Remove a member from a group.
 
         :param player: Player
@@ -92,7 +93,7 @@ class Group:
         """
         self.refresh(force=True)
 
-        if not player in self:
+        if player not in self:
             raise ValueError('Player is not present in this group.')
 
         if player in self._members:

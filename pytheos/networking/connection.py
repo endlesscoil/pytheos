@@ -13,7 +13,7 @@ from typing import Optional, Union
 from .. import utils
 from ..api import BrowseAPI, GroupAPI, PlayerAPI, SystemAPI
 from ..networking.errors import CommandFailedError
-from ..networking.types import HEOSResult
+from ..models.heos import HEOSResult
 
 logger = logging.getLogger(__name__)
 
