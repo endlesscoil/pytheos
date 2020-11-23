@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-from collections import Sequence
+from collections.abc import Sequence
 
-from ..models import MusicSource, SourceMedia
+from .containers import create_media_leaf, MediaContainer
+from ..models import MusicSource
 
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from pytheos import Pytheos
 
 
-class SourceController(Sequence):
+class Source(Sequence):
     @property
     def id(self):
         return self._source.source_id
@@ -50,8 +51,8 @@ class SourceController(Sequence):
     def parent(self):
         return self._parent
 
-    def __init__(self, pytheos: 'Pytheos', source: Union['SourceController', MusicSource],
-                 parent: Union['SourceController', 'PytheosContainer']=None):
+    def __init__(self, pytheos: 'Pytheos', source: Union['Source', MusicSource],
+                 parent: Union['Source', 'MediaContainer']=None):
         super().__init__()
 
         self._pytheos = pytheos
@@ -71,7 +72,7 @@ class SourceController(Sequence):
         return self.name
 
     def __repr__(self):
-        return f"<PytheosSource(id={self.id}, name={self.name})>"
+        return f"<SourceController(id={self.id}, name={self.name})>"
 
     def retrieve_metadata(self):
         self._pytheos.api.browse.retrieve_metadata()
@@ -84,123 +85,6 @@ class SourceController(Sequence):
         """
         if self._items is None or self.nocache or force:
             items = self._pytheos.api.browse.browse_source(self.id)
-            self._items = [_node_factory(item, self, self._pytheos) for item in items]
+            self._items = [create_media_leaf(item, self, self._pytheos) for item in items]
 
         return self._items
-
-
-class PytheosContainer(Sequence):
-    @property
-    def id(self):
-        return self._container.container_id
-
-    @property
-    def source_id(self):
-        return self._source_id
-
-    @property
-    def name(self):
-        return self._container.name
-
-    @property
-    def nocache(self):
-        return self._nocache
-
-    @nocache.setter
-    def nocache(self, value):
-        self._nocache = value
-
-    @property
-    def is_container_type(self):
-        return self._container.type.is_container
-
-    @property
-    def parent(self):
-        return self._parent
-
-    def __init__(self, pytheos: 'Pytheos', container: MusicSource, parent: Union[SourceController, 'PytheosContainer'],
-                 source_id=None):
-        super().__init__()
-
-        self._pytheos = pytheos
-        self._parent = parent
-        self._container = container
-        self._nocache = False
-        self._source_id = source_id
-
-        self._items: Optional[list] = None
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return f"<PytheosContainer(id={self.id}, name={self.name})>"
-
-    def __getitem__(self, item):
-        return self._items[item]
-
-    def __len__(self):
-        return len(self._items)
-
-    def refresh(self, force: bool=False):
-        """ Refreshes the container if it is uninitialized, this call is forced, or if caching is disabled.
-
-        :param force: Force refresh
-        :return: None
-        """
-        if self._items is None or self.nocache or force:
-            items = self._pytheos.api.browse.browse_source_container(self._source_id, self.id)
-            self._items = [_node_factory(item, self, self._pytheos) for item in items]
-
-        return self._items
-
-
-class PytheosMedia:
-    @property
-    def name(self):
-        return self._media.name
-
-    @property
-    def id(self):
-        return self._media.media_id
-
-    @property
-    def is_container_type(self):
-        return self._media.type.is_container
-
-    @property
-    def queue_id(self):
-        return self._media.queue_id
-
-    @property
-    def parent(self):
-        return self._parent
-
-    def __init__(self, pytheos: 'Pytheos', media: SourceMedia,
-                 parent: Optional[Union[SourceController, PytheosContainer]]):
-        self._pytheos = pytheos
-        self._parent = parent
-        self._media = media
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return f"<PytheosMedia(id={self.id}, name={self.name})>"
-
-
-def _node_factory(item, parent, pytheos):
-    """ Returns a leaf for our tree with a type appropriate for the response.
-
-    :param item:
-    :param parent:
-    :param pytheos:
-    :return:
-    """
-    if item.container:
-        return PytheosContainer(pytheos, item, parent, source_id=parent.source_id)
-
-    if item.media_id is None:
-        return SourceController(pytheos, item, parent)
-
-    return PytheosMedia(pytheos, item, parent)

@@ -6,15 +6,15 @@ import unittest.mock
 from unittest.mock import patch
 
 import pytheos
-from pytheos.api.browse import BrowseAPI
 from pytheos.models.source import MusicSource
-from pytheos.api.group import GroupAPI
-from pytheos.models.group import Group
-from pytheos.api.player import PlayerAPI
-from pytheos.models.player import Player
-from pytheos.networking.errors import SignInFailedError
-from pytheos.controllers import GroupController, PlayerController, SourceController
+from pytheos.models.player import Player as PlayerModel
+from pytheos.models.group import Group as GroupModel
 from pytheos.models.system import AccountStatus
+from pytheos.api.browse import BrowseAPI
+from pytheos.api.group import GroupAPI
+from pytheos.api.player import PlayerAPI
+from pytheos.networking.errors import SignInFailedError
+from pytheos.controllers import Group, Player, Source
 from pytheos.api.system import SystemAPI
 
 
@@ -66,16 +66,16 @@ class TestPytheos(unittest.TestCase):
             self._pytheos.api.system.sign_out.assert_called()
 
     def test_get_players(self):
-        with patch.object(PlayerAPI, 'get_players', return_value=[Player({'pid': 1}), Player({'pid': 2})]):
+        with patch.object(PlayerAPI, 'get_players', return_value=[PlayerModel({'pid': 1}), PlayerModel({'pid': 2})]):
             players = self._pytheos.get_players()
             self.assertGreater(len(players), 0)
-            self.assertIsInstance(players[list(players.keys())[0]], PlayerController)
+            self.assertIsInstance(players[list(players.keys())[0]], Player)
 
     def test_get_groups(self):
-        with patch.object(GroupAPI, 'get_groups', return_value=[Group({'gid': 1}), Group({'gid': 2})]):
+        with patch.object(GroupAPI, 'get_groups', return_value=[GroupModel({'gid': 1}), GroupModel({'gid': 2})]):
             groups = self._pytheos.get_groups()
             self.assertGreater(len(groups), 0)
-            self.assertIsInstance(groups[list(groups.keys())[0]], GroupController)
+            self.assertIsInstance(groups[list(groups.keys())[0]], Group)
 
     def test_get_sources(self):
         with patch.object(BrowseAPI, 'get_music_sources', return_value=[
@@ -84,7 +84,7 @@ class TestPytheos(unittest.TestCase):
         ]):
             sources = self._pytheos.get_sources()
             self.assertGreater(len(sources), 0)
-            self.assertIsInstance(sources[list(sources.keys())[0]], SourceController)
+            self.assertIsInstance(sources[list(sources.keys())[0]], Source)
 
 
 if __name__ == '__main__':

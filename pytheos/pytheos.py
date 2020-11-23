@@ -10,7 +10,7 @@ from typing import Callable, Optional, Union
 from . import utils
 from .networking import Connection, SSDPResponse, HEOSEvent, ChannelUnavailableError
 from .events import EventHandlerThread, EventReceiverThread
-from .controllers import GroupController, PlayerController, SourceController
+from .controllers import Group, Player, Source
 from .models.system import AccountStatus
 
 logger = logging.getLogger('pytheos')
@@ -242,7 +242,7 @@ class Pytheos:
         self._players = {}
 
         for player in self.api.player.get_players():
-            self._players[player.player_id] = PlayerController(self, player)
+            self._players[player.player_id] = Player(self, player)
 
         return self._players
 
@@ -262,7 +262,7 @@ class Pytheos:
         self._groups = {}
 
         for group in self.api.group.get_groups():
-            self._groups[group.group_id] = GroupController(self, group)
+            self._groups[group.group_id] = Group(self, group)
 
         return self._groups
 
@@ -274,7 +274,7 @@ class Pytheos:
         self._sources = {}
 
         for source in self.api.browse.get_music_sources():
-            self._sources[source.source_id] = SourceController(self, source)
+            self._sources[source.source_id] = Source(self, source)
 
         return self._sources
 

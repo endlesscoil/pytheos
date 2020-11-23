@@ -3,8 +3,8 @@
 
 from __future__ import annotations
 
-from ..controllers.queue import QueueController
-from ..controllers.group import GroupController
+from ..controllers.queue import Queue
+from ..controllers.group import Group
 from ..models import Player, MediaItem
 from ..models.source import InputSource
 from ..models.player import RepeatMode, ShuffleMode, PlayMode, PlayState, Network, Lineout, Control
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from pytheos import Pytheos
 
 
-class PlayerController:
+class Player:
     """ High-level Player API """
 
     @property
@@ -26,7 +26,7 @@ class PlayerController:
         return self._player.name
 
     @property
-    def group(self) -> GroupController:
+    def group(self) -> Group:
         return self._pytheos.get_group(self._player.group_id)
 
     @property
@@ -154,7 +154,7 @@ class PlayerController:
         self._volume: Optional[int] = None
         self._quick_selects: Optional[dict] = None
         self._play_state: Optional[PlayState] = None
-        self._queue = QueueController(pytheos, player)
+        self._queue = Queue(pytheos, player)
         self._now_playing: Optional[MediaItem] = None
 
     def refresh(self, player_id=None):
@@ -166,7 +166,7 @@ class PlayerController:
         """
         self._player = self._pytheos.api.player.get_player_info(player_id if player_id else self.id)
 
-    def play_input(self, input_source: InputSource, source_player: Optional[PlayerController]=None):
+    def play_input(self, input_source: InputSource, source_player: Optional[Player]=None):
         """ Instructs the player to play the specified input source.  Optionally, this input source can live on another
         Player on the network, which can be specified with the source_player parameter.
 
