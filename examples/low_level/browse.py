@@ -29,7 +29,7 @@ import os
 import sys
 from typing import Optional
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import pytheos
 from pytheos import Pytheos

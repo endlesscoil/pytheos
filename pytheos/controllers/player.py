@@ -67,7 +67,7 @@ class Player:
 
     @property
     def repeat(self) -> models.player.RepeatMode:
-        repeat, shuffle = self._get_play_mode()
+        repeat, _ = self._get_play_mode()
 
         return repeat
 
@@ -78,7 +78,7 @@ class Player:
 
     @property
     def shuffle(self) -> models.player.ShuffleMode:
-        repeat, shuffle = self._get_play_mode()
+        _, shuffle = self._get_play_mode()
 
         return shuffle
 
@@ -137,7 +137,7 @@ class Player:
         return {qs.id: qs for qs in self._pytheos.api.player.get_quickselects(self.id)}
 
     @property
-    def queue(self):
+    def queue(self) -> controllers.Queue:
         return self._queue
 
     def __init__(self, pytheos: 'Pytheos', player: models.Player):

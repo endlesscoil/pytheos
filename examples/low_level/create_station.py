@@ -6,7 +6,7 @@ the user can then make use of browse.play_station() to create and play the new s
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import pytheos
 from pytheos.models.browse import ServiceOption

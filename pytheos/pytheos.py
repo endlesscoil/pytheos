@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 import queue
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, Dict
 
 from . import utils
 from . import controllers
@@ -55,11 +55,11 @@ class Pytheos:
         return self._account_username
 
     @property
-    def players(self) -> tuple:
+    def players(self) -> Dict[int, controllers.Player]:
         if self._players is None:
             self.get_players()
 
-        return tuple(self._players)
+        return self._players.copy()
 
     @property
     def groups(self) -> tuple:
