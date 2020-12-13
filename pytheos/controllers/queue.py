@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+import time
 from collections.abc import MutableSequence
 
 from .containers import MediaItem
@@ -13,13 +14,6 @@ if TYPE_CHECKING:
 
 class Queue(MutableSequence):
     """ High-level Queue Representation """
-
-    @staticmethod
-    def _get_queue_insert_ids(item):
-        cid = item.id if item.is_container_type else item.parent.id
-        mid = None if item.is_container_type else item.id
-
-        return cid, mid
 
     def __init__(self, pytheos: 'Pytheos', player: 'models.Player'):
         super().__init__()
@@ -35,7 +29,6 @@ class Queue(MutableSequence):
 
     def __setitem__(self, key, value):
         self._refresh_queue()
-        self._pytheos.api.player.remove_from_queue(self._player.player_id, (key + 1,))
         self._insert_queue_item(key, value)
 
     def __delitem__(self, key):
@@ -65,14 +58,29 @@ class Queue(MutableSequence):
     def nocache(self, value):
         self._nocache = value
 
-    def insert(self, index: int, obj: MediaItem):
+    def insert(self, index: int, obj: models.Source):
         """ Inserts a MediaItem into the specified location in the queue.
 
         :param index: Index
         :param obj: MediaItem
         :return: None
         """
-        self._refresh_queue()
+        self._refresh_queue(force=True)
+        self._insert_queue_item(index, obj)
+
+    def replace(self, index: int, obj: models.Source):
+        """ Replaces an existing index with a new track.
+
+        :param index: Index
+        :param obj: Source item
+        :return: None
+        """
+        self._refresh_queue(force=True)
+        if index >= len(self._queue):
+            raise ValueError("Index out of range")
+
+        del self[index]
+        self._refresh_queue(force=True)
         self._insert_queue_item(index, obj)
 
     def play(self, play_id: int=None):
@@ -136,7 +144,14 @@ class Queue(MutableSequence):
 
         self._refresh_queue(True)
 
-    def _insert_queue_item(self, index: int, obj: MediaItem):
+    def refresh(self):
+        """ Refreshes the queue.
+
+        :return: None
+        """
+        self._refresh_queue(force=True)
+
+    def _insert_queue_item(self, index: int, obj: models.Source):
         """ Provides the logic to properly do an insertion using the HEOS API.  This removes the items after the insertion
         point, adds the new track to the queue, and then re-adds the removed items to finish the queue.
 
@@ -144,15 +159,20 @@ class Queue(MutableSequence):
         :param obj: MediaItem to insert
         :return: None
         """
-        if self._queue and index + 1 < len(self._queue):
-            self._pytheos.api.player.remove_from_queue(self._player.player_id, list(range(index + 1, len(self._queue))))
+        to_move = []
+        if index < len(self._queue):
+            for qi in self._queue[index:]:
+                to_move.append(qi.queue_id)
 
-        cid, mid = Queue._get_queue_insert_ids(obj)
-        self._pytheos.api.browse.add_to_queue(self._player.player_id, obj.parent.source_id, cid, media_id=mid, add_type=models.browse.AddToQueueType.AddToEnd)
+        kwargs = {}
+        if obj.media_id:
+            kwargs['media_id'] = obj.media_id
+        self._pytheos.api.browse.add_to_queue(self._player.player_id, obj.source_id, obj.container_id, add_type=models.browse.AddToQueueType.AddToEnd, **kwargs)
 
-        for qi in self._queue[index:]:
-            cid, mid = Queue._get_queue_insert_ids(qi)
-            self._pytheos.api.browse.add_to_queue(self._player.player_id, qi.parent.source_id, cid, media_id=mid, add_type=models.browse.AddToQueueType.AddToEnd)
+        time.sleep(0.5)     # FIXME - Need to wait to give HEOS a time to catch up.  Find a better way to deal with this... ugh.
+
+        if to_move:
+            self._pytheos.api.player.move_queue_item(self._player.player_id, to_move, len(self._queue) + 1)
 
         self._refresh_queue(True)
 

@@ -94,7 +94,7 @@ class Source:
     image_url: str = None
     service_username: str = None
 
-    def __init__(self, from_dict: Optional[dict]=None):
+    def __init__(self, from_dict: Optional[dict]=None, parent_source_id=None, parent_container_id=None):
         """ Constructor
 
         :param from_dict: Optional dictionary to use for initialization
@@ -110,3 +110,9 @@ class Source:
             self.media_id = from_dict.get('mid')
             self.image_url = from_dict.get('image_url')
             self.service_username = from_dict.get('service_username')
+
+        if not self.source_id:
+            self.source_id = parent_source_id
+
+        if not self.container_id:
+            self.container_id = parent_container_id

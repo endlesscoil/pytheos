@@ -63,7 +63,7 @@ class BrowseAPI:
 
         # FIXME: This needs a whole bunch of work.  There are three different formats to this command.
         results = self._api.call('browse', 'browse', **kwargs)
-        return [models.Source(media) for media in results.payload.data]
+        return [models.Source(media, parent_source_id=source_id) for media in results.payload.data]
 
     def browse_source_container(self,
                                 source_id: Optional[int]=None,
@@ -118,7 +118,7 @@ class BrowseAPI:
             kwargs['range'] = ','.join([str(itm) for itm in item_range])
 
         results = self._api.call('browse', 'browse', **kwargs)
-        return int(results.header.vars.get('count', 0)), [models.Source(media) for media in results.payload]
+        return int(results.header.vars.get('count', 0)), [models.Source(media, parent_source_id=source_id, parent_container_id=container_id) for media in results.payload]
 
     def get_music_sources(self) -> list:
         """ Retrieve a list of music sources.
