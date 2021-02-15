@@ -31,25 +31,25 @@ class Group:
         return tuple(self._members)
 
     @property
-    def muted(self) -> bool:
-        return self._pytheos.api.group.get_mute(self._group.group_id)
+    async def muted(self) -> bool:
+        return await self._pytheos.api.group.get_mute(self._group.group_id)
 
     @muted.setter
-    def muted(self, value: bool):
-        self._pytheos.api.group.set_mute(self._group.group_id, value)
+    async def muted(self, value: bool):
+        await self._pytheos.api.group.set_mute(self._group.group_id, value)
 
     @property
-    def volume(self) -> int:
-        return self._pytheos.api.group.get_volume(self._group.group_id)
+    async def volume(self) -> int:
+        return await self._pytheos.api.group.get_volume(self._group.group_id)
 
     @volume.setter
-    def volume(self, value: int):
+    async def volume(self, value: int):
         if value < self._pytheos.api.group.VOLUME_MIN:
             value = self._pytheos.api.group.VOLUME_MIN
         elif value > self._pytheos.api.group.VOLUME_MAX:
             value = self._pytheos.api.group.VOLUME_MAX
 
-        self._pytheos.api.group.set_volume(self._group.group_id, value)
+        await self._pytheos.api.group.set_volume(self._group.group_id, value)
 
     def __contains__(self, player):
         return player.id == self._leader.id or any([p.id == player.id for p in self._members])
@@ -62,36 +62,36 @@ class Group:
         self._leader: 'controllers.Player' = group.players[0] if group_count > 0 else None
         self._members = group.players[1:] if group_count > 1 else []
 
-    def refresh(self, force=False):
+    async def refresh(self, force=False):
         """ Refreshes the group information if leader is unset or force is specified.
 
         :param force: Force refresh
         :return: None
         """
         if not self._leader or force:
-            self._group = self._pytheos.api.group.get_group_info(self._group.group_id)
+            self._group = await self._pytheos.api.group.get_group_info(self._group.group_id)
 
-    def add_member(self, player: 'controllers.Player'):
+    async def add_member(self, player: 'controllers.Player'):
         """ Adds a new member to the group.
 
         :param player: Player
         :return: None
         """
-        self.refresh(force=True)
+        await self.refresh(force=True)
 
         if player in self:
             raise ValueError('Player is already present in this group.')
 
         self._members.append(player)
-        self._set_group()
+        await self._set_group()
 
-    def remove_member(self, player: 'controllers.Player'):
+    async def remove_member(self, player: 'controllers.Player'):
         """ Remove a member from a group.
 
         :param player: Player
         :return: None
         """
-        self.refresh(force=True)
+        await self.refresh(force=True)
 
         if player not in self:
             raise ValueError('Player is not present in this group.')
@@ -102,11 +102,11 @@ class Group:
         if self._leader == player and len(self._members) > 1:
             self._leader = self._members[0]
 
-        self._set_group()
+        await self._set_group()
 
-    def _set_group(self):
+    async def _set_group(self):
         """ Send the new group details to HEOS.
 
         :return: None
         """
-        self._pytheos.api.group.set_group(self._leader.id, [p.id for p in self._members])
+        await self._pytheos.api.group.set_group(self._leader.id, [p.id for p in self._members])

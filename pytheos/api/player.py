@@ -19,87 +19,87 @@ class PlayerAPI:
     def __init__(self, conn):
         self._api = conn
 
-    def check_update(self, player_id: int) -> bool:
+    async def check_update(self, player_id: int) -> bool:
         """ Checks whether or not there is an update available for the player
 
         :param player_id: Player ID
         :return: bool
         """
-        results = self._api.call('player', 'check_update', pid=player_id)
+        results = await self._api.call('player', 'check_update', pid=player_id)
         return results.payload.get('update') == 'update_exist'
 
-    def clear_queue(self, player_id: int) -> None:
+    async def clear_queue(self, player_id: int) -> None:
         """ Clears the current play queue
 
         :param player_id: Player ID
         :return: None
         """
-        self._api.call('player', 'clear_queue', pid=player_id)
+        await self._api.call('player', 'clear_queue', pid=player_id)
 
-    def get_mute(self, player_id: int) -> bool:
+    async def get_mute(self, player_id: int) -> bool:
         """ Returns whether or not the player is currently muted
 
         :param player_id: Player ID
         :return: bool
         """
-        results = self._api.call('player', 'get_mute', pid=player_id)
+        results = await self._api.call('player', 'get_mute', pid=player_id)
         return results.header.vars.get('state') == 'on'
 
-    def get_now_playing_media(self, player_id: int) -> models.media.MediaItem:
+    async def get_now_playing_media(self, player_id: int) -> models.media.MediaItem:
         """ Returns details of the currently playing media
 
         :param player_id: PlayerID
         :return: MediaItem
         """
-        results = self._api.call('player', 'get_now_playing_media', pid=player_id)
+        results = await self._api.call('player', 'get_now_playing_media', pid=player_id)
         # TODO: options support
 
         return models.media.MediaItem(results.payload)
 
-    def get_players(self) -> List[models.Player]:
+    async def get_players(self) -> List[models.Player]:
         """ Retrieves a list of players that are available
 
         :return: list
         """
-        results = self._api.call('player', 'get_players')
+        results = await self._api.call('player', 'get_players')
         return [models.Player(player_data) for player_data in results.payload]
 
-    def get_player_info(self, player_id: int) -> models.Player:
+    async def get_player_info(self, player_id: int) -> models.Player:
         """ Retrieves the Player information for a given ID
 
         :param player_id: Player ID
         :return: Player
         """
-        results = self._api.call('player', 'get_player_info', pid=player_id)
+        results = await self._api.call('player', 'get_player_info', pid=player_id)
         return models.Player(results.payload)
 
-    def get_play_mode(self, player_id: int) -> models.player.PlayMode:
+    async def get_play_mode(self, player_id: int) -> models.player.PlayMode:
         """ Returns the current play mode flags - repeat & shuffle
 
         :param player_id: Player ID
         :return: PlayMode
         """
-        results = self._api.call('player', 'get_play_mode', pid=player_id)
+        results = await self._api.call('player', 'get_play_mode', pid=player_id)
 
         return models.player.PlayMode(
             repeat=models.player.RepeatMode(results.header.vars.get('repeat')),
             shuffle=models.player.ShuffleMode(results.header.vars.get('shuffle'))
         )
 
-    def get_play_state(self, player_id: int) -> models.player.PlayState:
+    async def get_play_state(self, player_id: int) -> models.player.PlayState:
         """ Retrieves the current playing state (e.g. play, pause, stop)
 
         :param player_id: Player ID
         :raises: InvalidResponse
         :return: str
         """
-        results = self._api.call('player', 'get_play_state', pid=player_id)
+        results = await self._api.call('player', 'get_play_state', pid=player_id)
         if 'state' not in results.header.vars:
             raise InvalidResponse('Could not find "state" entry in response', results)
 
         return models.player.PlayState(results.header.vars['state'])
 
-    def get_queue(self, player_id: int, range_start: int=0, number_to_retrieve: int=100) -> list:
+    async def get_queue(self, player_id: int, range_start: int=0, number_to_retrieve: int=100) -> list:
         """ Retrieves the current play queue
 
         :param player_id: Player ID
@@ -113,11 +113,11 @@ class PlayerAPI:
         if not 0 < number_to_retrieve <= 100:
             raise ValueError('Number of items to retrieve must be between 1 and 100')
 
-        results = self._api.call('player', 'get_queue',
-                                 pid=player_id, range=f'{range_start},{range_start + number_to_retrieve - 1}')
+        results = await self._api.call('player', 'get_queue',
+                                       pid=player_id, range=f'{range_start},{range_start + number_to_retrieve - 1}')
         return [models.media.MediaItem(item) for item in results.payload]
 
-    def get_quickselects(self, player_id: int, quick_select_id: Optional[int]=None) -> list:
+    async def get_quickselects(self, player_id: int, quick_select_id: Optional[int]=None) -> list:
         """ Retrieves a list of quick select entries - LEGO AVR or HEOS BAR only
 
         :param player_id: Player ID
@@ -132,19 +132,19 @@ class PlayerAPI:
         if quick_select_id is not None:
             kwargs['id'] = quick_select_id
 
-        results = self._api.call('player', 'get_quickselects', **kwargs)
+        results = await self._api.call('player', 'get_quickselects', **kwargs)
         return [models.player.QuickSelect(id=item['id'], name=item['name']) for item in results.payload]
 
-    def get_volume(self, player_id: int) -> int:
+    async def get_volume(self, player_id: int) -> int:
         """ Retrieves the current volume
 
         :param player_id: Player ID
         :return: int
         """
-        results = self._api.call('player', 'get_volume', pid=player_id)
+        results = await self._api.call('player', 'get_volume', pid=player_id)
         return int(results.header.vars.get('level'))
 
-    def move_queue_item(self, player_id: int, queue_ids: tuple, destination_queue_id: int):
+    async def move_queue_item(self, player_id: int, queue_ids: tuple, destination_queue_id: int):
         """ Moves the specified queue IDs to the location specified by the destination queue ID.
 
         :param player_id: Player ID
@@ -163,34 +163,34 @@ class PlayerAPI:
         if destination_queue_id < 1:
             raise ValueError('Invalid Queue ID - must be between 1 and the size of the queue')
 
-        self._api.call('player', 'move_queue_item', pid=player_id, sqid=','.join(quickselect_ids), dqid=destination_queue_id)
+        await self._api.call('player', 'move_queue_item', pid=player_id, sqid=','.join(quickselect_ids), dqid=destination_queue_id)
 
-    def play_next(self, player_id: int) -> None:
+    async def play_next(self, player_id: int) -> None:
         """ Plays the next item in the play queue
 
         :param player_id: Player ID
         :return: None
         """
-        self._api.call('player', 'play_next', pid=player_id)
+        await self._api.call('player', 'play_next', pid=player_id)
 
-    def play_previous(self, player_id: int) -> None:
+    async def play_previous(self, player_id: int) -> None:
         """ Plays the previous item in the play queue
 
         :param player_id: Player ID
         :return: None
         """
-        self._api.call('player', 'play_previous', pid=player_id)
+        await self._api.call('player', 'play_previous', pid=player_id)
 
-    def play_queue(self, player_id: int, queue_entry_id: int) -> None:
+    async def play_queue(self, player_id: int, queue_entry_id: int) -> None:
         """ Plays the specified queue item
 
         :param player_id: Player ID
         :param queue_entry_id: Queue entry ID
         :return: None
         """
-        self._api.call('player', 'play_queue', pid=player_id, qid=queue_entry_id)
+        await self._api.call('player', 'play_queue', pid=player_id, qid=queue_entry_id)
 
-    def play_quickselect(self, player_id: int, quick_select_id: int) -> None:
+    async def play_quickselect(self, player_id: int, quick_select_id: int) -> None:
         """ Play the specified QuickSelect ID
 
         :param player_id: Player ID
@@ -201,18 +201,18 @@ class PlayerAPI:
         if not 1 <= quick_select_id <= 6:
             raise ValueError('Quick Select ID must be between 1 and 6')
 
-        self._api.call('player', 'play_quickselect', pid=player_id, id=quick_select_id)
+        await self._api.call('player', 'play_quickselect', pid=player_id, id=quick_select_id)
 
-    def remove_from_queue(self, player_id: int, queue_ids: Union[list, tuple, set]) -> None:
+    async def remove_from_queue(self, player_id: int, queue_ids: Union[list, tuple, set]) -> None:
         """ Remove a set of items from the queue
 
         :param player_id: Player ID
         :param queue_ids: Queue IDs
         :return: None
         """
-        self._api.call('player', 'remove_from_queue', pid=player_id, qid=','.join([str(qid) for qid in queue_ids]))
+        await self._api.call('player', 'remove_from_queue', pid=player_id, qid=','.join([str(qid) for qid in queue_ids]))
 
-    def save_queue(self, player_id: int, playlist_name: str) -> None:
+    async def save_queue(self, player_id: int, playlist_name: str) -> None:
         """ Saves the current queue as a playlist
 
         :param player_id: Player ID
@@ -223,27 +223,27 @@ class PlayerAPI:
         if len(playlist_name) > 128:
             raise ValueError('Playlist name cannot exceed 128 characters')
 
-        self._api.call('player', 'save_queue', pid=player_id, name=playlist_name)
+        await self._api.call('player', 'save_queue', pid=player_id, name=playlist_name)
 
-    def set_mute(self, player_id: int, enable: bool) -> None:
+    async def set_mute(self, player_id: int, enable: bool) -> None:
         """ Enables or disables mute on the specified player
 
         :param player_id: Player ID
         :param enable: True or False
         :return: None
         """
-        self._api.call('player', 'set_mute', pid=player_id, state=models.player.Mute.On if enable else models.player.Mute.Off)
+        await self._api.call('player', 'set_mute', pid=player_id, state=models.player.Mute.On if enable else models.player.Mute.Off)
 
-    def set_play_mode(self, player_id: int, play_mode: models.player.PlayMode) -> None:
+    async def set_play_mode(self, player_id: int, play_mode: models.player.PlayMode) -> None:
         """ Sets the play mode for the specified player - repeat & shuffle
 
         :param player_id: Player ID
         :param play_mode: PlayMode
         :return: None
         """
-        self._api.call('player', 'set_play_mode', pid=player_id, repeat=play_mode.repeat, shuffle=play_mode.shuffle)
+        await self._api.call('player', 'set_play_mode', pid=player_id, repeat=play_mode.repeat, shuffle=play_mode.shuffle)
 
-    def set_quickselect(self, player_id: int, quickselect_id: int) -> None:
+    async def set_quickselect(self, player_id: int, quickselect_id: int) -> None:
         """ Selects the specified Quick Select
 
         :param player_id: Player ID
@@ -254,9 +254,9 @@ class PlayerAPI:
         if not 0 < quickselect_id <= 6:
             raise ValueError('Level must be between 1 and 6')
 
-        self._api.call('player', 'set_quickselect', pid=player_id, id=quickselect_id)
+        await self._api.call('player', 'set_quickselect', pid=player_id, id=quickselect_id)
 
-    def set_play_state(self, player_id: int, state: models.player.PlayState) -> None:
+    async def set_play_state(self, player_id: int, state: models.player.PlayState) -> None:
         """ Set the current playing state for the player
 
         :param player_id: Player ID
@@ -264,9 +264,9 @@ class PlayerAPI:
         :raises: ValueError
         :return: None
         """
-        self._api.call('player', 'set_play_state', pid=player_id, state=models.player.PlayState(state))
+        await self._api.call('player', 'set_play_state', pid=player_id, state=models.player.PlayState(state))
 
-    def set_volume(self, player_id: int, level: int) -> None:
+    async def set_volume(self, player_id: int, level: int) -> None:
         """ Sets the volume level on the player
 
         :param player_id: Player ID
@@ -277,17 +277,17 @@ class PlayerAPI:
         if not self.VOLUME_MIN <= level <= self.VOLUME_MAX:
             raise ValueError('Level must be between 0 and 100')
 
-        self._api.call('player', 'set_volume', pid=player_id, level=level)
+        await self._api.call('player', 'set_volume', pid=player_id, level=level)
 
-    def toggle_mute(self, player_id: int) -> None:
+    async def toggle_mute(self, player_id: int) -> None:
         """ Toggles mute on the player
 
         :param player_id: Player ID
         :return: None
         """
-        self._api.call('player', 'toggle_mute', pid=player_id)
+        await self._api.call('player', 'toggle_mute', pid=player_id)
 
-    def volume_up(self, player_id: int, step_level: int=VOLUME_DEFAULT_STEP) -> None:
+    async def volume_up(self, player_id: int, step_level: int=VOLUME_DEFAULT_STEP) -> None:
         """ Turn the volume up by the specified step level.
 
         :param player_id: Player ID
@@ -298,9 +298,9 @@ class PlayerAPI:
         if not 0 < step_level <= 10:
             raise ValueError('Step level must be between 1 and 10')
 
-        self._api.call('player', 'volume_up', pid=player_id, step=step_level)
+        await self._api.call('player', 'volume_up', pid=player_id, step=step_level)
 
-    def volume_down(self, player_id: int, step_level: int=VOLUME_DEFAULT_STEP) -> None:
+    async def volume_down(self, player_id: int, step_level: int=VOLUME_DEFAULT_STEP) -> None:
         """ Turn the volume down by the specified step level.
 
         :param player_id: Player ID
@@ -311,4 +311,4 @@ class PlayerAPI:
         if not 0 < step_level <= 10:
             raise ValueError('Step level must be between 1 and 10')
 
-        self._api.call('player', 'volume_down', pid=player_id, step=step_level)
+        await self._api.call('player', 'volume_down', pid=player_id, step=step_level)

@@ -74,17 +74,17 @@ class Source(Sequence):
     def __repr__(self):
         return f"<SourceController(id={self.id}, name={self.name})>"
 
-    def retrieve_metadata(self):
-        self._pytheos.api.browse.retrieve_metadata()
+    async def retrieve_metadata(self):
+        await self._pytheos.api.browse.retrieve_metadata()
 
-    def refresh(self, force: bool=False):
+    async def refresh(self, force: bool=False):
         """ Refreshes the container if it is uninitialized, this call is forced, or if caching is disabled.
 
         :param force: Force refresh
         :return: None
         """
         if self._items is None or self.nocache or force:
-            items = self._pytheos.api.browse.browse_source(self.id)
+            items = await self._pytheos.api.browse.browse_source(self.id)
             self._items = [create_media_leaf(item, self, self._pytheos) for item in items]
 
         return self._items

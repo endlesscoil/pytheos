@@ -104,7 +104,7 @@ class MediaItem:
 
     @property
     def is_container_type(self):
-        return self._media.is_container # FIXME - what should this be now with all the rearranging?
+        return self._media.is_container     # FIXME - what should this be now with all the rearranging?
 
     @property
     def queue_id(self):
