@@ -23,10 +23,8 @@ async def discover(timeout: Optional[int]=None) -> List[NewSSDPResponse]:
     """
     loop = asyncio.get_running_loop()
     discovery = Discovery()
-    await loop.create_task(discovery.discover(timeout))
 
-    #return await loop.create_task(discovery.get_results())
-    return [NewSSDPResponse(itm) for itm in await discovery.get_results()]
+    return [NewSSDPResponse(itm) for itm in await loop.create_task(discovery.discover(timeout))]
 
 
 class SSDPBroadcastMessage:
@@ -147,19 +145,18 @@ class Discovery:
             reuse_addr=self.reuse_addr,
             ttl=self.ttl
         )
+
         transport, protocol = await loop.create_datagram_endpoint(
             lambda: proto,
             local_addr=(local_ip, self.bind_port)
         )
-        await self.send_broadcast(transport)
 
         try:
+            await self.send_broadcast(transport)
             await asyncio.sleep(timeout)
-            async for r in proto.get_results():
-                self.results.append(r)
+            self.results = [itm async for itm in proto.get_results()]
 
         finally:
             transport.close()
 
-    async def get_results(self):
         return self.results
