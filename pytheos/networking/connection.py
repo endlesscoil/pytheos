@@ -30,7 +30,7 @@ class Connection:
 
     @property
     def connected(self) -> bool:
-        return self._conn.get_socket() is not None if self._conn else None
+        return self._reader is not None and self._writer is not None
 
     @property
     def prettify_json_response(self):
@@ -53,17 +53,9 @@ class Connection:
 
         self._prettify_json_response = False
         self._lock = threading.Lock()
-        #self._conn: Optional[telnetlib.Telnet] = None
         self._reader = None
         self._writer = None
         self._last_response: Optional[str] = None
-
-    def __del__(self):
-        # if self._reader:
-        #     self._reader.close()
-        # if self._writer:
-        #     self._writer.close()
-        pass
 
     async def connect(self, server: str, port: int, deduplicate: bool=False):
         """ Establish a connection with the HEOS service
@@ -80,21 +72,6 @@ class Connection:
 
             self._reader, self._writer = await asyncio.open_connection(server, port)
 
-    def close(self):
-        """ Closes the connection
-
-        :return: None
-        """
-        # with self._lock:
-        #     if self._reader:
-        #         self._reader.close()
-        #         self._reader = None
-        #
-        #     if self._writer:
-        #         self._writer.close()
-        #         self._writer = None
-        pass
-
     def write(self, input_data: bytes):
         """ Writes the provided data to the connection
 
@@ -105,11 +82,10 @@ class Connection:
             with self._lock:
                 self._writer.write(input_data)
 
-    async def read_until(self, target: bytes, timeout: Optional[int]=None) -> bytes:
+    async def read_until(self, target: bytes) -> bytes:
         """ Reads from the connection until the target string is found or the optional timeout is hit
 
         :param target: Target string
-        :param timeout: Timeout (seconds) or None for no timeout
         :return: str
         """
         data = None
@@ -167,7 +143,7 @@ class Connection:
 
         started = time.time()
         while True:
-            response += await self.read_until(delimiter, timeout=self.CONNECTION_READ_TIMEOUT)
+            response += await self.read_until(delimiter)
             if delimiter in response:
                 response = response.strip()
                 logger.debug(f"Got response: {response}")

@@ -22,7 +22,7 @@ async def main():
     print("Connecting to first HEOS service..")
     with await pytheos.connect(services[0]) as p:
         player_id = None
-        players = await p.players
+        players = await p.get_players()
 
         for pid, player in players.items():
             print(f"Found player {player.name} ({player.id})!")
@@ -57,20 +57,20 @@ async def print_details(player):
         print(f"Group Members: {[member.name for member in player.group.members]}")
         print()
 
-    play_state = await player.play_state    # FIXME
+    play_state = await player.get_play_state()
+    repeat, shuffle = await player.get_play_mode()
+    volume = await player.get_volume()
     print(f"Current Play State: {play_state.name}")
-    shuffle = await player.shuffle          # FIXME
-    repeat = await player.repeat            # FIXME
     print(f"Shuffle is {shuffle.name}, Repeat is {repeat.name}")
-    print(f"Volume is {await player.volume}%")  # FIXME
+    print(f"Volume is {volume}%")
     print()
 
-    if await player.playing:    # FIXME
-        print(f"Now Playing: {player.now_playing.artist} - {player.now_playing.song}")
+    if await player.is_playing():
+        now_playing = await player.get_now_playing()
+        print(f"Now Playing: {now_playing.artist} - {now_playing.song}")
         print()
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
-    loop.run_forever()

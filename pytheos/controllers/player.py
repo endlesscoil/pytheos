@@ -54,90 +54,6 @@ class Player:
         return self._player.serial
 
     @property
-    async def update_available(self) -> bool:
-        return await self._pytheos.api.player.check_update(self.id)
-
-    @property
-    async def mute(self) -> bool:
-        return await self._pytheos.api.player.get_mute(self.id)
-
-    @mute.setter
-    async def mute(self, value: bool):
-        await self._pytheos.api.player.set_mute(self.id, value)
-
-    @property
-    async def repeat(self) -> models.player.RepeatMode:
-        repeat, _ = await self._get_play_mode()
-
-        return repeat
-
-    @repeat.setter
-    async def repeat(self, value: models.player.RepeatMode):
-        await self._pytheos.api.player.set_play_mode(self.id, models.player.PlayMode(repeat=value, shuffle=self.shuffle))
-        self._repeat = value
-
-    @property
-    async def shuffle(self) -> models.player.ShuffleMode:
-        _, shuffle = await self._get_play_mode()
-
-        return shuffle
-
-    @shuffle.setter
-    async def shuffle(self, value: models.player.ShuffleMode):
-        await self._pytheos.api.player.set_play_mode(self.id, models.player.PlayMode(repeat=self.repeat, shuffle=value))
-        self._shuffle = value
-
-    @property
-    async def playing(self) -> bool:
-        play_state = await self.play_state
-        return play_state == models.player.PlayState.Playing
-
-    @playing.setter
-    async def playing(self, value: bool):
-        await self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Playing if value else models.player.PlayState.Stopped)
-
-    @property
-    def paused(self) -> bool:
-        return self.play_state == models.player.PlayState.Paused
-
-    @paused.setter
-    async def paused(self, value: bool):
-        await self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Paused if value else models.player.PlayState.Playing)
-
-    @property
-    def stopped(self) -> bool:
-        return self.play_state == models.player.PlayState.Stopped
-
-    @stopped.setter
-    async def stopped(self, value: bool):
-        await self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Stopped if value else models.player.PlayState.Playing)
-
-    @property
-    async def volume(self) -> int:
-        return await self._pytheos.api.player.get_volume(self.id)
-
-    @volume.setter
-    async def volume(self, value: int):
-        if value < self._pytheos.api.player.VOLUME_MIN:
-            value = self._pytheos.api.player.VOLUME_MIN
-        elif value > self._pytheos.api.player.VOLUME_MAX:
-            value = self._pytheos.api.player.VOLUME_MAX
-
-        await self._pytheos.api.player.set_volume(self.id, value)
-
-    @property
-    async def now_playing(self) -> models.MediaItem:     # FIXME: Maybe want to abstract MediaItem out
-        return await self._pytheos.api.player.get_now_playing_media(self.id)
-
-    @property
-    async def play_state(self) -> models.player.PlayState:
-        return await self._pytheos.api.player.get_play_state(self.id)
-
-    @property
-    async def quick_selects(self) -> dict:
-        return {qs.id: qs for qs in await self._pytheos.api.player.get_quickselects(self.id)}
-
-    @property
     def queue(self) -> controllers.Queue:
         return self._queue
 
@@ -217,7 +133,6 @@ class Player:
         self.paused = True
         # FIXME?:  Why is this not doing anything?  Shouldn't it be calling into the player API?
 
-
     def stop(self):
         """ Set the current player state to Stopped.
 
@@ -240,7 +155,75 @@ class Player:
         """
         await self._pytheos.api.player.play_previous(self.id)
 
-    async def _get_play_mode(self) -> tuple:
+    async def is_update_available(self) -> bool:
+        return await self._pytheos.api.player.check_update(self.id)
+
+    async def get_mute(self) -> bool:
+        return await self._pytheos.api.player.get_mute(self.id)
+
+    async def set_mute(self, value: bool):
+        await self._pytheos.api.player.set_mute(self.id, value)
+
+    async def get_repeat(self) -> models.player.RepeatMode:
+        repeat, _ = await self.get_play_mode()
+        return repeat
+
+    async def set_repeat(self, value: models.player.RepeatMode):
+        _, shuffle = await self.get_play_mode()
+        await self._pytheos.api.player.set_play_mode(self.id, models.player.PlayMode(repeat=value, shuffle=shuffle))
+        self._repeat = value
+
+    async def get_shuffle(self) -> models.player.ShuffleMode:
+        _, shuffle = await self.get_play_mode()
+        return shuffle
+
+    async def set_shuffle(self, value: models.player.ShuffleMode):
+        repeat, _ = await self.get_play_mode()
+        await self._pytheos.api.player.set_play_mode(self.id, models.player.PlayMode(repeat=repeat, shuffle=value))
+        self._shuffle = value
+
+    async def is_playing(self) -> bool:
+        play_state = await self.get_play_state()
+        return play_state == models.player.PlayState.Playing
+
+    async def set_playing(self, value: bool):
+        await self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Playing if value else models.player.PlayState.Stopped)
+
+    async def get_paused(self) -> bool:
+        play_state = await self.get_play_state()
+        return play_state == models.player.PlayState.Paused
+
+    async def set_paused(self, value: bool):
+        await self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Paused if value else models.player.PlayState.Playing)
+
+    async def get_stopped(self) -> bool:
+        play_state = await self.get_play_state()
+        return play_state == models.player.PlayState.Stopped
+
+    async def set_stopped(self, value: bool):
+        await self._pytheos.api.player.set_play_state(self.id, models.player.PlayState.Stopped if value else models.player.PlayState.Playing)
+
+    async def get_volume(self) -> int:
+        return await self._pytheos.api.player.get_volume(self.id)
+
+    async def set_volume(self, value: int):
+        if value < self._pytheos.api.player.VOLUME_MIN:
+            value = self._pytheos.api.player.VOLUME_MIN
+        elif value > self._pytheos.api.player.VOLUME_MAX:
+            value = self._pytheos.api.player.VOLUME_MAX
+
+        await self._pytheos.api.player.set_volume(self.id, value)
+
+    async def get_now_playing(self) -> models.MediaItem:     # FIXME: Maybe want to abstract MediaItem out
+        return await self._pytheos.api.player.get_now_playing_media(self.id)
+
+    async def get_play_state(self) -> models.player.PlayState:
+        return await self._pytheos.api.player.get_play_state(self.id)
+
+    async def get_quick_selects(self) -> dict:
+        return {qs.id: qs for qs in await self._pytheos.api.player.get_quickselects(self.id)}
+
+    async def get_play_mode(self) -> tuple:
         """ Retries and returns the Repeat & Shuffle status.
 
         :return: tuple

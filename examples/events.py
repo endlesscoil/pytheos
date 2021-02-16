@@ -41,9 +41,6 @@ async def main():
 
     print("Connecting to first device found...")
     with await pytheos.connect(services[0]) as p:
-        import pytheos.logger as logger
-        logger.Logger.setLevel(logging.DEBUG)
-
         print(f"Connected to {p.server}!")
         p.subscribe('event/player_state_changed', _on_player_state_changed)
         p.subscribe('event/player_now_playing_changed', _on_now_playing_changed)

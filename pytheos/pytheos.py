@@ -5,8 +5,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import queue
-from typing import Callable, Optional, Union, Dict
+from typing import Callable, Optional, Union
 
 from . import utils
 from . import controllers
@@ -53,36 +52,6 @@ class Pytheos:
     @property
     def username(self):
         return self._account_username
-
-    @property
-    async def players(self) -> Dict[int, controllers.Player]:
-        if self._players is None:
-            await self.get_players()
-
-        return self._players.copy()
-
-    @property
-    async def groups(self) -> tuple:
-        if self._groups is None:
-            await self.get_groups()
-
-        return tuple(self._groups.values())
-
-    @property
-    def sources(self) -> tuple:
-        if self._sources is None:
-            self.get_sources()
-
-        return tuple(self._sources.values())
-
-    @property
-    def receive_events(self):
-        return self._receive_events
-
-    @receive_events.setter
-    async def receive_events(self, value):
-        self._receive_events = value
-        await self._set_register_for_change_events(value)
 
     def __init__(self, server: Union[str, SSDPResponse]=None, port: Optional[int]=DEFAULT_PORT):
         """ Constructor
@@ -147,7 +116,7 @@ class Pytheos:
         self._receive_events = enable_event_connection
         if self._receive_events:
             await self._event_channel.connect(self.server, self.port, deduplicate=True)
-            await self._set_register_for_change_events(True)
+            await self.enable_event_reception(True)
 
             loop = asyncio.get_running_loop()
             self._event_task = loop.create_task(self.listen_for_events())
@@ -174,12 +143,6 @@ class Pytheos:
         :return: None
         """
         logger.info(f'Closing connection to {self.server}:{self.port}')
-
-        if self._event_channel:
-            self._event_channel.close()
-
-        if self._command_channel:
-            self._command_channel.close()
 
         if self._event_task:
             self._event_task.cancel()
@@ -287,6 +250,13 @@ class Pytheos:
             self._sources[source.source_id] = controllers.Source(self, source)
 
         return self._sources
+
+    def is_receiving_events(self):
+        return self._receive_events
+
+    async def enable_event_reception(self, value):
+        self._receive_events = value
+        await self._set_register_for_change_events(value)
 
     async def listen_for_events(self):
         while True:

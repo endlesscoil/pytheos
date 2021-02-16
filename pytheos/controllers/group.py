@@ -17,39 +17,8 @@ class Group:
         return self._group.group_id
 
     @property
-    def leader(self) -> 'controllers.Player':
-        return self._leader
-
-    @leader.setter
-    def leader(self, value: 'controllers.Player'):
-        self.refresh(True)
-        self._leader = value
-        self._set_group()
-
-    @property
     def members(self) -> tuple:
         return tuple(self._members)
-
-    @property
-    async def muted(self) -> bool:
-        return await self._pytheos.api.group.get_mute(self._group.group_id)
-
-    @muted.setter
-    async def muted(self, value: bool):
-        await self._pytheos.api.group.set_mute(self._group.group_id, value)
-
-    @property
-    async def volume(self) -> int:
-        return await self._pytheos.api.group.get_volume(self._group.group_id)
-
-    @volume.setter
-    async def volume(self, value: int):
-        if value < self._pytheos.api.group.VOLUME_MIN:
-            value = self._pytheos.api.group.VOLUME_MIN
-        elif value > self._pytheos.api.group.VOLUME_MAX:
-            value = self._pytheos.api.group.VOLUME_MAX
-
-        await self._pytheos.api.group.set_volume(self._group.group_id, value)
 
     def __contains__(self, player):
         return player.id == self._leader.id or any([p.id == player.id for p in self._members])
@@ -103,6 +72,31 @@ class Group:
             self._leader = self._members[0]
 
         await self._set_group()
+
+    async def get_leader(self) -> 'controllers.Player':
+        await self.refresh(True)
+        return self._leader
+
+    async def set_leader(self, value: 'controllers.Player'):
+        self._leader = value
+        await self._set_group()
+
+    async def get_muted(self) -> bool:
+        return await self._pytheos.api.group.get_mute(self._group.group_id)
+
+    async def set_muted(self, value: bool):
+        await self._pytheos.api.group.set_mute(self._group.group_id, value)
+
+    async def get_volume(self) -> int:
+        return await self._pytheos.api.group.get_volume(self._group.group_id)
+
+    async def set_volume(self, value: int):
+        if value < self._pytheos.api.group.VOLUME_MIN:
+            value = self._pytheos.api.group.VOLUME_MIN
+        elif value > self._pytheos.api.group.VOLUME_MAX:
+            value = self._pytheos.api.group.VOLUME_MAX
+
+        await self._pytheos.api.group.set_volume(self._group.group_id, value)
 
     async def _set_group(self):
         """ Send the new group details to HEOS.
