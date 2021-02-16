@@ -9,12 +9,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
 
-TIMEOUT = 3
+DISCOVERY_TIMEOUT = 3
 
 
 async def main():
     print("Discovering HEOS services..")
-    services = await pytheos.discover(TIMEOUT)
+    services = await pytheos.discover(DISCOVERY_TIMEOUT)
     if not services:
         print("No HEOS services detected!")
         return
@@ -36,7 +36,7 @@ async def main():
         await print_details(player)
 
         # You also have full control of the other player features.  These are left disabled so you don't accidentally
-        # play that sweet speed metal you had queued up earlier at 100% volume at 1AM.
+        # play that sweet speed metal you had queued up at 100% volume at 1AM.
         #
         # player.play()
         # player.next()

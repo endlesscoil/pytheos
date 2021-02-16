@@ -174,19 +174,18 @@ class Pytheos:
         :return: None
         """
         logger.info(f'Closing connection to {self.server}:{self.port}')
-        # if self._event_thread:
-        #     self._event_thread.stop()
-        #     self._event_thread.join()
-        #
-        # if self._event_handler_thread:
-        #     self._event_handler_thread.stop()
-        #     self._event_handler_thread.join()
 
         if self._event_channel:
             self._event_channel.close()
 
         if self._command_channel:
             self._command_channel.close()
+
+        if self._event_task:
+            self._event_task.cancel()
+
+        if self._event_processor:
+            self._event_processor.cancel()
 
         self._connected = False
 

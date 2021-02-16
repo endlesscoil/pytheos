@@ -3,6 +3,7 @@
 This example demonstrates how to search for stations containing a particular term.  After retrieving the list
 the user can then make use of browse.play_station() to create and play the new station.
 """
+import asyncio
 import os
 import sys
 
@@ -11,16 +12,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import pytheos
 from pytheos.models.browse import ServiceOption
 
+DISCOVERY_TIMEOUT = 3
 SOURCE_ID = 1   # Pandora
 SEARCH_NAME = 'a band'
 
 
-def main():
-    services = pytheos.discover()
+async def main():
+    services = await pytheos.discover(DISCOVERY_TIMEOUT)
 
     if services:
-        with pytheos.connect(services[0]) as p:
-            results = p.api.browse.set_service_option(SOURCE_ID, ServiceOption.CreateNewStation, name=SEARCH_NAME)
+        with await pytheos.connect(services[0]) as p:
+            results = await p.api.browse.set_service_option(SOURCE_ID, ServiceOption.CreateNewStation, name=SEARCH_NAME)
 
             num_results = int(results.header.vars.get('returned', 0))
             if num_results > 0:
@@ -40,4 +42,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())

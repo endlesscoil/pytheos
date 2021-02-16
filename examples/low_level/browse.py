@@ -25,6 +25,7 @@ Example:
     - Other Track
     - ...
 """
+import asyncio
 import os
 import sys
 from typing import Optional
@@ -35,6 +36,8 @@ import pytheos
 from pytheos import Pytheos
 from pytheos.models import Source
 
+DISCOVERY_TIMEOUT = 3
+
 
 class TreeEntry(dict):
     """ Container class for our tree """
@@ -44,7 +47,7 @@ class TreeEntry(dict):
         self.object = obj
 
 
-def browse_path(svc: Pytheos, path: str) -> TreeEntry:
+async def browse_path(svc: Pytheos, path: str) -> TreeEntry:
     """ Traverses the provided path starting at the list of Music Sources.  The initial list can be retrieved
     by either a blank path or '/'.  Invalid paths will throw an exception.
 
@@ -52,7 +55,7 @@ def browse_path(svc: Pytheos, path: str) -> TreeEntry:
     :param path: Path string
     :return: The contents of the final path component
     """
-    tree = _init_tree_with_sources(svc)
+    tree = await _init_tree_with_sources(svc)
 
     source_id = None
     current_node = tree
@@ -67,14 +70,14 @@ def browse_path(svc: Pytheos, path: str) -> TreeEntry:
             raise ValueError('Could not find path')
 
         # Retrieve the contents of our new current node
-        source_id, results = _retrieve_contents(svc, source_id, current_node.object)
+        source_id, results = await _retrieve_contents(svc, source_id, current_node.object)
         for item in results:
             current_node[item.name] = TreeEntry(obj=item)
 
     return current_node
 
 
-def _init_tree_with_sources(svc: Pytheos) -> TreeEntry:
+async def _init_tree_with_sources(svc: Pytheos) -> TreeEntry:
     """ Initialize our tree with the list of Music Sources from HEOS.
 
     :param svc: Pytheos object
@@ -82,13 +85,13 @@ def _init_tree_with_sources(svc: Pytheos) -> TreeEntry:
     """
     tree = TreeEntry(obj=None)
 
-    for source in svc.api.browse.get_music_sources():
+    for source in await svc.api.browse.get_music_sources():
         tree.setdefault(source.name, TreeEntry(obj=source))
 
     return tree
 
 
-def _retrieve_contents(svc: Pytheos, parent_id: str, source: Source) -> tuple:
+async def _retrieve_contents(svc: Pytheos, parent_id: str, source: Source) -> tuple:
     """ Retrieve the contents of the provided source node.
 
     :param svc: Pytheos object
@@ -99,31 +102,31 @@ def _retrieve_contents(svc: Pytheos, parent_id: str, source: Source) -> tuple:
     new_source_id = parent_id
 
     if source.container:
-        results = svc.api.browse.browse_source_container(source_id=parent_id, container_id=source.container_id)
+        results = await svc.api.browse.browse_source_container(source_id=parent_id, container_id=source.container_id)
     else:
         # This is a nested source, so update the source ID and retrieve the contents
         new_source_id = source.source_id
-        results = svc.api.browse.browse_source(new_source_id)
+        results = await svc.api.browse.browse_source(new_source_id)
 
     return new_source_id, results
 
 
-def main():
+async def main():
     """ Main entry point """
-    services = pytheos.discover()
+    services = await pytheos.discover(DISCOVERY_TIMEOUT)
     if not services:
         print("No HEOS services detected!")
         return
 
     print("Connecting to first device found...")
 
-    with pytheos.connect(services[0]) as p:
+    with await pytheos.connect(services[0]) as p:
         print(f"Connected to {p.server}!")
         # Use all command line parameters to construct our path or default to '/' if not specified.
         path = ' '.join(sys.argv[1:]) if len(sys.argv) > 1 else '/'
 
         try:
-            listing = browse_path(p, path)
+            listing = await browse_path(p, path)
 
             print("Listing:")
             for name in listing:
@@ -134,4 +137,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
