@@ -13,7 +13,7 @@ import asyncio
 from .. import utils
 from ..api import BrowseAPI, GroupAPI, PlayerAPI, SystemAPI
 from ..networking.errors import CommandFailedError
-from ..models.heos import HEOSResult
+from ..models.heos import HEOSResult, HEOSEvent
 
 logger = logging.getLogger(__name__)
 
@@ -85,14 +85,15 @@ class Connection:
 
         :return: None
         """
-        with self._lock:
-            if self._reader:
-                self._reader.close()
-                self._reader = None
-
-            if self._writer:
-                self._writer.close()
-                self._writer = None
+        # with self._lock:
+        #     if self._reader:
+        #         self._reader.close()
+        #         self._reader = None
+        #
+        #     if self._writer:
+        #         self._writer.close()
+        #         self._writer = None
+        pass
 
     def write(self, input_data: bytes):
         """ Writes the provided data to the connection
@@ -167,7 +168,6 @@ class Connection:
         started = time.time()
         while True:
             response += await self.read_until(delimiter, timeout=self.CONNECTION_READ_TIMEOUT)
-
             if delimiter in response:
                 response = response.strip()
                 logger.debug(f"Got response: {response}")

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import queue
 from typing import Callable, Optional, Union, Dict
@@ -12,7 +13,6 @@ from . import controllers
 from .networking.connection import Connection
 from .networking.types import SSDPResponse
 from .networking.errors import ChannelUnavailableError
-from .events import EventHandlerThread, EventReceiverThread
 from .models.heos import HEOSEvent
 from .models.system import AccountStatus
 
@@ -98,9 +98,11 @@ class Pytheos:
 
         self._command_channel = Connection()
         self._event_channel = Connection()
-        self._event_queue = queue.Queue()
-        self._event_thread: Optional[EventReceiverThread] = None
-        self._event_handler_thread: Optional[EventHandlerThread] = None
+        self._event_queue = asyncio.Queue()
+        # self._event_thread: Optional[EventReceiverThread] = None
+        # self._event_handler_thread: Optional[EventHandlerThread] = None
+        self._event_task = None
+        self._event_processor = None
         self._connected = False
         self._event_subscriptions = {}
         self._receive_events = True
@@ -147,11 +149,15 @@ class Pytheos:
             await self._event_channel.connect(self.server, self.port, deduplicate=True)
             await self._set_register_for_change_events(True)
 
+            loop = asyncio.get_running_loop()
+            self._event_task = loop.create_task(self.listen_for_events())
+            self._event_processor = loop.create_task(self.event_processor())
+
             # FIXME: Figure out exactly how I'm consuming these.
-            self._event_thread = EventReceiverThread(self._event_channel, self._event_queue)
-            self._event_thread.start()
-            self._event_handler_thread = EventHandlerThread(self, self._event_handler, self._event_queue)
-            self._event_handler_thread.start()
+            # self._event_thread = EventReceiverThread(self._event_channel, self._event_queue)
+            # self._event_thread.start()
+            # self._event_handler_thread = EventHandlerThread(self, self._event_handler, self._event_queue)
+            # self._event_handler_thread.start()
             #/FIXME
 
         if refresh:
@@ -168,13 +174,13 @@ class Pytheos:
         :return: None
         """
         logger.info(f'Closing connection to {self.server}:{self.port}')
-        if self._event_thread:
-            self._event_thread.stop()
-            self._event_thread.join()
-
-        if self._event_handler_thread:
-            self._event_handler_thread.stop()
-            self._event_handler_thread.join()
+        # if self._event_thread:
+        #     self._event_thread.stop()
+        #     self._event_thread.join()
+        #
+        # if self._event_handler_thread:
+        #     self._event_handler_thread.stop()
+        #     self._event_handler_thread.join()
 
         if self._event_channel:
             self._event_channel.close()
@@ -283,14 +289,35 @@ class Pytheos:
 
         return self._sources
 
-    def _event_handler(self, event: HEOSEvent):
+    async def listen_for_events(self):
+        while True:
+            results = await self._event_channel.read_message()
+            if results:
+                event = HEOSEvent(results)
+                logger.debug(f"Received event: {event!r}")
+                await self._event_queue.put(event)
+
+            await asyncio.sleep(0.5)
+
+    async def event_processor(self):
+        while True:
+            event = await self._event_queue.get()
+            if event:
+                logger.debug(f'Processing event: {event!r}')
+                await self._event_handler(event)
+
+            await asyncio.sleep(0.5)
+
+    async def _event_handler(self, event: HEOSEvent):
         """ Internal event handler
 
         :param event: HEOS Event
         :return: None
         """
+        loop = asyncio.get_running_loop()
         for callback in self._event_subscriptions.get(event.command, []):
-            callback(event)
+            logger.debug(f'Calling registered callback {callback} for event {event!r}')
+            loop.create_task(callback(event))
 
     def _init_internal_event_handlers(self):
         """ Initialize the internal event handlers

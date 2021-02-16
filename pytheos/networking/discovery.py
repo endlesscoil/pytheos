@@ -10,12 +10,12 @@ from asyncio import transports
 from typing import Optional, List
 
 from .. import utils
-from ..networking.types import SSDPResponse, NewSSDPResponse
+from ..networking.types import SSDPResponse, SSDPResponse
 
 logger = logging.getLogger(__name__)
 
 
-async def discover(timeout: Optional[int]=None) -> List[NewSSDPResponse]:
+async def discover(timeout: int) -> List[SSDPResponse]:
     """ Convenience function for initiating the discovery process.
 
     :param timeout: Optional override for the default timeout
@@ -24,7 +24,7 @@ async def discover(timeout: Optional[int]=None) -> List[NewSSDPResponse]:
     loop = asyncio.get_running_loop()
     discovery = Discovery()
 
-    return [NewSSDPResponse(itm) for itm in await loop.create_task(discovery.discover(timeout))]
+    return [SSDPResponse(itm) for itm in await loop.create_task(discovery.discover(timeout))]
 
 
 class SSDPBroadcastMessage:

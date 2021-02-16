@@ -2,24 +2,27 @@
 """
 This example demonstrates high-level use of the Pytheos Player controller.
 """
+import asyncio
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import pytheos
 
+TIMEOUT = 3
 
-def main():
+
+async def main():
     print("Discovering HEOS services..")
-    services = pytheos.discover()
+    services = await pytheos.discover(TIMEOUT)
     if not services:
         print("No HEOS services detected!")
         return
 
     print("Connecting to first HEOS service..")
-    with pytheos.connect(services[0]) as p:
+    with await pytheos.connect(services[0]) as p:
         player_id = None
-        players = p.players
+        players = await p.players
 
         for pid, player in players.items():
             print(f"Found player {player.name} ({player.id})!")
@@ -30,7 +33,7 @@ def main():
 
         print(f"Using player {player.name} ({player.id})")
         print()
-        print_details(player)
+        await print_details(player)
 
         # You also have full control of the other player features.  These are left disabled so you don't accidentally
         # play that sweet speed metal you had queued up earlier at 100% volume at 1AM.
@@ -41,7 +44,7 @@ def main():
         # player.stop()
 
 
-def print_details(player):
+async def print_details(player):
     print(f"Model: {player.model}")
     print(f"Version: {player.version}")
     print(f"Serial Number: {player.serial}")
@@ -54,15 +57,20 @@ def print_details(player):
         print(f"Group Members: {[member.name for member in player.group.members]}")
         print()
 
-    print(f"Current Play State: {player.play_state.name}")
-    print(f"Shuffle is {player.shuffle.name}, Repeat is {player.repeat.name}")
-    print(f"Volume is {player.volume}%")
+    play_state = await player.play_state    # FIXME
+    print(f"Current Play State: {play_state.name}")
+    shuffle = await player.shuffle          # FIXME
+    repeat = await player.repeat            # FIXME
+    print(f"Shuffle is {shuffle.name}, Repeat is {repeat.name}")
+    print(f"Volume is {await player.volume}%")  # FIXME
     print()
 
-    if player.playing:
+    if await player.playing:    # FIXME
         print(f"Now Playing: {player.now_playing.artist} - {player.now_playing.song}")
         print()
 
 
 if __name__ == '__main__':
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.run_forever()

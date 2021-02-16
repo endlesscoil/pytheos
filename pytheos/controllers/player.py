@@ -88,8 +88,9 @@ class Player:
         self._shuffle = value
 
     @property
-    def playing(self) -> bool:
-        return self.play_state == models.player.PlayState.Playing
+    async def playing(self) -> bool:
+        play_state = await self.play_state
+        return play_state == models.player.PlayState.Playing
 
     @playing.setter
     async def playing(self, value: bool):
