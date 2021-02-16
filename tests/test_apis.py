@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+import asyncio
 import unittest
 from typing import Union, List, Dict
+from unittest import mock
 from unittest.mock import patch
 
 from pytheos.models.system import AccountStatus
@@ -24,6 +26,10 @@ TEST_GROUP_ID = 1
 TEST_EMAIL = "username@someemailplace.com"
 
 
+def _async_run(coro):
+    return asyncio.get_event_loop().run_until_complete(coro)
+
+
 class TestAPIs(unittest.TestCase):
     def setUp(self):
         self._pytheos = pytheos.Pytheos('127.0.0.1', 1255)
@@ -32,26 +38,27 @@ class TestAPIs(unittest.TestCase):
     def test_command_failure(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'register_for_change_events', 'fail')):
-            self.assertRaises(CommandFailedError, self._pytheos.api.system.register_for_change_events, True)
+            with self.assertRaises(CommandFailedError):
+                _async_run(self._pytheos.api.system.register_for_change_events(True))
 
     def test_system_register_for_change_events(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'register_for_change_events', 'success',
                                                                    enable='on')):
-            self._pytheos.api.system.register_for_change_events(True)
+            _async_run(self._pytheos.api.system.register_for_change_events(True))
             self._pytheos.api.send_command.assert_called_with('system', 'register_for_change_events', enable='on')
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'register_for_change_events', 'success',
                                                                    enable='off')):
-            self._pytheos.api.system.register_for_change_events(False)
+            _async_run(self._pytheos.api.system.register_for_change_events(False))
             self._pytheos.api.send_command.assert_called_with('system', 'register_for_change_events', enable='off')
 
     def test_system_check_account(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'check_account', 'success',
                                                                    message=f"signed_in&un={TEST_EMAIL}")):
-            status, email = self._pytheos.api.system.check_account()
+            status, email = _async_run(self._pytheos.api.system.check_account())
             self.assertEqual(status, AccountStatus.SignedIn)
             self.assertEqual(email, TEST_EMAIL)
             self._pytheos.api.send_command.assert_called_with('system', 'check_account')
@@ -59,7 +66,7 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'check_account', 'success',
                                                                    message=f"signed_out")):
-            status, email = self._pytheos.api.system.check_account()
+            status, email = _async_run(self._pytheos.api.system.check_account())
             self.assertEqual(status, AccountStatus.SignedOut)
             self.assertIsNone(email)
             self._pytheos.api.send_command.assert_called_with('system', 'check_account')
@@ -70,39 +77,40 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'sign_in', 'success',
                                                                    message=f"signed_in&un={TEST_EMAIL}")):
-            self._pytheos.api.system.sign_in(TEST_EMAIL, password)
+            _async_run(self._pytheos.api.system.sign_in(TEST_EMAIL, password))
             self._pytheos.api.send_command.assert_called_with('system', 'sign_in', un=TEST_EMAIL, pw=password)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'sign_in', 'fail')):
-            self.assertRaises(SignInFailedError, self._pytheos.api.system.sign_in, TEST_EMAIL, password)
+            with self.assertRaises(SignInFailedError):
+                _async_run(self._pytheos.api.system.sign_in(TEST_EMAIL, password))
 
     def test_system_sign_out(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'sign_out', 'success', message='signed_out')):
-            self._pytheos.api.system.sign_out()
+            _async_run(self._pytheos.api.system.sign_out())
             self._pytheos.api.send_command.assert_called_with('system', 'sign_out')
 
     def test_system_heart_beat(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'heart_beat', 'success')):
-            self._pytheos.api.system.heart_beat()
+            _async_run(self._pytheos.api.system.heart_beat())
             self._pytheos.api.send_command.assert_called_with('system', 'heart_beat')
 
     def test_system_reboot(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=None):
-            self._pytheos.api.system.reboot()
+            _async_run(self._pytheos.api.system.reboot())
             self._pytheos.api.send_command.assert_called_with('system', 'reboot')
 
     def test_system_prettify_json_response(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'prettify_json_response', 'success', enable='on')):
-            self._pytheos.api.system.prettify_json_response(True)
+            _async_run(self._pytheos.api.system.prettify_json_response(True))
             self._pytheos.api.send_command.assert_called_with('system', 'prettify_json_response', enable='on')
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('system', 'prettify_json_response', 'success', enable='off')):
-            self._pytheos.api.system.prettify_json_response(False)
+            _async_run(self._pytheos.api.system.prettify_json_response(False))
             self._pytheos.api.send_command.assert_called_with('system', 'prettify_json_response', enable='off')
 
     def test_player_get_players(self):
@@ -121,7 +129,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            players = self._pytheos.api.player.get_players()
+            players = _async_run(self._pytheos.api.player.get_players())
             self.assertGreater(len(players), 0)
             self.assertIsInstance(players[0], Player)
 
@@ -139,7 +147,7 @@ class TestAPIs(unittest.TestCase):
         }
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            result = self._pytheos.api.player.get_player_info(TEST_PLAYER_ID)
+            result = _async_run(self._pytheos.api.player.get_player_info(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_player_info', pid=TEST_PLAYER_ID)
             self.assertIsInstance(result, Player)
 
@@ -147,21 +155,21 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'get_play_state', 'success',
                                                                    pid=TEST_PLAYER_ID, state='stop')):
-            play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
+            play_state = _async_run(self._pytheos.api.player.get_play_state(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
             self.assertEqual(play_state, PlayState.Stopped)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'get_play_state', 'success',
                                                                    pid=TEST_PLAYER_ID, state='play')):
-            play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
+            play_state = _async_run(self._pytheos.api.player.get_play_state(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
             self.assertEqual(play_state, PlayState.Playing)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'get_play_state', 'success',
                                                                    pid=TEST_PLAYER_ID, state='pause')):
-            play_state = self._pytheos.api.player.get_play_state(TEST_PLAYER_ID)
+            play_state = _async_run(self._pytheos.api.player.get_play_state(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_state', pid=TEST_PLAYER_ID)
             self.assertEqual(play_state, PlayState.Paused)
 
@@ -169,22 +177,23 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'set_play_state', 'success',
                                                                    pid=TEST_PLAYER_ID, state='stop')):
-            self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Stopped)
+            _async_run(self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Stopped))
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Stopped)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'set_play_state', 'success',
                                                                    pid=TEST_PLAYER_ID, state='play')):
-            self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Playing)
+            _async_run(self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Playing))
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Playing)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'set_play_state', 'success',
                                                                    pid=TEST_PLAYER_ID, state='pause')):
-            self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Paused)
+            _async_run(self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, PlayState.Paused))
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_state', pid=TEST_PLAYER_ID, state=PlayState.Paused)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.set_play_state, TEST_PLAYER_ID, 'invalid_state')
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.set_play_state(TEST_PLAYER_ID, 'invalid_state'))
 
     def test_player_get_now_playing_media(self):
         response = TestAPIs.get_basic_response('player', 'get_now_playing_media', 'success', pid=TEST_PLAYER_ID)
@@ -211,7 +220,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            now_playing = self._pytheos.api.player.get_now_playing_media(TEST_PLAYER_ID)    # FIXME?: What about the options?
+            now_playing = _async_run(self._pytheos.api.player.get_now_playing_media(TEST_PLAYER_ID))    # FIXME?: What about the options?
             self._pytheos.api.send_command.assert_called_with('player', 'get_now_playing_media', pid=TEST_PLAYER_ID)
             self.assertIsInstance(now_playing, MediaItem)
 
@@ -220,7 +229,7 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('player', 'get_volume', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    level=10)):
-            volume = self._pytheos.api.player.get_volume(TEST_PLAYER_ID)
+            volume = _async_run(self._pytheos.api.player.get_volume(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_volume', pid=TEST_PLAYER_ID)
             self.assertEqual(volume, 10)
 
@@ -229,40 +238,46 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('player', 'set_volume', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    level=20)):
-            self._pytheos.api.player.set_volume(TEST_PLAYER_ID, 20)
+            _async_run(self._pytheos.api.player.set_volume(TEST_PLAYER_ID, 20))
             self._pytheos.api.send_command.assert_called_with('player', 'set_volume', pid=TEST_PLAYER_ID, level=20)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.set_volume, TEST_PLAYER_ID, 101)
-        self.assertRaises(ValueError, self._pytheos.api.player.set_volume, TEST_PLAYER_ID, -1)
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.set_volume(TEST_PLAYER_ID, 101))
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.set_volume(TEST_PLAYER_ID, -1))
 
     def test_player_volume_up(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'volume_up', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    step=5)):
-            self._pytheos.api.player.volume_up(TEST_PLAYER_ID, 5)
+            _async_run(self._pytheos.api.player.volume_up(TEST_PLAYER_ID, 5))
             self._pytheos.api.send_command.assert_called_with('player', 'volume_up', pid=TEST_PLAYER_ID, step=5)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_up, TEST_PLAYER_ID, 11)
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_up, TEST_PLAYER_ID, 0)
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.volume_up(TEST_PLAYER_ID, 11))
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.volume_up(TEST_PLAYER_ID, 0))
 
     def test_player_volume_down(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'volume_down', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    step=5)):
-            self._pytheos.api.player.volume_down(TEST_PLAYER_ID, 5)
+            _async_run(self._pytheos.api.player.volume_down(TEST_PLAYER_ID, 5))
             self._pytheos.api.send_command.assert_called_with('player', 'volume_down', pid=TEST_PLAYER_ID, step=5)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_down, TEST_PLAYER_ID, 11)
-        self.assertRaises(ValueError, self._pytheos.api.player.volume_down, TEST_PLAYER_ID, 0)
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.volume_down(TEST_PLAYER_ID, 11))
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.volume_down(TEST_PLAYER_ID, 0))
 
     def test_player_get_mute(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'get_mute', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    state='off')):
-            muted = self._pytheos.api.player.get_mute(TEST_PLAYER_ID)
+            muted = _async_run(self._pytheos.api.player.get_mute(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_mute', pid=TEST_PLAYER_ID)
             self.assertEqual(muted, False)
 
@@ -270,7 +285,7 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('player', 'get_mute', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    state='on')):
-            muted = self._pytheos.api.player.get_mute(TEST_PLAYER_ID)
+            muted = _async_run(self._pytheos.api.player.get_mute(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_mute', pid=TEST_PLAYER_ID)
             self.assertEqual(muted, True)
 
@@ -279,21 +294,21 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('player', 'set_mute', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    state='on')):
-            self._pytheos.api.player.set_mute(TEST_PLAYER_ID, True)
+            _async_run(self._pytheos.api.player.set_mute(TEST_PLAYER_ID, True))
             self._pytheos.api.send_command.assert_called_with('player', 'set_mute', pid=TEST_PLAYER_ID, state=Mute.On)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'set_mute', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    state='off')):
-            self._pytheos.api.player.set_mute(TEST_PLAYER_ID, False)
+            _async_run(self._pytheos.api.player.set_mute(TEST_PLAYER_ID, False))
             self._pytheos.api.send_command.assert_called_with('player', 'set_mute', pid=TEST_PLAYER_ID, state=Mute.Off)
 
     def test_player_toggle_mute(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'get_mute', 'success',
                                                                    pid=TEST_PLAYER_ID)):
-            self._pytheos.api.player.toggle_mute(TEST_PLAYER_ID)
+            _async_run(self._pytheos.api.player.toggle_mute(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'toggle_mute', pid=TEST_PLAYER_ID)
 
     def test_player_get_play_mode(self):
@@ -302,7 +317,7 @@ class TestAPIs(unittest.TestCase):
                                                                    pid=TEST_PLAYER_ID,
                                                                    repeat='off',
                                                                    shuffle='off')):
-            play_mode = self._pytheos.api.player.get_play_mode(TEST_PLAYER_ID)
+            play_mode = _async_run(self._pytheos.api.player.get_play_mode(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_play_mode', pid=TEST_PLAYER_ID)
             self.assertIsInstance(play_mode, PlayMode)
             self.assertEqual(play_mode.repeat, RepeatMode.Off)
@@ -314,7 +329,7 @@ class TestAPIs(unittest.TestCase):
                                                                    pid=TEST_PLAYER_ID,
                                                                    repeat='off',
                                                                    shuffle='off')):
-            self._pytheos.api.player.set_play_mode(TEST_PLAYER_ID, PlayMode(repeat=RepeatMode.Off, shuffle=ShuffleMode.Off))
+            _async_run(self._pytheos.api.player.set_play_mode(TEST_PLAYER_ID, PlayMode(repeat=RepeatMode.Off, shuffle=ShuffleMode.Off)))
             self._pytheos.api.send_command.assert_called_with('player', 'set_play_mode', pid=TEST_PLAYER_ID, repeat=RepeatMode.Off, shuffle=ShuffleMode.Off)
 
     def test_player_get_queue(self):
@@ -322,7 +337,7 @@ class TestAPIs(unittest.TestCase):
         retrieve_count = 10
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=TestAPIs.get_demo_queue()):
-            queue = self._pytheos.api.player.get_queue(TEST_PLAYER_ID, start_pos, retrieve_count)
+            queue = _async_run(self._pytheos.api.player.get_queue(TEST_PLAYER_ID, start_pos, retrieve_count))
             self._pytheos.api.send_command.assert_called_with('player', 'get_queue',
                                                               pid=TEST_PLAYER_ID,
                                                               range=','.join((str(start_pos), str(retrieve_count - 1))))
@@ -330,15 +345,18 @@ class TestAPIs(unittest.TestCase):
             self.assertGreater(len(queue), 0)
             self.assertIsInstance(queue[0], MediaItem)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, TEST_PLAYER_ID, -1, 10)  # Lower limit too small
-        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, TEST_PLAYER_ID, 0, 101)  # Number to retrieve too large
-        self.assertRaises(ValueError, self._pytheos.api.player.get_queue, TEST_PLAYER_ID, 0, 0)    # Number to retrieve too small
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.get_queue(TEST_PLAYER_ID, -1, 10))  # Lower limit too small
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.get_queue(TEST_PLAYER_ID, 0, 101))  # Number to retrieve too large
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.get_queue(TEST_PLAYER_ID, 0, 0))    # Number to retrieve too small
 
     def test_player_play_queue(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=TestAPIs.get_demo_queue()):
-            queue = self._pytheos.api.player.get_queue(TEST_PLAYER_ID, 0, 10)
+            queue = _async_run(self._pytheos.api.player.get_queue(TEST_PLAYER_ID, 0, 10))
 
-            self._pytheos.api.player.play_queue(TEST_PLAYER_ID, queue[0].queue_id)
+            _async_run(self._pytheos.api.player.play_queue(TEST_PLAYER_ID, queue[0].queue_id))
             self._pytheos.api.send_command.assert_called_with('player', 'play_queue', pid=TEST_PLAYER_ID, qid=queue[0].queue_id)
 
     def test_player_remove_from_queue(self):
@@ -346,14 +364,14 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('player', 'remove_from_queue', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    qid=0)):
-            self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0,))
+            _async_run(self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0,)))
             self._pytheos.api.send_command.assert_called_with('player', 'remove_from_queue', pid=TEST_PLAYER_ID, qid='0')
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'remove_from_queue', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    qid='0,1')):
-            self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0, 1))
+            _async_run(self._pytheos.api.player.remove_from_queue(TEST_PLAYER_ID, queue_ids=(0, 1)))
             self._pytheos.api.send_command.assert_called_with('player', 'remove_from_queue', pid=TEST_PLAYER_ID, qid='0,1')
 
     def test_player_save_queue(self):
@@ -361,16 +379,17 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('player', 'save_queue', 'success',
                                                                    pid=TEST_PLAYER_ID,
                                                                    name='Test Playlist')):
-            self._pytheos.api.player.save_queue(TEST_PLAYER_ID, "Test Playlist")
+            _async_run(self._pytheos.api.player.save_queue(TEST_PLAYER_ID, "Test Playlist"))
             self._pytheos.api.send_command.assert_called_with('player', 'save_queue',
                                                               pid=TEST_PLAYER_ID, name='Test Playlist')
 
-        self.assertRaises(ValueError, self._pytheos.api.player.save_queue, TEST_PLAYER_ID, '*'*129)     # Name too long
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.save_queue(TEST_PLAYER_ID, '*'*129))     # Name too long
 
     def test_player_clear_queue(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'clear_queue', 'success', pid=TEST_PLAYER_ID)):
-            self._pytheos.api.player.clear_queue(TEST_PLAYER_ID)
+            _async_run(self._pytheos.api.player.clear_queue(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'clear_queue', pid=TEST_PLAYER_ID)
 
     def test_player_move_queue_item(self):
@@ -379,7 +398,7 @@ class TestAPIs(unittest.TestCase):
                                                                    pid=TEST_PLAYER_ID,
                                                                    sqid=1,
                                                                    dqid=1)):
-            self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1,), destination_queue_id=1)
+            _async_run(self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1,), destination_queue_id=1))
             self._pytheos.api.send_command.assert_called_with('player', 'move_queue_item', pid=TEST_PLAYER_ID, sqid='1', dqid=1)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
@@ -387,45 +406,51 @@ class TestAPIs(unittest.TestCase):
                                                                    pid=TEST_PLAYER_ID,
                                                                    sqid='1,2',
                                                                    dqid=3)):
-            self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1, 2), destination_queue_id=3)
+            _async_run(self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1, 2), destination_queue_id=3))
             self._pytheos.api.send_command.assert_called_with('player', 'move_queue_item', pid=TEST_PLAYER_ID, sqid='1,2', dqid=3)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.move_queue_item, TEST_PLAYER_ID, queue_ids=(1,), destination_queue_id=0)  # Invalid destination ID
-        self.assertRaises(ValueError, self._pytheos.api.player.move_queue_item, TEST_PLAYER_ID, queue_ids=(0,), destination_queue_id=4)  # Invalid source ID
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(1,), destination_queue_id=0))  # Invalid destination ID
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.move_queue_item(TEST_PLAYER_ID, queue_ids=(0,), destination_queue_id=4))  # Invalid source ID
 
     def test_player_play_next(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'play_next', 'success',
                                                                    pid=TEST_PLAYER_ID)):
-            self._pytheos.api.player.play_next(TEST_PLAYER_ID)
+            _async_run(self._pytheos.api.player.play_next(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'play_next', pid=TEST_PLAYER_ID)
 
     def test_player_play_previous(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'play_previous', 'success',
                                                                    pid=TEST_PLAYER_ID)):
-            self._pytheos.api.player.play_previous(TEST_PLAYER_ID)
+            _async_run(self._pytheos.api.player.play_previous(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'play_previous', pid=TEST_PLAYER_ID)
 
     def test_player_set_quickselect(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'set_quickselect', 'success',
                                                                    pid=TEST_PLAYER_ID, id=1)):
-            self._pytheos.api.player.set_quickselect(TEST_PLAYER_ID, 1)
+            _async_run(self._pytheos.api.player.set_quickselect(TEST_PLAYER_ID, 1))
             self._pytheos.api.send_command.assert_called_with('player', 'set_quickselect', pid=TEST_PLAYER_ID, id=1)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, TEST_PLAYER_ID, 0)  # Value too small
-        self.assertRaises(ValueError, self._pytheos.api.player.set_quickselect, TEST_PLAYER_ID, 7)  # Value too large
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.set_quickselect(TEST_PLAYER_ID, 0))  # Value too small
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.set_quickselect(TEST_PLAYER_ID, 7))  # Value too large
 
     def test_player_play_quickselect(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('player', 'play_quickselect', 'success',
                                                                    pid=TEST_PLAYER_ID, id=1)):
-            self._pytheos.api.player.play_quickselect(TEST_PLAYER_ID, 1)
+            _async_run(self._pytheos.api.player.play_quickselect(TEST_PLAYER_ID, 1))
             self._pytheos.api.send_command.assert_called_with('player', 'play_quickselect', pid=TEST_PLAYER_ID, id=1)
 
-        self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect, TEST_PLAYER_ID, 0)     # Value too small
-        self.assertRaises(ValueError, self._pytheos.api.player.play_quickselect, TEST_PLAYER_ID, 7)     # Value too large
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.play_quickselect(TEST_PLAYER_ID, 0))     # Value too small
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.player.play_quickselect(TEST_PLAYER_ID, 7))     # Value too large
 
     def test_player_get_quickselects(self):
         response = TestAPIs.get_basic_response('player', 'get_quickselects', 'success', pid=TEST_PLAYER_ID)
@@ -436,7 +461,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            quick_selects = self._pytheos.api.player.get_quickselects(TEST_PLAYER_ID)
+            quick_selects = _async_run(self._pytheos.api.player.get_quickselects(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'get_quickselects', pid=TEST_PLAYER_ID)
 
             self.assertIsInstance(quick_selects, list)
@@ -448,13 +473,13 @@ class TestAPIs(unittest.TestCase):
         response['payload'] = {'update': 'update_none'}
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            update_available = self._pytheos.api.player.check_update(TEST_PLAYER_ID)
+            update_available = _async_run(self._pytheos.api.player.check_update(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'check_update', pid=TEST_PLAYER_ID)
             self.assertEqual(update_available, False)
 
         response['payload'] = {'update': 'update_exist'}
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            update_available = self._pytheos.api.player.check_update(TEST_PLAYER_ID)
+            update_available = _async_run(self._pytheos.api.player.check_update(TEST_PLAYER_ID))
             self._pytheos.api.send_command.assert_called_with('player', 'check_update', pid=TEST_PLAYER_ID)
             self.assertEqual(update_available, True)
 
@@ -506,7 +531,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            groups = self._pytheos.api.group.get_groups()
+            groups = _async_run(self._pytheos.api.group.get_groups())
             self._pytheos.api.send_command.assert_called_with('group', 'get_groups')
             self.assertEqual(len(groups), 2)
             self.assertIsInstance(groups[0], Group)
@@ -537,7 +562,7 @@ class TestAPIs(unittest.TestCase):
             ]
         }
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            group_info = self._pytheos.api.group.get_group_info(TEST_GROUP_ID)
+            group_info = _async_run(self._pytheos.api.group.get_group_info(TEST_GROUP_ID))
             self._pytheos.api.send_command.assert_called_with('group', 'get_group_info', gid=TEST_GROUP_ID)
             self.assertIsInstance(group_info, Group)
 
@@ -551,14 +576,14 @@ class TestAPIs(unittest.TestCase):
                                                                    gid='1',
                                                                    name='Group 1',
                                                                    pid=','.join(str(n) for n in [leader]+members))):
-            results = self._pytheos.api.group.set_group(leader, members)
+            results = _async_run(self._pytheos.api.group.set_group(leader, members))
             self._pytheos.api.send_command.assert_called_with('group', 'set_group', pid=','.join(str(n) for n in [leader]+members))
             self.assertIsInstance(results, Group)
 
         # Ungroup all
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('group', 'set_group', 'success', pid=leader)):
-            results = self._pytheos.api.group.set_group(leader)
+            results = _async_run(self._pytheos.api.group.set_group(leader))
             self._pytheos.api.send_command.assert_called_with('group', 'set_group', pid=str(leader))
             self.assertIsNone(results)
 
@@ -567,7 +592,7 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('group', 'get_volume', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    level=50)):
-            volume = self._pytheos.api.group.get_volume(TEST_GROUP_ID)
+            volume = _async_run(self._pytheos.api.group.get_volume(TEST_GROUP_ID))
             self._pytheos.api.send_command.assert_called_with('group', 'get_volume', gid=TEST_GROUP_ID)
             self.assertIsInstance(volume, int)
             self.assertTrue(0 <= volume <= 100)
@@ -577,40 +602,46 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('group', 'set_volume', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    level=20)):
-            self._pytheos.api.group.set_volume(TEST_GROUP_ID, 20)
+            _async_run(self._pytheos.api.group.set_volume(TEST_GROUP_ID, 20))
             self._pytheos.api.send_command.assert_called_with('group', 'set_volume', gid=TEST_GROUP_ID, level=20)
 
-        self.assertRaises(ValueError, self._pytheos.api.group.set_volume, TEST_GROUP_ID, 101)
-        self.assertRaises(ValueError, self._pytheos.api.group.set_volume, TEST_GROUP_ID, -1)
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.group.set_volume(TEST_GROUP_ID, 101))
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.group.set_volume(TEST_GROUP_ID, -1))
 
     def test_group_volume_up(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('group', 'volume_up', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    step=5)):
-            self._pytheos.api.group.volume_up(TEST_GROUP_ID, 5)
+            _async_run(self._pytheos.api.group.volume_up(TEST_GROUP_ID, 5))
             self._pytheos.api.send_command.assert_called_with('group', 'volume_up', gid=TEST_GROUP_ID, step=5)
 
-        self.assertRaises(ValueError, self._pytheos.api.group.volume_up, TEST_GROUP_ID, 11)
-        self.assertRaises(ValueError, self._pytheos.api.group.volume_up, TEST_GROUP_ID, 0)
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.group.volume_up(TEST_GROUP_ID, 11))
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.group.volume_up(TEST_GROUP_ID, 0))
 
     def test_group_volume_down(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('group', 'volume_down', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    step=5)):
-            self._pytheos.api.group.volume_down(TEST_GROUP_ID, 5)
+            _async_run(self._pytheos.api.group.volume_down(TEST_GROUP_ID, 5))
             self._pytheos.api.send_command.assert_called_with('group', 'volume_down', gid=TEST_GROUP_ID, step=5)
 
-        self.assertRaises(ValueError, self._pytheos.api.group.volume_down, TEST_GROUP_ID, 11)
-        self.assertRaises(ValueError, self._pytheos.api.group.volume_down, TEST_GROUP_ID, 0)
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.group.volume_down(TEST_GROUP_ID, 11))
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.group.volume_down(TEST_GROUP_ID, 0))
 
     def test_group_get_mute(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('group', 'get_mute', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    state='on')):
-            muted = self._pytheos.api.group.get_mute(TEST_GROUP_ID)
+            muted = _async_run(self._pytheos.api.group.get_mute(TEST_GROUP_ID))
             self._pytheos.api.send_command.assert_called_with('group', 'get_mute', gid=TEST_GROUP_ID)
             self.assertEqual(muted, True)
 
@@ -618,7 +649,7 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('group', 'get_mute', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    state='off')):
-            muted = self._pytheos.api.group.get_mute(TEST_GROUP_ID)
+            muted = _async_run(self._pytheos.api.group.get_mute(TEST_GROUP_ID))
             self._pytheos.api.send_command.assert_called_with('group', 'get_mute', gid=TEST_GROUP_ID)
             self.assertEqual(muted, False)
 
@@ -627,20 +658,20 @@ class TestAPIs(unittest.TestCase):
                           return_value=TestAPIs.get_basic_response('group', 'set_mute', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    state='on')):
-            self._pytheos.api.group.set_mute(TEST_GROUP_ID, True)
+            _async_run(self._pytheos.api.group.set_mute(TEST_GROUP_ID, True))
             self._pytheos.api.send_command.assert_called_with('group', 'set_mute', gid=TEST_GROUP_ID, state=Mute.On)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('group', 'set_mute', 'success',
                                                                    gid=TEST_GROUP_ID,
                                                                    state='off')):
-            self._pytheos.api.group.set_mute(TEST_GROUP_ID, False)
+            _async_run(self._pytheos.api.group.set_mute(TEST_GROUP_ID, False))
             self._pytheos.api.send_command.assert_called_with('group', 'set_mute', gid=TEST_GROUP_ID, state=Mute.Off)
 
     def test_group_toggle_mute(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('group', 'toggle_mute', 'success')):
-            self._pytheos.api.group.toggle_mute(TEST_GROUP_ID)
+            _async_run(self._pytheos.api.group.toggle_mute(TEST_GROUP_ID))
             self._pytheos.api.send_command.assert_called_with('group', 'toggle_mute', gid=TEST_GROUP_ID)
 
     def test_browse_get_music_sources(self):
@@ -663,7 +694,7 @@ class TestAPIs(unittest.TestCase):
             }
         ]
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            music_sources = self._pytheos.api.browse.get_music_sources()
+            music_sources = _async_run(self._pytheos.api.browse.get_music_sources())
             self._pytheos.api.send_command.assert_called_with('browse', 'get_music_sources')
             self.assertGreater(len(music_sources), 0)
             self.assertIsInstance(music_sources[0], Source)
@@ -680,7 +711,7 @@ class TestAPIs(unittest.TestCase):
         }
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            self.assertIsInstance(self._pytheos.api.browse.get_source_info(1), Source)
+            self.assertIsInstance(_async_run(self._pytheos.api.browse.get_source_info(1)), Source)
             self._pytheos.api.send_command.assert_called_with('browse', 'get_source_info', sid=1)
 
     def test_browse_browse_source(self):
@@ -707,7 +738,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            results = self._pytheos.api.browse.browse_source(1)
+            results = _async_run(self._pytheos.api.browse.browse_source(1))
             self._pytheos.api.send_command.assert_called_with('browse', 'browse', sid=1)
             self.assertGreater(len(results), 0)
             self.assertIsInstance(results[0], Source)
@@ -729,7 +760,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            results = self._pytheos.api.browse.browse_source_container(source_id, container_id)
+            results = _async_run(self._pytheos.api.browse.browse_source_container(source_id, container_id))
             self._pytheos.api.send_command.assert_called_with('browse', 'browse', sid=source_id, cid=container_id)
             self.assertGreater(len(results), 0)
             self.assertIsInstance(results[0], Source)
@@ -759,7 +790,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            results = self._pytheos.api.browse.get_search_criteria(sid)
+            results = _async_run(self._pytheos.api.browse.get_search_criteria(sid))
             self._pytheos.api.send_command.assert_called_with('browse', 'get_search_criteria', sid=sid)
             self.assertGreater(len(results), 0)
             self.assertIsInstance(results[0], SearchCriteria)
@@ -798,7 +829,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            results = self._pytheos.api.browse.search(sid, 'someband', 1)
+            results = _async_run(self._pytheos.api.browse.search(sid, 'someband', 1))
             self._pytheos.api.send_command.assert_called_with('browse', 'search', sid=sid, search='someband', scid=1)
             self.assertGreater(len(results), 0)
             self.assertIsInstance(results[0], Source)
@@ -814,23 +845,24 @@ class TestAPIs(unittest.TestCase):
                                                pid=pid, sid=sid, cid=cid, mid=mid, name=name)
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            self._pytheos.api.browse.play_station(pid, sid, cid, mid, name)
+            _async_run(self._pytheos.api.browse.play_station(pid, sid, cid, mid, name))
             self._pytheos.api.send_command.assert_called_with('browse', 'play_stream', pid=pid, sid=sid, cid=cid, mid=mid, name=name)
 
     def test_browse_play_preset(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('browse', 'play_preset', 'success',
                                                                    pid=TEST_PLAYER_ID, preset=1)):
-            self._pytheos.api.browse.play_preset(TEST_PLAYER_ID, 1)
+            _async_run(self._pytheos.api.browse.play_preset(TEST_PLAYER_ID, 1))
             self._pytheos.api.send_command.assert_called_with('browse', 'play_preset', pid=TEST_PLAYER_ID, preset=1)
 
-        self.assertRaises(ValueError, self._pytheos.api.browse.play_preset, TEST_PLAYER_ID, 0)
+        with self.assertRaises(ValueError):
+            _async_run(self._pytheos.api.browse.play_preset(TEST_PLAYER_ID, 0))
 
     def test_browse_play_input(self):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('browse', 'play_input', 'success',
                                                                    pid=TEST_PLAYER_ID, input=str(InputSource.Phono))):
-            self._pytheos.api.browse.play_input(TEST_PLAYER_ID, InputSource.Phono)
+            _async_run(self._pytheos.api.browse.play_input(TEST_PLAYER_ID, InputSource.Phono))
             self._pytheos.api.send_command.assert_called_with('browse', 'play_input', pid=TEST_PLAYER_ID, input=InputSource.Phono)
 
     def test_browse_play_url(self):
@@ -839,7 +871,7 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('browse', 'play_url', 'success',
                                                                    pid=TEST_PLAYER_ID, url=url)):
-            self._pytheos.api.browse.play_url(TEST_PLAYER_ID, url)
+            _async_run(self._pytheos.api.browse.play_url(TEST_PLAYER_ID, url))
 
     def test_browse_add_container_to_queue(self):
         sid = 1340337940
@@ -848,7 +880,7 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('browse', 'add_to_queue', 'success',
                                                                    pid=TEST_PLAYER_ID, sid=sid, cid=cid, aid=3)):
-            self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, add_type=AddToQueueType.AddToEnd)
+            _async_run(self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, add_type=AddToQueueType.AddToEnd))
             self._pytheos.api.send_command.assert_called_with('browse', 'add_to_queue', pid=TEST_PLAYER_ID,
                                                               sid=sid, cid=cid, aid=AddToQueueType.AddToEnd)
 
@@ -860,7 +892,7 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('browse', 'add_to_queue', 'success',
                                                                    pid=TEST_PLAYER_ID, sid=sid, cid=cid, mid=mid, aid=3)):
-            self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, media_id=mid, add_type=AddToQueueType.AddToEnd)
+            _async_run(self._pytheos.api.browse.add_to_queue(TEST_PLAYER_ID, sid, cid, media_id=mid, add_type=AddToQueueType.AddToEnd))
             self._pytheos.api.send_command.assert_called_with('browse', 'add_to_queue', pid=TEST_PLAYER_ID,
                                                               sid=sid, cid=cid, mid=mid, aid=AddToQueueType.AddToEnd)
 
@@ -872,7 +904,7 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('browse', 'rename_playlist', 'success',
                                                                    sid=sid, cid=cid, name=name)):
-            self._pytheos.api.browse.rename_playlist(sid, cid, name)
+            _async_run(self._pytheos.api.browse.rename_playlist(sid, cid, name))
             self._pytheos.api.send_command.assert_called_with('browse', 'rename_playlist', sid=sid, cid=cid, name=name)
 
     def test_browse_delete_playlist(self):
@@ -882,7 +914,7 @@ class TestAPIs(unittest.TestCase):
         with patch.object(pytheos.networking.connection.Connection, 'read_message',
                           return_value=TestAPIs.get_basic_response('browse', 'delete_playlist', 'success',
                                                                    sid=sid, cid=cid)):
-            self._pytheos.api.browse.delete_playlist(sid, cid)
+            _async_run(self._pytheos.api.browse.delete_playlist(sid, cid))
             self._pytheos.api.send_command.assert_called_with('browse', 'delete_playlist', sid=sid, cid=cid)
 
     def test_browse_retrieve_metadata(self):
@@ -907,7 +939,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            results = self._pytheos.api.browse.retrieve_metadata(sid, cid)
+            results = _async_run(self._pytheos.api.browse.retrieve_metadata(sid, cid))
             self._pytheos.api.send_command.assert_called_with('browse', 'retrieve_metadata', sid=sid, cid=cid)
             self.assertGreater(len(results), 0)
             self.assertIsInstance(results[0], AlbumMetadata)
@@ -939,7 +971,7 @@ class TestAPIs(unittest.TestCase):
         ]
 
         with patch.object(pytheos.networking.connection.Connection, 'read_message', return_value=response):
-            results = self._pytheos.api.browse.set_service_option(sid, ServiceOption.CreateNewStation, name=query)
+            results = _async_run(self._pytheos.api.browse.set_service_option(sid, ServiceOption.CreateNewStation, name=query))
             self._pytheos.api.send_command.assert_called_with('browse', 'set_service_option', sid=sid, option=ServiceOption.CreateNewStation, name=query)
             self.assertGreater(int(results.header.vars.get('returned', 0)), 0)
 

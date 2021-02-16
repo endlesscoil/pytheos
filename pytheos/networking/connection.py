@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import json
 import logging
-import telnetlib
 import threading
 import time
 from typing import Optional, Union
+import asyncio
 
 from .. import utils
 from ..api import BrowseAPI, GroupAPI, PlayerAPI, SystemAPI
@@ -53,14 +53,19 @@ class Connection:
 
         self._prettify_json_response = False
         self._lock = threading.Lock()
-        self._conn: Optional[telnetlib.Telnet] = None
+        #self._conn: Optional[telnetlib.Telnet] = None
+        self._reader = None
+        self._writer = None
         self._last_response: Optional[str] = None
 
     def __del__(self):
-        if self._conn:
-            self.close()
+        # if self._reader:
+        #     self._reader.close()
+        # if self._writer:
+        #     self._writer.close()
+        pass
 
-    def connect(self, server: str, port: int, deduplicate: bool=False):
+    async def connect(self, server: str, port: int, deduplicate: bool=False):
         """ Establish a connection with the HEOS service
 
         :param server: Server hostname or IP
@@ -73,7 +78,7 @@ class Connection:
             self.port = port
             self.deduplicate = deduplicate
 
-            self._conn = telnetlib.Telnet(self.server, self.port)
+            self._reader, self._writer = await asyncio.open_connection(server, port)
 
     def close(self):
         """ Closes the connection
@@ -81,9 +86,13 @@ class Connection:
         :return: None
         """
         with self._lock:
-            if self._conn:
-                self._conn.close()
-                self._conn = None
+            if self._reader:
+                self._reader.close()
+                self._reader = None
+
+            if self._writer:
+                self._writer.close()
+                self._writer = None
 
     def write(self, input_data: bytes):
         """ Writes the provided data to the connection
@@ -91,11 +100,11 @@ class Connection:
         :param input_data: Data to write
         :return: None
         """
-        if self._conn:
+        if self._writer:
             with self._lock:
-                self._conn.write(input_data)
+                self._writer.write(input_data)
 
-    def read_until(self, target: bytes, timeout: Optional[int]=None) -> bytes:
+    async def read_until(self, target: bytes, timeout: Optional[int]=None) -> bytes:
         """ Reads from the connection until the target string is found or the optional timeout is hit
 
         :param target: Target string
@@ -104,13 +113,13 @@ class Connection:
         """
         data = None
 
-        if self._conn:
+        if self._reader:
             with self._lock:
-                data = self._conn.read_until(target, timeout=timeout)
+                data = await self._reader.readuntil(target)
 
         return data
 
-    def call(self, group: str, command: str, **kwargs: dict) -> HEOSResult:
+    async def call(self, group: str, command: str, **kwargs: dict) -> HEOSResult:
         """ Formats a HEOS API request, submits it, and reads the response.
 
         :param group: Group name (e.g. system, player, etc)
@@ -120,7 +129,7 @@ class Connection:
         :return: HEOSResult
         """
         self.send_command(group, command, **kwargs)
-        message = self.read_message()
+        message = await self.read_message()
         results = HEOSResult(message)
 
         if results.header:
@@ -145,7 +154,7 @@ class Connection:
         self.write(command_string.encode('utf-8'))
         logger.debug(f"Sending command: {command_string.rstrip()}")
 
-    def read_message(self, timeout: int=MESSAGE_READ_TIMEOUT, delimiter: bytes=b'\r\n') -> Optional[dict]:
+    async def read_message(self, timeout: int=MESSAGE_READ_TIMEOUT, delimiter: bytes=b'\r\n') -> Optional[dict]:
         """ Reads a message from the connection
 
         :param timeout: Timeout (seconds)
@@ -157,7 +166,7 @@ class Connection:
 
         started = time.time()
         while True:
-            response += self.read_until(delimiter, timeout=self.CONNECTION_READ_TIMEOUT)
+            response += await self.read_until(delimiter, timeout=self.CONNECTION_READ_TIMEOUT)
 
             if delimiter in response:
                 response = response.strip()
@@ -206,11 +215,9 @@ class Connection:
 
         return any([msg.lower() in message.lower() for msg in self.DELAY_MESSAGES])
 
-    def heart_beat(self):
+    async def heart_beat(self):
         """ Performs a system/heart_beat API call on the connection in order to keep the connection alive.
 
         :return: None
         """
-        self.system.heart_beat()
-
-
+        await self.system.heart_beat()

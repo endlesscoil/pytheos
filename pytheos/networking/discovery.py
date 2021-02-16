@@ -5,26 +5,26 @@ from __future__ import annotations
 
 import logging
 import socket
+import asyncio
+from asyncio import transports
 from typing import Optional, List
 
 from .. import utils
-from ..networking.types import SSDPResponse
+from ..networking.types import SSDPResponse, NewSSDPResponse
 
 logger = logging.getLogger(__name__)
 
 
-def discover(timeout: Optional[int]=None, retries: Optional[int]=None, mx: Optional[int]=None) -> List[SSDPResponse]:
+async def discover(timeout: Optional[int]=None) -> List[NewSSDPResponse]:
     """ Convenience function for initiating the discovery process.
 
     :param timeout: Optional override for the default timeout
-    :param retries: Optional override for the default number of retries
-    :param mx: Optional override for the default MX value
     :return: list
     """
+    loop = asyncio.get_running_loop()
     discovery = Discovery()
-    devices = discovery.discover(timeout, retries, mx)
 
-    return devices
+    return [NewSSDPResponse(itm) for itm in await loop.create_task(discovery.discover(timeout))]
 
 
 class SSDPBroadcastMessage:
@@ -53,6 +53,38 @@ class SSDPBroadcastMessage:
             '',
             ''
         ])
+
+
+class SSDPProtocol(asyncio.DatagramProtocol):
+    def __init__(self, address, bind_ip, bind_port, reuse_addr, ttl):
+        super().__init__()
+
+        self.transport = None
+        self.address = address
+        self.bind_ip = bind_ip
+        self.bind_port = bind_port
+        self.reuse_addr = reuse_addr
+        self.ttl = ttl
+
+        self.results = []
+
+    def connection_made(self, transport: transports.BaseTransport) -> None:
+        self.transport = transport
+
+        sock = self.transport.get_extra_info('socket')
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(self.reuse_addr))
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(self.bind_ip))  # Required for Windows
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, self.ttl)
+
+        membership_request = socket.inet_aton(self.address) + socket.inet_aton(self.bind_ip)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, membership_request)            # Required for Windows
+
+    def datagram_received(self, data, addr):
+        self.results.append(data.decode())
+
+    async def get_results(self):
+        for r in self.results:
+            yield r
 
 
 class Discovery:
@@ -86,110 +118,45 @@ class Discovery:
         self.bind_port = self.DEFAULT_BIND_PORT
         self.ttl = self.DEFAULT_TTL
         self.reuse_addr = True
-
+        self.results = []
         self._socket = None
 
-    def discover(self, timeout: int=None, retries: int=None, mx: int=None) -> List[SSDPResponse]:
-        """ Performs SSDP broadcasts to identify any HEOS devices on the network
+    async def send_broadcast(self, transport):
+        broadcast_message = SSDPBroadcastMessage(
+            self.address,
+            self.port,
+            self.service,
+            self.mx
+        )
 
-        :param timeout: Timeout (seconds)
-        :param retries: Number of retries
-        :param mx: MX value
-        :return: list
-        """
-        socket.setdefaulttimeout(timeout if timeout is not None else self.timeout)
-        if not self.bind_ip:
-            self.bind_ip = utils.get_default_ip(socket.AF_INET)
+        sock = transport.get_extra_info('socket')
+        msg = str(broadcast_message).encode('utf-8')
+        sock.sendto(msg, (self.address, self.port))
 
-        return self._perform_discovery(retries, mx)
+    async def discover(self, timeout):
+        self.results = []
 
-    def _perform_discovery(self, retries: Optional[int]=None, mx: Optional[int]=None) -> List[SSDPResponse]:
-        """ Performs the discovery process.
+        loop = asyncio.get_running_loop()
+        local_ip = utils.get_default_ip(socket.AF_INET)
+        proto = SSDPProtocol(
+            self.address,
+            local_ip,
+            self.bind_port,
+            reuse_addr=self.reuse_addr,
+            ttl=self.ttl
+        )
 
-        :param retries: Optional override for the number of retries
-        :param mx: Optional override for the MX value
-        :return: list
-        """
-        logger.debug(f"Binding to IP: {self.bind_ip}")
+        transport, protocol = await loop.create_datagram_endpoint(
+            lambda: proto,
+            local_addr=(local_ip, self.bind_port)
+        )
 
-        retries = retries if retries is not None else self.retries
-        mx = mx if mx is not None else self.mx
+        try:
+            await self.send_broadcast(transport)
+            await asyncio.sleep(timeout)
+            self.results = [itm async for itm in proto.get_results()]
 
-        discovered_devices = []
-        for attempt in range(retries):
-            logger.debug(f"Broadcasting discovery to {self.address}:{self.port}")
+        finally:
+            transport.close()
 
-            devices = self._communicate(mx)
-            if not devices:
-                continue
-
-            logger.info(f"Discovered {len(devices)} new devices..")
-            discovered_devices.extend(devices)
-
-        return discovered_devices
-
-    def _communicate(self, mx: int) -> List[SSDPResponse]:
-        """ Create our socket, construct the broadcast message, send it, and read the responses.
-
-        :param mx: MX value to use
-        :return: list
-        """
-        self._socket = self._create_socket()
-
-        msg = self._build_message(mx)
-        self._send_message(msg)
-
-        devices = []
-        while True:
-            try:
-                device = self._read_response()
-            except socket.timeout:
-                break
-
-            devices.append(device)
-
-        self._close_socket()
-
-        return devices
-
-    def _read_response(self):
-        return SSDPResponse(self._socket)
-
-    def _build_message(self, mx: int) -> bytes:
-        """ Constructs the broadcast message to send.
-
-        :param mx: MX value
-        :return: bytes
-        """
-        broadcast_message = SSDPBroadcastMessage(self.address, self.port, self.service, mx)
-        return str(broadcast_message).encode('utf-8')
-
-    def _send_message(self, message: bytes):
-        """ Sends the message to the socket.
-
-        :param message: Message
-        :return: None
-        """
-        logger.debug(f'Sending message {message}')
-        self._socket.sendto(message, (self.address, self.port))
-
-    def _create_socket(self):
-        """ Create the socket we will use to broadcast our SSDP request.
-
-        :return: socket
-        """
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, int(self.reuse_addr))
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(self.bind_ip))  # Required for Windows
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, self.ttl)
-
-        membership_request = socket.inet_aton(self.address) + socket.inet_aton(self.bind_ip)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, membership_request)            # Required for Windows
-        sock.bind((self.bind_ip, self.bind_port))
-
-        return sock
-
-    def _close_socket(self):
-        """ Close the socket """
-        self._socket.close()
-        self._socket = None
+        return self.results
