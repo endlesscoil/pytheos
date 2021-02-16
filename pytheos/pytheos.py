@@ -55,16 +55,16 @@ class Pytheos:
         return self._account_username
 
     @property
-    def players(self) -> Dict[int, controllers.Player]:
+    async def players(self) -> Dict[int, controllers.Player]:
         if self._players is None:
-            self.get_players()
+            await self.get_players()
 
         return self._players.copy()
 
     @property
-    def groups(self) -> tuple:
+    async def groups(self) -> tuple:
         if self._groups is None:
-            self.get_groups()
+            await self.get_groups()
 
         return tuple(self._groups.values())
 
@@ -80,9 +80,9 @@ class Pytheos:
         return self._receive_events
 
     @receive_events.setter
-    def receive_events(self, value):
+    async def receive_events(self, value):
         self._receive_events = value
-        self._set_register_for_change_events(value)
+        await self._set_register_for_change_events(value)
 
     def __init__(self, server: Union[str, SSDPResponse]=None, port: Optional[int]=DEFAULT_PORT):
         """ Constructor
@@ -118,17 +118,19 @@ class Pytheos:
     def __repr__(self):
         return f'<Pytheos(server={self.server}, port={self.port})>'
 
+    # FIXME: How do we do async with this?
     def __enter__(self):
         if not self._connected:
             self.connect()
 
         return self
 
+    # FIXME: How do we do async with this?
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._connected:
             self.close()
 
-    def connect(self, enable_event_connection: bool=True, refresh: bool=True) -> Pytheos:
+    async def connect(self, enable_event_connection: bool=True, refresh: bool=True) -> Pytheos:
         """ Connect to our HEOS device.
 
         :param enable_event_connection: Enables establishing an additional connection for system events
@@ -137,13 +139,13 @@ class Pytheos:
         """
         logger.info(f'Connecting to {self.server}:{self.port}')
 
-        self._command_channel.connect(self.server, self.port)
+        await self._command_channel.connect(self.server, self.port)
         self._connected = True
 
         self._receive_events = enable_event_connection
         if self._receive_events:
-            self._event_channel.connect(self.server, self.port, deduplicate=True)
-            self._set_register_for_change_events(True)
+            await self._event_channel.connect(self.server, self.port, deduplicate=True)
+            await self._set_register_for_change_events(True)
 
             # FIXME: Figure out exactly how I'm consuming these.
             self._event_thread = EventReceiverThread(self._event_channel, self._event_queue)
@@ -153,12 +155,12 @@ class Pytheos:
             #/FIXME
 
         if refresh:
-            self.refresh()
+            await self.refresh()
 
         return self
 
-    def _set_register_for_change_events(self, value: bool):
-        self._event_channel.system.register_for_change_events(value)
+    async def _set_register_for_change_events(self, value: bool):
+        await self._event_channel.system.register_for_change_events(value)
 
     def close(self):
         """ Close the connection to our HEOS device
@@ -195,56 +197,56 @@ class Pytheos:
 
         self._event_subscriptions[event_name].append(callback)
 
-    def refresh(self):
+    async def refresh(self):
         """ Refreshes internal information from the HEOS system.
 
         :return: None
         """
-        self.check_account()
-        self.get_players()
-        self.get_groups()
-        self.get_sources()
+        await self.check_account()
+        await self.get_players()
+        await self.get_groups()
+        await self.get_sources()
 
-    def reboot(self):
+    async def reboot(self):
         """ Instructs the system to reboot.
 
         :return: None
         """
-        self.api.system.reboot()
+        await self.api.system.reboot()
 
-    def check_account(self) -> tuple:
+    async def check_account(self) -> tuple:
         """ Checks if the system is logged into HEOS and returns the status and account name, if available.
 
         :return: tuple
         """
-        self._account_status, self._account_username = self.api.system.check_account()
+        self._account_status, self._account_username = await self.api.system.check_account()
 
         return self._account_status, self._account_username
 
-    def sign_in(self, username: str, password: str):
+    async def sign_in(self, username: str, password: str):
         """ Signs the system into the HEOS service.
 
         :param username: Username
         :param password: Password
         :return: None
         """
-        self.api.system.sign_in(username, password)
+        await self.api.system.sign_in(username, password)
 
-    def sign_out(self):
+    async def sign_out(self):
         """ Signs out from the HEOS service.
 
         :return: None
         """
-        self.api.system.sign_out()
+        await self.api.system.sign_out()
 
-    def get_players(self):
+    async def get_players(self):
         """ Retrieves a mapping of IDs to Players present in the HEOS system.
 
         :return: dict
         """
         self._players = {}
 
-        for player in self.api.player.get_players():
+        for player in await self.api.player.get_players():
             self._players[player.player_id] = controllers.Player(self, player)
 
         return self._players
@@ -257,26 +259,26 @@ class Pytheos:
         """
         return self._groups.get(group_id)
 
-    def get_groups(self):
+    async def get_groups(self):
         """ Retrieves a mapping of IDs to Groups present in the HEOS system.
 
         :return: dict
         """
         self._groups = {}
 
-        for group in self.api.group.get_groups():
+        for group in await self.api.group.get_groups():
             self._groups[group.group_id] = controllers.Group(self, group)
 
         return self._groups
 
-    def get_sources(self):
+    async def get_sources(self):
         """ Retrieves a mapping of IDs to Sources present in the HEOS system.
 
         :return:
         """
         self._sources = {}
 
-        for source in self.api.browse.get_music_sources():
+        for source in await self.api.browse.get_music_sources():
             self._sources[source.source_id] = controllers.Source(self, source)
 
         return self._sources
@@ -355,7 +357,7 @@ class Pytheos:
         raise NotImplementedError()
 
 
-def connect(host: Union[SSDPResponse, str], port: int=Pytheos.DEFAULT_PORT) -> Pytheos:
+async def connect(host: Union[SSDPResponse, str], port: int=Pytheos.DEFAULT_PORT) -> Pytheos:
     """ Connect to the provided host and return a context manager for use with the connection.
 
     :param host: Host to connect to
@@ -367,4 +369,4 @@ def connect(host: Union[SSDPResponse, str], port: int=Pytheos.DEFAULT_PORT) -> P
         host = utils.extract_host(host.location)
 
     conn = Pytheos(host, port)
-    return conn.connect()
+    return await conn.connect()
