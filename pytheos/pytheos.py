@@ -68,8 +68,6 @@ class Pytheos:
         self._command_channel = Connection()
         self._event_channel = Connection()
         self._event_queue = asyncio.Queue()
-        # self._event_thread: Optional[EventReceiverThread] = None
-        # self._event_handler_thread: Optional[EventHandlerThread] = None
         self._event_task = None
         self._event_processor = None
         self._connected = False
@@ -89,14 +87,12 @@ class Pytheos:
     def __repr__(self):
         return f'<Pytheos(server={self.server}, port={self.port})>'
 
-    # FIXME: How do we do async with this?
     def __enter__(self):
         if not self._connected:
             self.connect()
 
         return self
 
-    # FIXME: How do we do async with this?
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._connected:
             self.close()
@@ -121,13 +117,6 @@ class Pytheos:
             loop = asyncio.get_running_loop()
             self._event_task = loop.create_task(self.listen_for_events())
             self._event_processor = loop.create_task(self.event_processor())
-
-            # FIXME: Figure out exactly how I'm consuming these.
-            # self._event_thread = EventReceiverThread(self._event_channel, self._event_queue)
-            # self._event_thread.start()
-            # self._event_handler_thread = EventHandlerThread(self, self._event_handler, self._event_queue)
-            # self._event_handler_thread.start()
-            #/FIXME
 
         if refresh:
             await self.refresh()
@@ -219,13 +208,15 @@ class Pytheos:
 
         return self._players
 
-    def get_group(self, group_id):
+    async def get_group(self, group_id):
         """ Retrieve a specific group by ID.
 
         :param group_id: Group ID
         :return: PytheosGroup
         """
-        return self._groups.get(group_id)
+        groups = await self.get_groups()
+
+        return groups.get(group_id)
 
     async def get_groups(self):
         """ Retrieves a mapping of IDs to Groups present in the HEOS system.
