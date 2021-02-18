@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import logging
-import threading
 import time
 from typing import Optional, Union
 import asyncio
@@ -13,7 +12,7 @@ import asyncio
 from .. import utils
 from ..api import BrowseAPI, GroupAPI, PlayerAPI, SystemAPI
 from ..networking.errors import CommandFailedError
-from ..models.heos import HEOSResult, HEOSEvent
+from ..models.heos import HEOSResult
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +51,6 @@ class Connection:
         self.browse = BrowseAPI(self)
 
         self._prettify_json_response = False
-        self._lock = threading.Lock()
         self._reader = None
         self._writer = None
         self._last_response: Optional[str] = None
@@ -65,12 +63,11 @@ class Connection:
         :param deduplicate: Flag to enable message deduplication
         :return: None
         """
-        with self._lock:
-            self.server = server
-            self.port = port
-            self.deduplicate = deduplicate
+        self.server = server
+        self.port = port
+        self.deduplicate = deduplicate
 
-            self._reader, self._writer = await asyncio.open_connection(server, port)
+        self._reader, self._writer = await asyncio.open_connection(server, port)
 
     def write(self, input_data: bytes):
         """ Writes the provided data to the connection
@@ -79,8 +76,7 @@ class Connection:
         :return: None
         """
         if self._writer:
-            with self._lock:
-                self._writer.write(input_data)
+            self._writer.write(input_data)
 
     async def read_until(self, target: bytes) -> bytes:
         """ Reads from the connection until the target string is found or the optional timeout is hit
@@ -91,8 +87,7 @@ class Connection:
         data = None
 
         if self._reader:
-            with self._lock:
-                data = await self._reader.readuntil(target)
+            data = await self._reader.readuntil(target)
 
         return data
 

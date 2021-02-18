@@ -10,7 +10,7 @@ from asyncio import transports
 from typing import Optional, List
 
 from .. import utils
-from ..networking.types import SSDPResponse, SSDPResponse
+from ..networking.types import SSDPResponse
 
 logger = logging.getLogger(__name__)
 
