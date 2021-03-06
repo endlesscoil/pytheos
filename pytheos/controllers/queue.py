@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import time
-from collections.abc import MutableSequence
 
 from .containers import MediaItem
 from .. import models
@@ -13,56 +11,38 @@ if TYPE_CHECKING:
     from pytheos import Pytheos
 
 
-class Queue(MutableSequence):
+class Queue:
     """ High-level Queue Representation """
 
     def __init__(self, pytheos: 'Pytheos', player: 'models.Player'):
-        super().__init__()
-
         self._pytheos = pytheos
         self._player = player
-        self._queue = None
-        self._nocache = False
+        self._queue = []
 
-    # FIXME: This is going to need to be reworked for async.
-    def __getitem__(self, item):
-        self._refresh_queue()
-        return self._queue[item]
-
-    # FIXME: This is going to need to be reworked for async.
-    def __setitem__(self, key, value):
-        self._refresh_queue()
-        self._insert_queue_item(key, value)
-
-    # FIXME: This is going to need to be reworked for async.
-    def __delitem__(self, key):
-        self._refresh_queue()
-
-        if self._queue:
-            # Replace a negative index with a positive one
-            if key < 0:
-                key = len(self._queue) + key
-
-            self._pytheos.api.player.remove_from_queue(self._player.player_id, (key + 1,))
-            del self._queue[key]
-
-    # FIXME: This is going to need to be reworked for async.
     def __len__(self):
-        self._refresh_queue()
         return len(self._queue)
 
-    # FIXME: This is going to need to be reworked for async.
     def __str__(self):
-        self._refresh_queue()
-        return '[{items}]'.format(items=', '.join([str(qi) for qi in self._queue]))
+        return '[{items}]'.format(items=', '.join([f'"{str(qi)}"' for qi in self._queue]))
 
-    @property
-    def nocache(self):
-        return self._nocache
+    def __iter__(self):
+        return iter(self._queue)
 
-    @nocache.setter
-    def nocache(self, value):
-        self._nocache = value
+    async def append(self, obj: models.Source):
+        """ Inserts a MediaItem at the end of the queue.
+
+        :param obj: MediaItem
+        :return: None
+        """
+        await self.insert(-1, obj)
+
+    async def prepend(self, obj: models.Source):
+        """ Inserts a MediaItem at the beginning of the queue.
+
+        :param obj: MediaItem
+        :return: None
+        """
+        await self.insert(0, obj)
 
     async def insert(self, index: int, obj: models.Source):
         """ Inserts a MediaItem into the specified location in the queue.
@@ -71,6 +51,9 @@ class Queue(MutableSequence):
         :param obj: MediaItem
         :return: None
         """
+        if index < 0:
+            index = len(self._queue) + index + 1
+
         await self._refresh_queue(force=True)
         await self._insert_queue_item(index, obj)
 
@@ -85,9 +68,22 @@ class Queue(MutableSequence):
         if index >= len(self._queue):
             raise ValueError("Index out of range")
 
-        del self[index]
+        if index < 0:
+            index = len(self._queue) + index + 1
+
+        await self.delete(index)
         await self._refresh_queue(force=True)
         await self._insert_queue_item(index, obj)
+
+    async def delete(self, index):
+        await self._refresh_queue(force=True)
+
+        if self._queue:
+            if index < 0:
+                index = len(self._queue) + index
+
+            await self._pytheos.api.player.remove_from_queue(self._player.player_id, (index + 1,))
+            del self._queue[index]
 
     async def play(self, play_id: int=None):
         """ Starts playing the queue.  Optionally takes a queue ID to play.
@@ -103,7 +99,7 @@ class Queue(MutableSequence):
 
             await self._pytheos.api.player.play_queue(self._player.player_id, play_id)
 
-    async  def next(self):
+    async def next(self):
         """ Plays the next track in the queue.
 
         :return: None
@@ -188,7 +184,7 @@ class Queue(MutableSequence):
         :param force: Force refresh
         :return: None
         """
-        if self._queue is None or self.nocache or force:
+        if self._queue is None or force:
             self._queue = [MediaItem(self._pytheos, qi, None) for qi in await self._pytheos.api.player.get_queue(self._player.player_id)]
 
         return self._queue
