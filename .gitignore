@@ -1,6 +1,6 @@
 # admin
 .idea
-doctrees
+_build
 
 # Pytheos
 examples/test.py

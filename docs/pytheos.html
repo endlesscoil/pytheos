@@ -1,0 +1,476 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pytheos Package &#8212; Pytheos  documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pytheos.controllers Package" href="pytheos_controllers.html" />
+    <link rel="prev" title="Welcome to Pytheos’ documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pytheos_controllers.html" title="pytheos.controllers Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Pytheos’ documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytheos  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytheos Package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pytheos-package">
+<h1>pytheos Package<a class="headerlink" href="#pytheos-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-pytheos.pytheos">
+<span id="pytheos-module"></span><h2><a class="reference internal" href="index.html#module-pytheos" title="pytheos"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pytheos</span></code></a> Module<a class="headerlink" href="#module-pytheos.pytheos" title="Permalink to this headline">¶</a></h2>
+<p>Provides the primary interface into the library</p>
+<dl class="py class">
+<dt id="pytheos.pytheos.Pytheos">
+<em class="property">class </em><code class="sig-prename descclassname">pytheos.pytheos.</code><code class="sig-name descname">Pytheos</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">server</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>str<span class="p">, </span><a class="reference internal" href="pytheos_networking.html#pytheos.networking.types.SSDPResponse" title="pytheos.networking.types.SSDPResponse">pytheos.networking.types.SSDPResponse</a><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">port</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">1255</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Pytheos interface</p>
+<dl class="py attribute">
+<dt id="pytheos.pytheos.Pytheos.DEFAULT_PORT">
+<code class="sig-name descname">DEFAULT_PORT</code><em class="property"> = 1255</em><a class="headerlink" href="#pytheos.pytheos.Pytheos.DEFAULT_PORT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.check_channel_availability">
+<em class="property">static </em><code class="sig-name descname">check_channel_availability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">channel</span><span class="p">:</span> <span class="n"><a class="reference internal" href="pytheos_networking.html#pytheos.networking.connection.Connection" title="pytheos.networking.connection.Connection">pytheos.networking.connection.Connection</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.check_channel_availability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks to make sure that the provided channel is available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>channel</strong> – Channel connection</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p>ChannelUnavailableError</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.log_level">
+<em class="property">property </em><code class="sig-name descname">log_level</code><a class="headerlink" href="#pytheos.pytheos.Pytheos.log_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.connected">
+<em class="property">property </em><code class="sig-name descname">connected</code><a class="headerlink" href="#pytheos.pytheos.Pytheos.connected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.signed_in">
+<em class="property">property </em><code class="sig-name descname">signed_in</code><a class="headerlink" href="#pytheos.pytheos.Pytheos.signed_in" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.username">
+<em class="property">property </em><code class="sig-name descname">username</code><a class="headerlink" href="#pytheos.pytheos.Pytheos.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.connect">
+<em class="property">async </em><code class="sig-name descname">connect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">enable_event_connection</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">refresh</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#pytheos.pytheos.Pytheos" title="pytheos.pytheos.Pytheos">pytheos.pytheos.Pytheos</a><a class="headerlink" href="#pytheos.pytheos.Pytheos.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to our HEOS device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>enable_event_connection</strong> – Enables establishing an additional connection for system events</p></li>
+<li><p><strong>refresh</strong> – Determines if the system state should be automatically refreshed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the connection to our HEOS device</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.subscribe">
+<code class="sig-name descname">subscribe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe a callback function to a specific event</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event_name</strong> – Event name</p></li>
+<li><p><strong>callback</strong> – Callback function</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.refresh">
+<em class="property">async </em><code class="sig-name descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.refresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Refreshes internal information from the HEOS system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.reboot">
+<em class="property">async </em><code class="sig-name descname">reboot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.reboot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instructs the system to reboot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.check_account">
+<em class="property">async </em><code class="sig-name descname">check_account</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#pytheos.pytheos.Pytheos.check_account" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the system is logged into HEOS and returns the status and account name, if available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.sign_in">
+<em class="property">async </em><code class="sig-name descname">sign_in</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">username</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">password</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.sign_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signs the system into the HEOS service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>username</strong> – Username</p></li>
+<li><p><strong>password</strong> – Password</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.sign_out">
+<em class="property">async </em><code class="sig-name descname">sign_out</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.sign_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signs out from the HEOS service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.get_players">
+<em class="property">async </em><code class="sig-name descname">get_players</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.get_players" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a mapping of IDs to Players present in the HEOS system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.get_group">
+<em class="property">async </em><code class="sig-name descname">get_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.get_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a specific group by ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>group_id</strong> – Group ID</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>PytheosGroup</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.get_groups">
+<em class="property">async </em><code class="sig-name descname">get_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.get_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a mapping of IDs to Groups present in the HEOS system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.get_sources">
+<em class="property">async </em><code class="sig-name descname">get_sources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.get_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a mapping of IDs to Sources present in the HEOS system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.is_receiving_events">
+<code class="sig-name descname">is_receiving_events</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.is_receiving_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves whether or not we’re receiving events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pytheos.pytheos.Pytheos.enable_event_reception">
+<em class="property">async </em><code class="sig-name descname">enable_event_reception</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytheos.pytheos.Pytheos.enable_event_reception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables or disables event reception.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – True or False</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytheos.pytheos.connect">
+<em class="property">async </em><code class="sig-prename descclassname">pytheos.pytheos.</code><code class="sig-name descname">connect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference internal" href="pytheos_networking.html#pytheos.networking.types.SSDPResponse" title="pytheos.networking.types.SSDPResponse">pytheos.networking.types.SSDPResponse</a><span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">port</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1255</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#pytheos.pytheos.Pytheos" title="pytheos.pytheos.Pytheos">pytheos.pytheos.Pytheos</a><a class="headerlink" href="#pytheos.pytheos.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to the provided host and return a context manager for use with the connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> – Host to connect to</p></li>
+<li><p><strong>port</strong> – Port to connect to</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p>ValueError</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The Pytheos instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytheos.errors">
+<span id="pytheos-errors-module"></span><h2><a class="reference internal" href="#module-pytheos.errors" title="pytheos.errors"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pytheos.errors</span></code></a> Module<a class="headerlink" href="#module-pytheos.errors" title="Permalink to this headline">¶</a></h2>
+<p>Errors generated by Pytheos</p>
+<dl class="py exception">
+<dt id="pytheos.errors.PytheosError">
+<em class="property">exception </em><code class="sig-prename descclassname">pytheos.errors.</code><code class="sig-name descname">PytheosError</code><a class="headerlink" href="#pytheos.errors.PytheosError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base Pytheos error class</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pytheos.utils">
+<span id="pytheos-utils-module"></span><h2><a class="reference internal" href="#module-pytheos.utils" title="pytheos.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pytheos.utils</span></code></a> Module<a class="headerlink" href="#module-pytheos.utils" title="Permalink to this headline">¶</a></h2>
+<p>General utility functions</p>
+<dl class="py function">
+<dt id="pytheos.utils.extract_host">
+<code class="sig-prename descclassname">pytheos.utils.</code><code class="sig-name descname">extract_host</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>str<span class="p">]</span><a class="headerlink" href="#pytheos.utils.extract_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts the hostname or IP address from the supplied URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>url</strong> – URL string</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Matching string or None if not found</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytheos.utils.build_command_string">
+<code class="sig-prename descclassname">pytheos.utils.</code><code class="sig-name descname">build_command_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">command</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#pytheos.utils.build_command_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds the command string to send to the HEOS service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group</strong> – Group name (e.g. system, player, etc)</p></li>
+<li><p><strong>command</strong> – Command name (e.g. heart_beat)</p></li>
+<li><p><strong>kwargs</strong> – Any parameters that should be sent along with the command</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The command string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytheos.utils.parse_var_string">
+<code class="sig-prename descclassname">pytheos.utils.</code><code class="sig-name descname">parse_var_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_string</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#pytheos.utils.parse_var_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a URL parameter string (sorta) like “var1=’val1’&amp;var2=’val2’” - also supports the special case
+where there is no value specified, such as “signed_in&amp;un=username”, for the player/signed_in command.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_string</strong> – Input string to parse</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytheos.utils.get_default_ip">
+<code class="sig-prename descclassname">pytheos.utils.</code><code class="sig-name descname">get_default_ip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address_family</span><span class="p">:</span> <span class="n">socket.AddressFamily</span></em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#pytheos.utils.get_default_ip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the IP address on the default interface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address_family</strong> – Address family</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytheos.utils.get_interface_ip">
+<code class="sig-prename descclassname">pytheos.utils.</code><code class="sig-name descname">get_interface_ip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interface</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">address_family</span><span class="p">:</span> <span class="n">socket.AddressFamily</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>str<span class="p">]</span><a class="headerlink" href="#pytheos.utils.get_interface_ip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the IP address of the specified interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interface</strong> – Interface name</p></li>
+<li><p><strong>address_family</strong> – Address family</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>str or None if not found</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pytheos.utils.get_default_interface">
+<code class="sig-prename descclassname">pytheos.utils.</code><code class="sig-name descname">get_default_interface</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">address_family</span><span class="p">:</span> <span class="n">socket.AddressFamily</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#pytheos.utils.get_default_interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the default gateway and interface for the specified address family.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>address_family</strong> – Address family</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pytheos Package</a><ul>
+<li><a class="reference internal" href="#module-pytheos.pytheos"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pytheos</span></code> Module</a></li>
+<li><a class="reference internal" href="#module-pytheos.errors"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pytheos.errors</span></code> Module</a></li>
+<li><a class="reference internal" href="#module-pytheos.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pytheos.utils</span></code> Module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to Pytheos’ documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pytheos_controllers.html"
+                        title="next chapter">pytheos.controllers Package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pytheos.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pytheos_controllers.html" title="pytheos.controllers Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Pytheos’ documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytheos  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pytheos Package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Scott Petersen.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+    </div>
+  </body>
+</html>
