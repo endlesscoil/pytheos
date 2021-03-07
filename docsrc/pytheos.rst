@@ -1,8 +1,6 @@
 pytheos Package
 ====================
 
-
-
 :mod:`pytheos` Module
 --------------------------
 
@@ -12,7 +10,7 @@ pytheos Package
     :show-inheritance:
 
 :mod:`pytheos.errors` Module
---------------------------
+-----------------------------
 
 .. automodule:: pytheos.errors
     :members:
@@ -20,7 +18,7 @@ pytheos Package
     :show-inheritance:
 
 :mod:`pytheos.utils` Module
---------------------------
+----------------------------
 
 .. automodule:: pytheos.utils
     :members:

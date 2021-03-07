@@ -116,7 +116,7 @@ class Pytheos:
 
             loop = asyncio.get_running_loop()
             self._event_task = loop.create_task(self._listen_for_events())
-            self._event_processor = loop.create_task(self._event_processor())
+            self._event_processor = loop.create_task(self._process_events())
 
         if refresh:
             await self.refresh()
@@ -278,7 +278,7 @@ class Pytheos:
 
             await asyncio.sleep(0.5)
 
-    async def _event_processor(self):
+    async def _process_events(self):
         """ Async task that processes events that originate from the event channel.
 
         :return: None

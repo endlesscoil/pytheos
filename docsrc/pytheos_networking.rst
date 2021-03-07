@@ -1,5 +1,5 @@
 pytheos.networking Package
-====================
+===========================
 
 :mod:`discovery` Module
 --------------------------

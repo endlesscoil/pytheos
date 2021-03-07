@@ -1,8 +1,8 @@
 pytheos.models Package
-====================
+=======================
 
 :mod:`pytheos.models.browse` Module
---------------------------
+------------------------------------
 
 .. automodule:: pytheos.models.browse
     :members:
@@ -10,7 +10,7 @@ pytheos.models Package
     :show-inheritance:
 
 :mod:`pytheos.models.group` Module
---------------------------
+-----------------------------------
 
 .. automodule:: pytheos.models.group
     :members:
@@ -18,7 +18,7 @@ pytheos.models Package
     :show-inheritance:
 
 :mod:`pytheos.models.heos` Module
---------------------------
+----------------------------------
 
 .. automodule:: pytheos.models.heos
     :members:
@@ -26,7 +26,7 @@ pytheos.models Package
     :show-inheritance:
 
 :mod:`pytheos.models.media` Module
---------------------------
+-----------------------------------
 
 .. automodule:: pytheos.models.media
     :members:
@@ -34,7 +34,7 @@ pytheos.models Package
     :show-inheritance:
 
 :mod:`pytheos.models.player` Module
---------------------------
+------------------------------------
 
 .. automodule:: pytheos.models.player
     :members:
@@ -42,7 +42,7 @@ pytheos.models Package
     :show-inheritance:
 
 :mod:`pytheos.models.source` Module
---------------------------
+------------------------------------
 
 .. automodule:: pytheos.models.source
     :members:
@@ -50,7 +50,7 @@ pytheos.models Package
     :show-inheritance:
 
 :mod:`pytheos.models.system` Module
---------------------------
+------------------------------------
 
 .. automodule:: pytheos.models.system
     :members:
