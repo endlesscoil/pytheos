@@ -1,7 +1,7 @@
-![Python package](https://github.com/endlesscoil/pytheos/workflows/Python%20package/badge.svg)
+![Tests](https://github.com/endlesscoil/pytheos/workflows/Python%20package/badge.svg)
 
 Pytheos is a Python library designed to allow easy interaction with devices in the HEOS audio ecosystem.  HEOS is 
-supported on specific Denon and Marantz products.
+supported on some Denon and Marantz products.
 
 ##### Features
 * Network discovery via SSDP
@@ -17,20 +17,23 @@ supported on specific Denon and Marantz products.
 This is a partial list of supported devices - I suspect most, if not all, HEOS devices will work fine.
  
 ###### Confirmed
-* Marantz PM7000N (1.583.201)
+* Marantz PM7000N (1.583.161 r165840)
 
 ##### Installation
 
-###### Via PyPI
-TBD
+###### As a package
+```
+pip install git+https://git@github.com/endlesscoil/pytheos.git
+```
 
 ###### Developers
 If you wish to do development work on Pytheos you can clone the repository and set up your development environment
 with the following commands.
 ```
-git clone https://github.com/endlesscoil/pytheos.git
-python setup.py develop
+git clone git@github.com:endlesscoil/pytheos.git
+pip install -e pytheos
 ```
 
 ##### Example Usage
-See the [Examples](https://github.com/endlesscoil/pytheos/tree/master/examples) directory.
+See the [examples](https://github.com/endlesscoil/pytheos/tree/master/examples) directory for a set of high and 
+low-level examples.
