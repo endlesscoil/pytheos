@@ -1,38 +1,34 @@
-High-level API
+pytheos.networking Package
 ====================
 
-:mod:`player` Module
+:mod:`discovery` Module
 --------------------------
 
-.. automodule:: pytheos.player
+.. automodule:: pytheos.networking.discovery
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-:mod:`group` Module
+:mod:`connection` Module
 --------------------------
 
-.. automodule:: pytheos.group
+.. automodule:: pytheos.networking.connection
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-:mod:`queue` Module
+:mod:`errors` Module
 --------------------------
 
-.. automodule:: pytheos.queue
+.. automodule:: pytheos.networking.errors
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-:mod:`source` Module
+:mod:`types` Module
 --------------------------
 
-.. automodule:: pytheos.source
+.. automodule:: pytheos.networking.types
     :members:
     :undoc-members:
     :show-inheritance:
-

@@ -1,50 +1,34 @@
 pytheos.api Package
 ====================
 
-:mod:`interface` Module
---------------------------
+:mod:`pytheos.api.browse` Module
+---------------------------------
 
-.. automodule:: pytheos.api.interface
+.. automodule:: pytheos.api.browse
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`player` Module
---------------------------
+:mod:`pytheos.api.group` Module
+---------------------------------
 
-.. automodule:: pytheos.api.player.player
+.. automodule:: pytheos.api.group
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`browse` Module
---------------------------
+:mod:`pytheos.api.player` Module
+---------------------------------
 
-.. automodule:: pytheos.api.browse.browse
+.. automodule:: pytheos.api.player
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`group` Module
---------------------------
-
-.. automodule:: pytheos.api.group.group
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`system` Module
---------------------------
+:mod:`pytheos.api.system` Module
+---------------------------------
 
 .. automodule:: pytheos.api.system
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`types` Module
---------------------------
-
-.. automodule:: pytheos.api.types
     :members:
     :undoc-members:
     :show-inheritance:

@@ -8,14 +8,19 @@ Welcome to Pytheos' documentation!
 
 .. automodule:: pytheos
 .. automodule:: pytheos.api
+.. automodule:: pytheos.controllers
+.. automodule:: pytheos.models
+.. automodule:: pytheos.networking
 
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
 
    pytheos
-   pytheos_highlevel
+   pytheos_controllers
+   pytheos_networking
    pytheos_api
+   pytheos_models
 
 Indices and tables
 ==================
