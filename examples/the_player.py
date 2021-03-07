@@ -51,10 +51,11 @@ async def print_details(player):
     print(f"IP Address: {player.ip}")
     print()
 
-    if player.group:
-        print(f"Group: {player.group.id}")
-        print(f"Group Leader: {player.group.leader.name}")
-        print(f"Group Members: {[member.name for member in player.group.members]}")
+    group = player.get_group()
+    if group:
+        print(f"Group: {group.id}")
+        print(f"Group Leader: {group.leader.name}")
+        print(f"Group Members: {[member.name for member in group.members]}")
         print()
 
     play_state = await player.get_play_state()

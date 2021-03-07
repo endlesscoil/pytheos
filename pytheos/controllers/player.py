@@ -22,10 +22,6 @@ class Player:
         return self._player.name
 
     @property
-    def group(self) -> controllers.Group:
-        return await self._pytheos.get_group(self._player.group_id)
-
-    @property
     def model(self) -> str:
         return self._player.model
 
@@ -309,3 +305,6 @@ class Player:
         """
         state = await self._pytheos.api.player.get_play_mode(self.id)
         return state.repeat, state.shuffle
+
+    async def get_group(self) -> controllers.Group:
+        return await self._pytheos.get_group(self._player.group_id)
