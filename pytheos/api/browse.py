@@ -255,6 +255,14 @@ class BrowseAPI:
         return results
 
     async def _get_search_results(self, source_id: int, query: str, search_criteria_id: int, item_range: tuple) -> tuple:
+        """ Retrieves the results for a given range in a search request
+
+        :param source_id:
+        :param query:
+        :param search_criteria_id:
+        :param item_range:
+        :return:
+        """
         kwargs = {}
 
         if item_range is not None:
@@ -264,11 +272,11 @@ class BrowseAPI:
         return int(results.header.vars.get('count', 0)), [models.Source(media) for media in results.payload]
 
     async def set_service_option(self, source_id: int, option: models.browse.ServiceOption, **kwargs) -> models.heos.HEOSResult:
-        """
+        """ Sets a service option.
 
-        :param source_id:
-        :param option:
-        :param kwargs:
-        :return:
+        :param source_id: Source ID
+        :param option: Option to set
+        :param kwargs: Optional parameters used by individual service options
+        :return: HEOSResult
         """
         return await self._api.call('browse', 'set_service_option', sid=source_id, option=option, **kwargs)

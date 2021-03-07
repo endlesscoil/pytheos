@@ -7,7 +7,7 @@ import logging
 import socket
 import asyncio
 from asyncio import transports
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from .. import utils
 from ..networking.types import SSDPResponse
@@ -57,6 +57,14 @@ class SSDPBroadcastMessage:
 
 class SSDPProtocol(asyncio.DatagramProtocol):
     def __init__(self, address, bind_ip, bind_port, reuse_addr, ttl):
+        """ Constructor
+
+        :param address: Broadcast address
+        :param bind_ip: IP to bind to
+        :param bind_port: Port to bind to
+        :param reuse_addr: Reuse address?
+        :param ttl: Time-to-live
+        """
         super().__init__()
 
         self.transport = None
@@ -68,7 +76,12 @@ class SSDPProtocol(asyncio.DatagramProtocol):
 
         self.results = []
 
-    def connection_made(self, transport: transports.BaseTransport) -> None:
+    def connection_made(self, transport: transports.BaseTransport):
+        """ Initializes the socket given the provided transport.
+
+        :param transport: Transport
+        :return: None
+        """
         self.transport = transport
 
         sock = self.transport.get_extra_info('socket')
@@ -79,10 +92,20 @@ class SSDPProtocol(asyncio.DatagramProtocol):
         membership_request = socket.inet_aton(self.address) + socket.inet_aton(self.bind_ip)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, membership_request)            # Required for Windows
 
-    def datagram_received(self, data, addr):
+    def datagram_received(self, data: bytes, addr: Tuple[str, int]):
+        """ Callback used to add response datagrams to our results.
+
+        :param data: Datagram bytes
+        :param addr: Source address
+        :return: None
+        """
         self.results.append(data.decode())
 
     async def get_results(self):
+        """ Retrieves the broadcast results
+
+        :return: list of results
+        """
         for r in self.results:
             yield r
 
@@ -121,7 +144,12 @@ class Discovery:
         self.results = []
         self._socket = None
 
-    async def send_broadcast(self, transport):
+    async def _send_broadcast(self, transport):
+        """ Create and send an SSDPBroadcastMessage over the provided transport.
+
+        :param transport: Transport to use
+        :return: None
+        """
         broadcast_message = SSDPBroadcastMessage(
             self.address,
             self.port,
@@ -134,6 +162,11 @@ class Discovery:
         sock.sendto(msg, (self.address, self.port))
 
     async def discover(self, timeout):
+        """ Sends a discovery broadcast to the network and waits for responses.
+
+        :param timeout: Amount of time to wait for a response.
+        :return: list of results
+        """
         self.results = []
 
         loop = asyncio.get_running_loop()
@@ -152,7 +185,7 @@ class Discovery:
         )
 
         try:
-            await self.send_broadcast(transport)
+            await self._send_broadcast(transport)
             await asyncio.sleep(timeout)
             self.results = [itm async for itm in proto.get_results()]
 

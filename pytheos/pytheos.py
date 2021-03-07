@@ -68,11 +68,11 @@ class Pytheos:
         self._command_channel = Connection()
         self._event_channel = Connection()
         self._event_queue = asyncio.Queue()
-        self._event_task = None
-        self._event_processor = None
-        self._connected = False
-        self._event_subscriptions = {}
-        self._receive_events = True
+        self._event_task: Optional[asyncio.Task] = None
+        self._event_processor: Optional[asyncio.Task] = None
+        self._connected: bool = False
+        self._event_subscriptions: dict = {}
+        self._receive_events: bool = True
 
         self._account_status: Optional[AccountStatus] = None
         self._account_username: Optional[str] = None
@@ -115,8 +115,8 @@ class Pytheos:
             await self.enable_event_reception(True)
 
             loop = asyncio.get_running_loop()
-            self._event_task = loop.create_task(self.listen_for_events())
-            self._event_processor = loop.create_task(self.event_processor())
+            self._event_task = loop.create_task(self._listen_for_events())
+            self._event_processor = loop.create_task(self._event_processor())
 
         if refresh:
             await self.refresh()
@@ -124,6 +124,11 @@ class Pytheos:
         return self
 
     async def _set_register_for_change_events(self, value: bool):
+        """ Notifies HEOS that we want event messages on the event channel.
+
+        :param value: True or False
+        :return: None
+        """
         await self._event_channel.system.register_for_change_events(value)
 
     def close(self):
@@ -243,13 +248,27 @@ class Pytheos:
         return self._sources
 
     def is_receiving_events(self):
+        """ Retrieves whether or not we're receiving events.
+
+        :return: bool
+        """
         return self._receive_events
 
     async def enable_event_reception(self, value):
+        """ Enables or disables event reception.
+
+        :param value: True or False
+        :return: None
+        """
         self._receive_events = value
         await self._set_register_for_change_events(value)
 
-    async def listen_for_events(self):
+    async def _listen_for_events(self):
+        """ Async task that reads messages from the event channel and adds them to our event queue for
+        later processing.
+
+        :return: None
+        """
         while True:
             results = await self._event_channel.read_message()
             if results:
@@ -259,7 +278,11 @@ class Pytheos:
 
             await asyncio.sleep(0.5)
 
-    async def event_processor(self):
+    async def _event_processor(self):
+        """ Async task that processes events that originate from the event channel.
+
+        :return: None
+        """
         while True:
             event = await self._event_queue.get()
             if event:

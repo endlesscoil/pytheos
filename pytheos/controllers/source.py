@@ -75,6 +75,10 @@ class Source(Sequence):
         return f"<SourceController(id={self.id}, name={self.name})>"
 
     async def retrieve_metadata(self):
+        """ Retrieves a list of metadata for the specified source.  Only supported on some sources.
+
+        :return: list
+        """
         await self._pytheos.api.browse.retrieve_metadata()
 
     async def refresh(self, force: bool=False):
