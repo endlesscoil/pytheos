@@ -46,6 +46,9 @@ class TreeEntry(dict):
 
         self.object = obj
 
+    def get_item(self, idx: int):
+        return list(self.values())[idx]
+
 
 async def browse_path(svc: Pytheos, path: str) -> TreeEntry:
     """ Traverses the provided path starting at the list of Music Sources.  The initial list can be retrieved

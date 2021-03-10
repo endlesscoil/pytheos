@@ -20,13 +20,13 @@ async def main():
 
     print("Connecting to first HEOS service..")
     with await pytheos.connect(services[0]) as p:
-        player = None
         players = await p.get_players()
 
-        for pid, heos_player in players.items():
+        for heos_player in players:
             print(f"Found player {heos_player.name} ({heos_player.id})!")
-            player = heos_player
 
+        assert len(players) > 0
+        player = players[0]
         print(f"Using player {player.name} ({player.id})")
         print()
         print("Current queue:")
@@ -50,15 +50,15 @@ async def main():
 
         print()
         tracks = await browse_path(p, '/History/TRACKS')
-        if len(tracks) < 2:
-            obj = tracks[list(tracks.keys())[-1]].object
+        if len(tracks) > 2:
+            obj = tracks.get_item(-1).object
             print(f"Inserting {obj.name} from history at pos 1")
             await player.queue.insert(1, obj)
 
             print("Deleting second-to-last entry in queue")
             await player.queue.delete(-2)
 
-            obj = tracks[list(tracks.keys())[-2]].object
+            obj = tracks.get_item(-2).object
             print(f"Replacing 5th element with {obj.name}")
             await player.queue.replace(4, obj)
 

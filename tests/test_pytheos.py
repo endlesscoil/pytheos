@@ -75,7 +75,7 @@ class TestPytheos(unittest.TestCase):
         with patch.object(PlayerAPI, 'get_players', return_value=[PlayerModel({'pid': 1}), PlayerModel({'pid': 2})]):
             players = _async_run(self._pytheos.get_players())
             self.assertGreater(len(players), 0)
-            self.assertIsInstance(players[list(players.keys())[0]], Player)
+            self.assertIsInstance(players[0], Player)
 
     def test_get_groups(self):
         with patch.object(GroupAPI, 'get_groups', return_value=[GroupModel({'gid': 1}), GroupModel({'gid': 2})]):

@@ -21,16 +21,13 @@ async def main():
 
     print("Connecting to first HEOS service..")
     with await pytheos.connect(services[0]) as p:
-        player_id = None
         players = await p.get_players()
 
-        for pid, player in players.items():
+        for player in players:
             print(f"Found player {player.name} ({player.id})!")
-            player_id = pid
 
-        assert player_id is not None
-        player = players[player_id]
-
+        assert len(players) > 0
+        player = players[0]
         print(f"Using player {player.name} ({player.id})")
         print()
         await print_details(player)
@@ -51,7 +48,7 @@ async def print_details(player):
     print(f"IP Address: {player.ip}")
     print()
 
-    group = player.get_group()
+    group = await player.get_group()
     if group:
         print(f"Group: {group.id}")
         print(f"Group Leader: {group.leader.name}")

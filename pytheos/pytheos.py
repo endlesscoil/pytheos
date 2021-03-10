@@ -73,12 +73,11 @@ class Pytheos:
         self._connected: bool = False
         self._event_subscriptions: dict = {}
         self._receive_events: bool = True
-
         self._account_status: Optional[AccountStatus] = None
         self._account_username: Optional[str] = None
-        self._players: Optional[dict] = None
-        self._groups: Optional[dict] = None
-        self._sources: Optional[dict] = None
+        self._players: list = []
+        self._groups: dict = {}     # FIXME?: Not sure I like having this as a dict.
+        self._sources: dict = {}    # FIXME?: Not sure I like having this as a dict.
 
         self.api: Connection = self._command_channel
 
@@ -204,12 +203,9 @@ class Pytheos:
     async def get_players(self):
         """ Retrieves a mapping of IDs to Players present in the HEOS system.
 
-        :return: dict
+        :return: list
         """
-        self._players = {}
-
-        for player in await self.api.player.get_players():
-            self._players[player.player_id] = controllers.Player(self, player)
+        self._players = [controllers.Player(self, player) for player in await self.api.player.get_players()]
 
         return self._players
 
