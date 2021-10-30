@@ -94,6 +94,10 @@ class Source:
     image_url: str = None
     service_username: str = None
 
+    artist: str = None
+    album: str = None
+    album_id: str = None
+
     def __init__(self, from_dict: Optional[dict]=None, parent_source_id=None, parent_container_id=None):
         """ Constructor
 
@@ -110,6 +114,9 @@ class Source:
             self.media_id = from_dict.get('mid')
             self.image_url = from_dict.get('image_url')
             self.service_username = from_dict.get('service_username')
+            self.album = from_dict.get('album')
+            self.album_id = from_dict.get('album_id')
+            self.artist = from_dict.get('artist')
 
         if not self.source_id:
             self.source_id = parent_source_id
